@@ -1,0 +1,27 @@
+# Environment
+.env
+.env.local
+.env.production
+
+# Dependencies
+node_modules/
+
+# Data files (too large for git — download manually per ingest.js instructions)
+data/raw/**/*
+!data/raw/.gitkeep
+data/processed/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build output
+dist/
+build/
+
+# Railway
+.railway/
