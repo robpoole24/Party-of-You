@@ -1,0 +1,31 @@
+{
+  "name": "party-of-you-platform",
+  "version": "0.1.0",
+  "description": "Grassroots candidate infrastructure platform — free, transparent, no corporate money",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "api-status": "node -e \"const {getApiStatus} = require('./src/config/apis'); console.log(JSON.stringify(getApiStatus(), null, 2))\"",
+    "test": "jest"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "bull": "^4.12.0",
+    "compression": "^1.7.4",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.1.5",
+    "express-session": "^1.17.3",
+    "helmet": "^7.1.0",
+    "ioredis": "^5.3.2",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.11.3",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "nodemon": "^3.0.2"
+  }
+}
