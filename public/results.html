@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Races — Party of You</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --navy:   #1a2d5a;
+  --navy-d: #0d1b35;
+  --red:    #c8102e;
+  --red-d:  #a00c24;
+  --sky:    #2b7fc1;
+  --sky-l:  #4a9fd4;
+  --white:  #ffffff;
+  --gray:   #f4f6fb;
+  --border: #dde3ef;
+  --text:   #0d1b35;
+  --muted:  #5a6a8a;
+  --green:  #15803d;
+  --amber:  #b45309;
+  --cond:   'Barlow Condensed', sans-serif;
+  --body:   'Barlow', sans-serif;
+}
+
+body { font-family: var(--body); color: var(--text); background: var(--gray); -webkit-font-smoothing: antialiased; }
+
+/* ── NAV ─────────────────────────────────────────────────────── */
+nav {
+  background: var(--navy-d); border-bottom: 2px solid var(--red);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 32px; height: 56px; position: sticky; top: 0; z-index: 100;
+}
+.nav-logo img { height: 36px; border-radius: 4px; }
+.nav-back {
+  font-family: var(--cond); font-size: 13px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.6); text-decoration: none;
+  display: flex; align-items: center; gap: 6px;
+  transition: color 0.15s;
+}
+.nav-back:hover { color: var(--white); }
+.nav-cta-btn {
+  font-family: var(--cond); font-size: 13px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  background: var(--red); color: var(--white);
+  padding: 7px 16px; border-radius: 4px;
+  text-decoration: none; transition: background 0.15s;
+}
+.nav-cta-btn:hover { background: var(--red-d); }
+
+/* ── PAGE LAYOUT ─────────────────────────────────────────────── */
+.page { max-width: 1100px; margin: 0 auto; padding: 32px 24px 80px; }
+
+/* ── ADDRESS HEADER ──────────────────────────────────────────── */
+.addr-header {
+  background: var(--navy);
+  border-radius: 10px;
+  padding: 28px 32px;
+  margin-bottom: 24px;
+  display: flex; align-items: flex-start; justify-content: space-between;
+  flex-wrap: wrap; gap: 20px;
+}
+.addr-label {
+  font-family: var(--cond); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: rgba(255,255,255,0.4); margin-bottom: 6px;
+}
+.addr-text {
+  font-family: var(--cond); font-size: 22px; font-weight: 800;
+  color: var(--white); text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.addr-districts {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;
+}
+.district-badge {
+  font-family: var(--cond); font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  padding: 4px 10px; border-radius: 4px;
+  background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.75);
+  border: 1px solid rgba(255,255,255,0.15);
+}
+.addr-change {
+  font-family: var(--cond); font-size: 12px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.4); text-decoration: none;
+  border: 1px solid rgba(255,255,255,0.15);
+  padding: 7px 14px; border-radius: 4px;
+  transition: all 0.15s; white-space: nowrap;
+  align-self: flex-start;
+}
+.addr-change:hover { color: var(--white); border-color: rgba(255,255,255,0.4); }
+
+/* ── MAIN GRID ───────────────────────────────────────────────── */
+.results-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 20px;
+  align-items: start;
+}
+
+/* ── RACES COLUMN ────────────────────────────────────────────── */
+.races-col {}
+.col-label {
+  font-family: var(--cond); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--red); margin-bottom: 12px;
+}
+.col-title {
+  font-family: var(--cond); font-size: 28px; font-weight: 900;
+  text-transform: uppercase; color: var(--navy);
+  line-height: 1; margin-bottom: 20px;
+}
+
+.race-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 24px;
+  margin-bottom: 14px;
+  border-left: 4px solid var(--navy);
+  transition: border-left-color 0.15s, box-shadow 0.15s;
+}
+.race-card:hover { border-left-color: var(--red); box-shadow: 0 4px 20px rgba(26,45,90,0.08); }
+.race-card.open-seat { border-left-color: var(--green); }
+.race-card.open-seat:hover { border-left-color: var(--green); }
+
+.race-top {
+  display: flex; align-items: flex-start;
+  justify-content: space-between; gap: 12px;
+  margin-bottom: 10px;
+}
+.race-office {
+  font-family: var(--cond); font-size: 19px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.02em;
+  color: var(--navy); line-height: 1.1;
+}
+.race-status {
+  font-family: var(--cond); font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  padding: 4px 10px; border-radius: 20px;
+  white-space: nowrap; flex-shrink: 0;
+}
+.status-open { background: rgba(21,128,61,0.1); color: var(--green); border: 1px solid rgba(21,128,61,0.25); }
+.status-contested { background: rgba(180,83,9,0.1); color: var(--amber); border: 1px solid rgba(180,83,9,0.25); }
+.status-filing { background: rgba(43,127,193,0.1); color: var(--sky); border: 1px solid rgba(43,127,193,0.25); }
+.status-unknown { background: rgba(90,106,138,0.1); color: var(--muted); border: 1px solid rgba(90,106,138,0.2); }
+
+.race-meta {
+  display: flex; gap: 16px; flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.race-meta-item { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 5px; }
+.race-meta-item strong { color: var(--text); font-weight: 600; }
+
+.incumbent-row {
+  background: var(--gray);
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  display: flex; align-items: center; gap: 10px;
+}
+.incumbent-label {
+  font-family: var(--cond); font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--muted); white-space: nowrap;
+}
+.incumbent-name { font-size: 13px; font-weight: 600; color: var(--text); }
+.incumbent-party {
+  font-size: 11px; padding: 2px 8px; border-radius: 3px;
+  font-weight: 600;
+}
+.party-D { background: rgba(30,80,160,0.1); color: #1e50a0; }
+.party-R { background: rgba(200,16,46,0.1); color: var(--red); }
+.party-I { background: rgba(21,128,61,0.1); color: var(--green); }
+
+.race-details-row {
+  display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+}
+.race-detail-chip {
+  font-size: 11px; color: var(--muted);
+  background: var(--gray); border: 1px solid var(--border);
+  padding: 3px 10px; border-radius: 20px;
+}
+
+.race-cta {
+  margin-top: 16px; padding-top: 16px;
+  border-top: 1px solid var(--border);
+  display: flex; gap: 10px; flex-wrap: wrap;
+}
+.race-btn {
+  font-family: var(--cond); font-size: 13px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  padding: 9px 18px; border-radius: 5px;
+  text-decoration: none; border: none; cursor: pointer;
+  font-family: var(--cond); transition: all 0.15s;
+}
+.race-btn.primary { background: var(--navy); color: var(--white); }
+.race-btn.primary:hover { background: var(--red); }
+.race-btn.secondary {
+  background: transparent; color: var(--navy);
+  border: 1.5px solid var(--border);
+}
+.race-btn.secondary:hover { border-color: var(--navy); }
+
+.data-limited {
+  background: rgba(180,83,9,0.06);
+  border: 1px solid rgba(180,83,9,0.2);
+  border-radius: 8px;
+  padding: 16px;
+  font-size: 12px; color: var(--amber); line-height: 1.6;
+  margin-bottom: 14px;
+}
+.data-limited strong { display: block; margin-bottom: 4px; font-size: 13px; }
+
+/* ── RIGHT SIDEBAR ───────────────────────────────────────────── */
+.sidebar {}
+
+.sidebar-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.sidebar-card-hdr {
+  background: var(--navy);
+  padding: 14px 18px;
+  display: flex; align-items: center; gap: 8px;
+}
+.sidebar-card-hdr h3 {
+  font-family: var(--cond); font-size: 13px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--white);
+}
+.sidebar-card-hdr .hdr-icon { font-size: 16px; }
+.sidebar-card-body { padding: 18px; }
+
+.stat-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: 8px 0; border-bottom: 1px solid var(--border);
+}
+.stat-row:last-child { border-bottom: none; padding-bottom: 0; }
+.stat-label { font-size: 12px; color: var(--muted); }
+.stat-value { font-family: var(--cond); font-size: 16px; font-weight: 800; color: var(--navy); }
+.stat-value.red { color: var(--red); }
+.stat-value.green { color: var(--green); }
+
+.insight-item {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+}
+.insight-item:last-child { border-bottom: none; }
+.insight-icon { font-size: 18px; flex-shrink: 0; }
+.insight-text { font-size: 12px; color: var(--muted); line-height: 1.5; }
+.insight-text strong { color: var(--text); display: block; margin-bottom: 2px; font-size: 13px; }
+
+.poll-item {
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+}
+.poll-item:last-child { border-bottom: none; }
+.poll-question { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+.poll-bar-wrap { display: flex; gap: 4px; align-items: center; }
+.poll-bar { height: 8px; border-radius: 4px; }
+.poll-bar.dem { background: #1e50a0; }
+.poll-bar.rep { background: var(--red); }
+.poll-labels {
+  display: flex; justify-content: space-between;
+  font-size: 10px; color: var(--muted); margin-top: 4px;
+}
+
+/* ── CTA CARD ────────────────────────────────────────────────── */
+.cta-card {
+  background: var(--navy);
+  border-radius: 10px;
+  padding: 28px;
+  text-align: center;
+}
+.cta-card h3 {
+  font-family: var(--cond); font-size: 22px; font-weight: 900;
+  text-transform: uppercase; color: var(--white); margin-bottom: 10px;
+}
+.cta-card p { font-size: 13px; color: rgba(255,255,255,0.6); margin-bottom: 20px; line-height: 1.6; }
+.cta-card a {
+  display: block; background: var(--red); color: var(--white);
+  font-family: var(--cond); font-size: 15px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  padding: 13px; border-radius: 6px; text-decoration: none;
+  transition: background 0.15s;
+}
+.cta-card a:hover { background: var(--red-d); }
+
+/* ── LOADING / ERROR ──────────────────────────────────────────── */
+.loading-state {
+  text-align: center; padding: 80px 20px;
+}
+.loading-spinner {
+  width: 40px; height: 40px;
+  border: 3px solid var(--border);
+  border-top-color: var(--navy);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 16px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-state p { font-size: 14px; color: var(--muted); }
+
+.error-state {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 10px; padding: 40px; text-align: center;
+}
+.error-state h3 { font-family: var(--cond); font-size: 22px; font-weight: 800; text-transform: uppercase; color: var(--navy); margin-bottom: 10px; }
+.error-state p { font-size: 14px; color: var(--muted); margin-bottom: 20px; }
+.error-state a { color: var(--sky); text-decoration: underline; }
+
+/* ── RESPONSIVE ───────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  nav { padding: 0 16px; }
+  .page { padding: 20px 16px 60px; }
+  .addr-header { padding: 20px; }
+  .results-grid { grid-template-columns: 1fr; }
+  .sidebar { order: -1; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-back">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    New Search
+  </a>
+  <a class="nav-logo" href="/"><img src="/images/partyofyoulogo.png" alt="Party of You"></a>
+  <a href="/apply.html" class="nav-cta-btn">Run for Office →</a>
+</nav>
+
+<div class="page">
+
+  <!-- Address header — filled by JS -->
+  <div class="addr-header" id="addr-header">
+    <div>
+      <div class="addr-label">Showing races for</div>
+      <div class="addr-text" id="addr-display">Loading...</div>
+      <div class="addr-districts" id="addr-districts"></div>
+    </div>
+    <a href="/" class="addr-change">← Change Address</a>
+  </div>
+
+  <!-- Main results grid -->
+  <div class="results-grid">
+
+    <!-- Races column -->
+    <div class="races-col">
+      <div class="col-label">Open &amp; Contested Races</div>
+      <div class="col-title" id="races-title">Finding your races...</div>
+      <div id="races-container">
+        <div class="loading-state">
+          <div class="loading-spinner"></div>
+          <p>Resolving your address and pulling race data...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+
+      <!-- Demographics card -->
+      <div class="sidebar-card" id="demo-card" style="display:none">
+        <div class="sidebar-card-hdr">
+          <span class="hdr-icon">👥</span>
+          <h3>District Demographics</h3>
+        </div>
+        <div class="sidebar-card-body" id="demo-body">
+          <div class="loading-state" style="padding:20px">
+            <div class="loading-spinner" style="width:24px;height:24px;border-width:2px"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Insights card -->
+      <div class="sidebar-card" id="insights-card" style="display:none">
+        <div class="sidebar-card-hdr">
+          <span class="hdr-icon">💡</span>
+          <h3>District Insights</h3>
+        </div>
+        <div class="sidebar-card-body" id="insights-body"></div>
+      </div>
+
+      <!-- Polling card -->
+      <div class="sidebar-card" id="polling-card" style="display:none">
+        <div class="sidebar-card-hdr">
+          <span class="hdr-icon">📊</span>
+          <h3>Current Polling</h3>
+        </div>
+        <div class="sidebar-card-body" id="polling-body"></div>
+      </div>
+
+      <!-- CTA card -->
+      <div class="cta-card">
+        <h3>Ready to Run?</h3>
+        <p>Agree to our platform, create your candidate profile, and get access to every tool in the dashboard — free.</p>
+        <a href="/apply.html">Apply to Run for Office →</a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// ── READ ADDRESS FROM URL ────────────────────────────────────────
+const params = new URLSearchParams(window.location.search);
+const address = params.get('address');
+
+if (!address) {
+  window.location.href = '/';
+}
+
+// Display the address immediately
+document.getElementById('addr-display').textContent = decodeURIComponent(address || '');
+
+// ── FETCH RACE DATA ──────────────────────────────────────────────
+async function loadResults() {
+  try {
+    const res = await fetch(`/api/races?address=${encodeURIComponent(address)}`);
+
+    if (!res.ok) {
+      showRaceError('Could not look up races for this address. Please check the address and try again.');
+      return;
+    }
+
+    const data = await res.json();
+    renderGeography(data.geography);
+    renderRaces(data.races);
+
+  } catch (err) {
+    showRaceError('Network error. Please check your connection and try again.');
+  }
+}
+
+// ── FETCH INTELLIGENCE (demographics + polling) ──────────────────
+async function loadIntelligence() {
+  try {
+    const res = await fetch(`/api/intelligence?address=${encodeURIComponent(address)}`);
+    if (!res.ok) return;
+    const data = await res.json();
+    renderDemographics(data.demographics);
+    renderPolling(data.polling);
+  } catch (err) {
+    // Intelligence is supplementary — fail silently
+  }
+}
+
+// ── RENDER GEOGRAPHY ─────────────────────────────────────────────
+function renderGeography(geo) {
+  if (!geo) return;
+
+  if (geo.normalizedAddress) {
+    document.getElementById('addr-display').textContent = geo.normalizedAddress;
+  }
+
+  const badges = [];
+  if (geo.state) badges.push(geo.state);
+  if (geo.districts?.congressional) badges.push(`CD ${geo.districts.congressional}`);
+  if (geo.districts?.stateSenate) badges.push(`State Senate ${geo.districts.stateSenate}`);
+  if (geo.districts?.stateHouse) badges.push(`State House ${geo.districts.stateHouse}`);
+  if (geo.county) badges.push(geo.county);
+
+  document.getElementById('addr-districts').innerHTML = badges
+    .map(b => `<span class="district-badge">${b}</span>`)
+    .join('');
+}
+
+// ── RENDER RACES ─────────────────────────────────────────────────
+function renderRaces(races) {
+  const container = document.getElementById('races-container');
+  const allRaces = [
+    ...(races?.federal || []),
+    ...(races?.state || []),
+    ...(races?.local || []),
+  ];
+
+  if (!allRaces.length) {
+    container.innerHTML = `
+      <div class="error-state">
+        <h3>No races found</h3>
+        <p>We couldn't find race data for this address yet. Local race coverage is expanding — <a href="mailto:robpoole24@gmail.com">let us know your district</a> and we'll prioritize it.</p>
+      </div>`;
+    document.getElementById('races-title').textContent = 'No races found';
+    return;
+  }
+
+  const openCount = allRaces.filter(r => r.isOpenSeat).length;
+  document.getElementById('races-title').textContent =
+    `${allRaces.length} Race${allRaces.length !== 1 ? 's' : ''} Found` +
+    (openCount ? ` · ${openCount} Open Seat${openCount !== 1 ? 's' : ''}` : '');
+
+  container.innerHTML = allRaces.map(race => renderRaceCard(race)).join('');
+}
+
+function renderRaceCard(r) {
+  // Data limited fallback
+  if (r.dataLimited) {
+    return `
+      <div class="race-card">
+        <div class="race-top">
+          <div class="race-office">${r.office || 'Local Offices'}</div>
+        </div>
+        <div class="data-limited">
+          <strong>⚠ Limited local data</strong>
+          ${r.dataNote || 'Full local race data requires additional data sources we are actively working to add.'}
+          ${(r.resources || []).map(l => `<a href="${l.url}" target="_blank" rel="noopener" style="display:block;margin-top:8px;color:var(--sky)">${l.label} →</a>`).join('')}
+        </div>
+      </div>`;
+  }
+
+  // Status badge
+  const statusMap = {
+    open: ['status-open', 'Filing Open'],
+    'closing-soon': ['status-filing', 'Filing Closing Soon'],
+    closed: ['status-unknown', 'Filing Closed'],
+    unknown: ['status-unknown', 'Check Filing Status'],
+  };
+  const [statusClass, statusText] = statusMap[r.filingStatus] || ['status-unknown', 'Check Filing Status'];
+  const openClass = r.isOpenSeat ? ' open-seat' : '';
+  const openBadge = r.isOpenSeat
+    ? `<span class="race-status status-open">Open Seat</span>`
+    : `<span class="race-status ${statusClass}">${statusText}</span>`;
+
+  // Incumbent
+  const incumbentHtml = r.incumbent
+    ? `<div class="incumbent-row">
+         <span class="incumbent-label">Incumbent</span>
+         <span class="incumbent-name">${r.incumbent.name}</span>
+         <span class="incumbent-party party-${r.incumbent.party?.[0] || 'I'}">${r.incumbent.party || 'Unknown'}</span>
+       </div>`
+    : r.isOpenSeat
+      ? `<div class="incumbent-row"><span class="incumbent-label">Status</span><span class="incumbent-name" style="color:var(--green)">No incumbent — open seat</span></div>`
+      : '';
+
+  // Meta
+  const meta = [];
+  if (r.term) meta.push(`<span class="race-meta-item">📅 <strong>${r.term}</strong> term</span>`);
+  if (r.salary) meta.push(`<span class="race-meta-item">💰 <strong>${r.salary}</strong>/yr</span>`);
+  if (r.electionDate) meta.push(`<span class="race-meta-item">🗳️ Election: <strong>${r.electionDate}</strong></span>`);
+  if (r.filingDeadline) meta.push(`<span class="race-meta-item">📋 Filing deadline: <strong>${r.filingDeadline}</strong></span>`);
+
+  return `
+    <div class="race-card${openClass}">
+      <div class="race-top">
+        <div class="race-office">${r.office}</div>
+        ${openBadge}
+      </div>
+      ${meta.length ? `<div class="race-meta">${meta.join('')}</div>` : ''}
+      ${incumbentHtml}
+      ${r.signatureRequirement?.count
+        ? `<div class="race-details-row">
+             <span class="race-detail-chip">📝 ~${r.signatureRequirement.count.toLocaleString()} signatures required</span>
+           </div>`
+        : ''}
+      <div class="race-cta">
+        <a href="/apply.html?race=${encodeURIComponent(r.id)}" class="race-btn primary">I Want to Run for This →</a>
+        <a href="/platform.html" class="race-btn secondary">Read Our Platform</a>
+      </div>
+    </div>`;
+}
+
+// ── RENDER DEMOGRAPHICS ──────────────────────────────────────────
+function renderDemographics(demo) {
+  const card = document.getElementById('demo-card');
+  const body = document.getElementById('demo-body');
+  if (!demo) { card.style.display = 'none'; return; }
+
+  // Use the most specific district available
+  const district =
+    demo.districts?.congressional ||
+    demo.districts?.stateLeg?.stateHouse ||
+    demo.districts?.county ||
+    demo.districts?.state;
+
+  if (!district || !district.population) { card.style.display = 'none'; return; }
+
+  const rows = [];
+
+  if (district.population?.total) {
+    rows.push({ label: 'Population', value: district.population.total.toLocaleString() });
+  }
+  if (district.income?.medianHouseholdIncome) {
+    rows.push({ label: 'Median Household Income', value: '$' + district.income.medianHouseholdIncome.toLocaleString() });
+  }
+  if (district.income?.povertyRate) {
+    const isHigh = district.income.povertyRate > 12;
+    rows.push({ label: 'Poverty Rate', value: district.income.povertyRate + '%', cls: isHigh ? 'red' : '' });
+  }
+  if (district.employment?.unemploymentRate) {
+    rows.push({ label: 'Unemployment Rate', value: district.employment.unemploymentRate + '%' });
+  }
+  if (district.housing?.ownerOccupied) {
+    rows.push({ label: 'Homeowners', value: district.housing.ownerOccupied + '%' });
+  }
+  if (district.population?.medianAge) {
+    rows.push({ label: 'Median Age', value: district.population.medianAge });
+  }
+
+  if (!rows.length) { card.style.display = 'none'; return; }
+
+  body.innerHTML = rows.map(r =>
+    `<div class="stat-row">
+       <span class="stat-label">${r.label}</span>
+       <span class="stat-value ${r.cls || ''}">${r.value}</span>
+     </div>`
+  ).join('');
+
+  card.style.display = 'block';
+
+  // Render insights
+  if (demo.insights?.length) {
+    const insightsCard = document.getElementById('insights-card');
+    const insightsBody = document.getElementById('insights-body');
+    insightsBody.innerHTML = demo.insights.map(ins =>
+      `<div class="insight-item">
+         <span class="insight-icon">${ins.icon}</span>
+         <div class="insight-text">
+           <strong>${ins.headline}</strong>
+           ${ins.detail}
+         </div>
+       </div>`
+    ).join('');
+    insightsCard.style.display = 'block';
+  }
+}
+
+// ── RENDER POLLING ───────────────────────────────────────────────
+function renderPolling(polling) {
+  const card = document.getElementById('polling-card');
+  const body = document.getElementById('polling-body');
+  if (!polling) { card.style.display = 'none'; return; }
+
+  const polls = [];
+
+  // Generic ballot
+  if (polling.data?.genericBallot?.average) {
+    const avg = polling.data.genericBallot.average;
+    const dem = avg.Democrat || 0;
+    const rep = avg.Republican || 0;
+    const total = dem + rep || 100;
+    polls.push(`
+      <div class="poll-item">
+        <div class="poll-question">Generic Congressional Ballot</div>
+        <div class="poll-bar-wrap">
+          <div class="poll-bar dem" style="width:${(dem/total*100).toFixed(0)}%; height:8px; border-radius:4px 0 0 4px;"></div>
+          <div class="poll-bar rep" style="width:${(rep/total*100).toFixed(0)}%; height:8px; border-radius:0 4px 4px 0;"></div>
+        </div>
+        <div class="poll-labels"><span>Dem ${dem}%</span><span>Rep ${rep}%</span></div>
+      </div>`);
+  }
+
+  // Approval polls — show first 3
+  const approvals = (polling.data?.approvalPolls || []).slice(0, 3);
+  approvals.forEach(p => {
+    if (!p.answers?.length) return;
+    const approve = p.answers.find(a => a.choice?.toLowerCase().includes('approv'));
+    const disapprove = p.answers.find(a => a.choice?.toLowerCase().includes('disapprov'));
+    if (!approve) return;
+    polls.push(`
+      <div class="poll-item">
+        <div class="poll-question">${p.subject || 'Approval'} — ${p.pollster}</div>
+        <div class="poll-bar-wrap">
+          <div class="poll-bar dem" style="width:${approve.pct || 0}%; height:8px; border-radius:4px;"></div>
+        </div>
+        <div class="poll-labels">
+          <span>Approve ${approve.pct || 0}%</span>
+          ${disapprove ? `<span>Disapprove ${disapprove.pct || 0}%</span>` : ''}
+        </div>
+      </div>`);
+  });
+
+  if (!polls.length) { card.style.display = 'none'; return; }
+
+  body.innerHTML = polls.join('') +
+    `<div style="margin-top:12px; font-size:10px; color:var(--muted)">
+       Source: <a href="https://votehub.com" target="_blank" rel="noopener" style="color:var(--sky)">VoteHub</a>
+       — aggregated from national pollsters. License: CC Attribution 4.0.
+     </div>`;
+
+  card.style.display = 'block';
+}
+
+// ── ERROR STATE ──────────────────────────────────────────────────
+function showRaceError(msg) {
+  document.getElementById('races-title').textContent = 'Could not load races';
+  document.getElementById('races-container').innerHTML = `
+    <div class="error-state">
+      <h3>Something went wrong</h3>
+      <p>${msg}</p>
+      <p style="margin-top:12px"><a href="/">← Try a different address</a></p>
+    </div>`;
+}
+
+// ── INIT ─────────────────────────────────────────────────────────
+if (address) {
+  loadResults();
+  loadIntelligence();
+}
+</script>
+
+</body>
+</html>

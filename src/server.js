@@ -25,6 +25,13 @@ const PORT = process.env.PORT || 3000;
 
 app.use(compression());
 
+// Serve static files from /public
+// Makes index.html, results.html, platform.html, /images/, /widgets/ all accessible
+app.use(express.static('public', {
+  maxAge: '1h',
+  etag: true,
+}));
+
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
@@ -118,72 +125,7 @@ app.use('/api/intelligence', featureGuard('FEATURE_POLLING_INTELLIGENCE'), requi
 
 // More routes added as modules are built...
 
-// ─────────────────────────────────────────────────
-// PLACEHOLDER ROOT — Landing page placeholder
-// Replace with React frontend once built
-// ─────────────────────────────────────────────────
-
-app.get('/', (req, res) => {
-  res.send(`
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Party of You</title>
-      <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-          background: #0d1117;
-          color: #e6edf3;
-          min-height: 100vh;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        .container { text-align: center; max-width: 600px; padding: 2rem; }
-        h1 { font-size: 3rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 1rem; }
-        .accent { color: #e84848; }
-        p { font-size: 1.2rem; color: #8b949e; line-height: 1.6; margin-bottom: 2rem; }
-        .badge {
-          display: inline-block;
-          background: #1f2937;
-          border: 1px solid #374151;
-          padding: 0.5rem 1rem;
-          border-radius: 9999px;
-          font-size: 0.875rem;
-          color: #9ca3af;
-          margin-bottom: 1rem;
-        }
-        .status { 
-          display: inline-flex;
-          align-items: center;
-          gap: 0.5rem;
-          background: #162032;
-          border: 1px solid #1d4ed8;
-          padding: 0.75rem 1.5rem;
-          border-radius: 8px;
-          font-size: 0.9rem;
-          color: #60a5fa;
-        }
-        .dot { width: 8px; height: 8px; background: #22c55e; border-radius: 50%; }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <div class="badge">partyofyou.org</div>
-        <h1>Party of <span class="accent">You</span></h1>
-        <p>Grassroots candidate infrastructure. No corporate money. No party bosses. Just tools for people who want to change things.</p>
-        <div class="status">
-          <div class="dot"></div>
-          Platform building in progress
-        </div>
-      </div>
-    </body>
-    </html>
-  `);
-});
+// Root route is handled by express.static serving public/index.html
 
 // ─────────────────────────────────────────────────
 // 404 HANDLER
