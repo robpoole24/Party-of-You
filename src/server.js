@@ -53,6 +53,38 @@ function attachDb(req, res, next) {
 app.use(compression());
 app.use(cookieParser());
 
+// ── ADMIN ROUTE GUARD ──────────────────────────────
+// Must come BEFORE express.static so it intercepts
+// /admin/ and /admin/index.html before they're served.
+// login.html is the only admin page served without auth.
+app.use('/admin', (req, res, next) => {
+  // Allow login page through without auth
+  if (req.path === '/login.html' || req.path === '/login') {
+    return next();
+  }
+
+  // Check for valid admin token
+  const jwt = require('jsonwebtoken');
+  const token = req.cookies?.poy_token ||
+    (req.headers.authorization?.startsWith('Bearer ')
+      ? req.headers.authorization.slice(7)
+      : null);
+
+  if (!token) {
+    return res.redirect('/admin/login.html');
+  }
+
+  try {
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    if (payload.role !== 'admin') {
+      return res.redirect('/admin/login.html');
+    }
+    next(); // Valid admin — serve the static file
+  } catch {
+    return res.redirect('/admin/login.html');
+  }
+});
+
 // Serve static files from /public
 app.use(express.static(path.join(__dirname, '../public'), {
   maxAge: process.env.NODE_ENV === 'production' ? '1h' : 0,
@@ -123,6 +155,10 @@ app.use('/api/auth', signupRouter);
 
 const adminRouter = require('./admin/routes');
 app.use('/api/admin', adminRouter);
+
+// Admin file uploads (multer handles multipart — separate from JSON API)
+const uploadRouter = require('./admin/upload');
+app.use('/api/admin/upload', uploadRouter);
 
 // ─────────────────────────────────────────────────
 // PUBLIC API ROUTES

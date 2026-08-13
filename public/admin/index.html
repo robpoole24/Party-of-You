@@ -142,14 +142,14 @@ body { font-family: var(--body); background: var(--navy-d); color: var(--text); 
 
 /* ── DATASET ROW ── */
 .dataset-row {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 12px 0; border-bottom: 1px solid var(--border);
+  display: flex; align-items: flex-start; justify-content: space-between;
+  padding: 14px 0; border-bottom: 1px solid var(--border); gap: 20px;
 }
 .dataset-row:last-child { border-bottom: none; }
-.dataset-info { flex: 1; }
+.dataset-info { flex: 1; min-width: 0; }
 .dataset-name { font-size: 13px; font-weight: 600; color: var(--white); margin-bottom: 3px; }
-.dataset-desc { font-size: 11px; color: var(--muted); }
-.dataset-actions { display: flex; gap: 8px; align-items: center; }
+.dataset-desc { font-size: 11px; color: var(--muted); white-space: normal; line-height: 1.5; }
+.dataset-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
 
 /* ── BUTTONS ── */
 .btn-sm {
@@ -665,29 +665,117 @@ async function loadDatasets() {
   if (!data) return;
 
   document.getElementById('datasets-list').innerHTML = data.datasets.map(d => `
-    <div class="dataset-row">
+    <div class="dataset-row" id="ds-row-${d.key}">
       <div class="dataset-info">
         <div class="dataset-name">${d.name}</div>
         <div class="dataset-desc">${d.description}</div>
+        <div id="ds-files-${d.key}" style="margin-top:8px;font-size:11px;color:var(--muted)">
+          <button class="btn-sm secondary" style="font-size:10px;padding:3px 8px" onclick="loadDatasetFiles('${d.key}')">Show files</button>
+        </div>
       </div>
       <div class="dataset-actions">
-        <span class="badge ${d.loaded ? 'badge-ok' : 'badge-pending'}">
+        <span class="badge ${d.loaded ? 'badge-ok' : d.status === 'pending-approval' ? 'badge-pending' : 'badge-pending'}">
           ${d.loaded ? '✓ Loaded' : d.status === 'pending-approval' ? 'Awaiting Approval' : 'Not Loaded'}
         </span>
-        ${!d.loaded && d.status !== 'pending-approval'
-          ? `<button class="btn-sm primary" onclick="triggerIngest('${d.key}')">Ingest</button>`
-          : ''
-        }
+        <label class="btn-sm secondary" style="cursor:pointer;position:relative">
+          Upload
+          <input type="file" multiple accept=".csv,.sav,.tsv,.txt,.json,.zip,.xlsx,.xls"
+            style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%"
+            onchange="uploadFiles('${d.key}', this)">
+        </label>
+        <button class="btn-sm primary" onclick="triggerIngest('${d.key}')">Ingest</button>
       </div>
     </div>
   `).join('');
 }
 
-async function triggerIngest(source) {
-  if (!confirm(`Trigger ingestion for ${source}? Make sure raw files are in data/raw/${source}/`)) return;
-  const data = await api('/datasets/' + source + '/ingest', { method: 'POST' });
-  if (data) alert(data.message);
+async function loadDatasetFiles(source) {
+  const el = document.getElementById(`ds-files-${source}`);
+  el.innerHTML = '<span style="color:var(--muted)">Loading...</span>';
+
+  const res = await fetch(`/api/admin/upload/${source}`);
+  const data = await res.json();
+
+  if (!data.files?.length) {
+    el.innerHTML = '<span style="color:var(--muted)">No files uploaded yet.</span>';
+    return;
+  }
+
+  el.innerHTML = `
+    <div style="margin-top:6px;background:rgba(255,255,255,0.03);border-radius:6px;padding:10px;border:1px solid var(--border)">
+      <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">
+        ${data.fileCount} file(s) · ${data.totalSize}
+      </div>
+      ${data.files.map(f => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04)">
+          <span style="color:var(--text);font-size:12px">${f.name}</span>
+          <div style="display:flex;gap:8px;align-items:center">
+            <span style="color:var(--muted);font-size:11px">${f.sizeFormatted}</span>
+            <button class="btn-sm danger" style="padding:2px 8px;font-size:10px"
+              onclick="deleteFile('${source}','${f.name}')">✕</button>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
 }
+
+async function uploadFiles(source, input) {
+  if (!input.files?.length) return;
+
+  const btn = input.parentElement;
+  const originalText = btn.childNodes[0].textContent;
+  btn.childNodes[0].textContent = 'Uploading...';
+
+  const formData = new FormData();
+  Array.from(input.files).forEach(f => formData.append('files', f));
+
+  try {
+    const res = await fetch(`/api/admin/upload/${source}`, {
+      method: 'POST',
+      body: formData,
+      // No Content-Type header — browser sets it with boundary for multipart
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      btn.childNodes[0].textContent = `✓ ${data.fileCount} uploaded`;
+      setTimeout(() => { btn.childNodes[0].textContent = originalText; }, 3000);
+      loadDatasetFiles(source);
+    } else {
+      alert(data.error || 'Upload failed.');
+      btn.childNodes[0].textContent = originalText;
+    }
+  } catch (e) {
+    alert('Upload failed: ' + e.message);
+    btn.childNodes[0].textContent = originalText;
+  }
+
+  // Reset input so same file can be re-uploaded if needed
+  input.value = '';
+}
+
+async function deleteFile(source, filename) {
+  if (!confirm(`Delete ${filename}?`)) return;
+  const res = await fetch(`/api/admin/upload/${source}/${encodeURIComponent(filename)}`, {
+    method: 'DELETE',
+  });
+  const data = await res.json();
+  if (data.success) loadDatasetFiles(source);
+}
+
+async function triggerIngest(source) {
+  if (!confirm(`Trigger ingestion for ${source}?\n\nMake sure files are uploaded first.`)) return;
+  const btn = event.target;
+  btn.textContent = 'Running...';
+  btn.disabled = true;
+  const data = await api('/datasets/' + source + '/ingest', { method: 'POST' });
+  btn.textContent = 'Ingest';
+  btn.disabled = false;
+  if (data) alert(data.message);
+  loadDatasets();
+}
+
 
 // ── OPERATIONS ───────────────────────────────────────────────────
 async function loadOperations() {
