@@ -329,6 +329,7 @@ router.get('/datasets', (req, res) => {
     envFlag: source.envFlag,
     loaded: process.env[source.envFlag] === 'true',
     targetTable: source.targetTable,
+    hidden: source.hidden || false,
     downloadInstructions: source.downloadInstructions,
   }));
 

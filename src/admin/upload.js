@@ -29,8 +29,10 @@ const DATA_DIR = path.join(process.cwd(), 'data', 'raw');
 
 // Allowed sources (must match keys in BULK_SOURCES in ingest.js)
 const ALLOWED_SOURCES = [
+  // Raw source data
   'mit-election-lab',
   'pew-research',
+  'pew-waves',          // Individual Pew ATP wave SPSS files — add new waves anytime
   'gss',
   'anes',
   'opensecrets',
@@ -38,6 +40,11 @@ const ALLOWED_SOURCES = [
   'propublica-expenditures',
   'propublica-ftf',
   'kff',
+  // Processed/ready-to-ingest datasets
+  'election-intelligence',   // district_partisan_lean, district_intelligence, competitive_districts
+  'election-history',        // election_history.csv (full 1976-2024)
+  'precinct-2024',           // precinct_district_2024.csv
+  'state-summary',           // state_summary.csv
 ];
 
 // Allowed file extensions

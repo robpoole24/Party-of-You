@@ -370,16 +370,72 @@ body { font-family: var(--body); background: var(--navy-d); color: var(--text); 
     <div class="section" id="sec-feeds">
       <div class="page-hdr">
         <h1>Data Feeds</h1>
-        <p>Live status of all external API connections.</p>
+        <p>Live status of all external API connections and feature flags.</p>
       </div>
-      <div class="feed-grid" id="feed-grid">
-        <div style="color:var(--muted);font-size:13px">Loading feed status...</div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+        <div class="panel">
+          <div class="panel-hdr"><h2>✅ Active APIs — Keys Connected</h2></div>
+          <div class="panel-body">
+            <div class="feed-grid" id="feed-grid-connected" style="grid-template-columns:1fr;gap:8px">
+              <div style="color:var(--muted);font-size:13px">Loading...</div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-hdr"><h2>⏳ Pending — Keys Not Set</h2></div>
+          <div class="panel-body">
+            <div id="feed-grid-pending" style="display:flex;flex-direction:column;gap:8px">
+              <div style="color:var(--muted);font-size:13px">Loading...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-hdr"><h2>Feature Flags</h2></div>
+        <div class="panel-body">
+          <div id="feature-flags" style="display:grid;grid-template-columns:1fr 1fr;gap:12px"></div>
+        </div>
       </div>
 
       <div class="panel" style="margin-top:20px">
-        <div class="panel-hdr"><h2>Feature Flags</h2></div>
+        <div class="panel-hdr"><h2>Processed Datasets — Election Intelligence</h2></div>
         <div class="panel-body">
-          <div id="feature-flags" style="display:grid;gap:12px"></div>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:16px">
+            These datasets were processed from MIT Election Lab public data and are ready to load into the database.
+            Upload them via the Bulk Datasets tab.
+          </p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:14px">
+              <div style="font-size:13px;font-weight:600;color:var(--white);margin-bottom:4px">district_partisan_lean.csv</div>
+              <div style="font-size:11px;color:var(--muted)">599 districts with lean index, label, and trend. Core metric for candidate recruitment.</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:14px">
+              <div style="font-size:13px;font-weight:600;color:var(--white);margin-bottom:4px">competitive_districts.csv</div>
+              <div style="font-size:11px;color:var(--muted)">276 districts within 12 points. 44 true toss-ups. The candidate recruitment shortlist.</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:14px">
+              <div style="font-size:13px;font-weight:600;color:var(--white);margin-bottom:4px">district_intelligence.csv</div>
+              <div style="font-size:11px;color:var(--muted)">Full district profiles with trend direction, competitiveness flags, and election history.</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:14px">
+              <div style="font-size:13px;font-weight:600;color:var(--white);margin-bottom:4px">precinct_district_2024.csv</div>
+              <div style="font-size:11px;color:var(--muted)">2024 actual results aggregated to congressional district — 4,166 districts across 47 states.</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:14px">
+              <div style="font-size:13px;font-weight:600;color:var(--white);margin-bottom:4px">election_history.csv</div>
+              <div style="font-size:11px;color:var(--muted)">37,000+ rows of cleaned results 1976–2024. House, Senate, President. Source for all calculations.</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:14px">
+              <div style="font-size:13px;font-weight:600;color:var(--white);margin-bottom:4px">state_summary.csv</div>
+              <div style="font-size:11px;color:var(--muted)">State-level roll-up: how many Safe D / Lean D / Toss-up / Lean R / Safe R districts per state.</div>
+            </div>
+          </div>
+          <p style="font-size:11px;color:var(--muted);margin-top:16px">
+            Source: MIT Election Data + Science Lab — public federal data. No subscription required.
+            <a href="https://electionlab.mit.edu/data" target="_blank" style="color:var(--sky)">electionlab.mit.edu/data</a>
+          </p>
         </div>
       </div>
     </div>
@@ -403,7 +459,7 @@ body { font-family: var(--body); background: var(--navy-d); color: var(--text); 
       <div class="page-hdr">
         <h1>Platform Operations</h1>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:20px">
         <div class="panel">
           <div class="panel-hdr"><h2>Cache</h2></div>
           <div class="panel-body">
@@ -635,26 +691,38 @@ async function loadFeeds() {
   const data = await api('/feeds');
   if (!data) return;
 
-  document.getElementById('feed-grid').innerHTML = data.feeds.map(f => `
-    <div class="feed-card">
-      <div class="feed-name">${f.name}</div>
-      <div class="feed-status">
-        <span class="dot ${f.connected ? 'dot-green' : 'dot-red'}"></span>
-        <span style="color:${f.connected ? 'var(--green)' : 'var(--muted)'}">
-          ${f.connected ? 'Connected' : 'Not configured'}
-        </span>
-      </div>
-      ${f.requiredFor?.length ? `<div style="font-size:10px;color:var(--muted);margin-top:5px">${f.requiredFor.slice(0,2).join(', ')}</div>` : ''}
-    </div>
-  `).join('');
+  const connected = data.feeds.filter(f => f.connected);
+  const pending = data.feeds.filter(f => !f.connected);
+
+  document.getElementById('feed-grid-connected').innerHTML = connected.length
+    ? connected.map(f => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.15);border-radius:7px">
+          <div>
+            <div style="font-size:13px;font-weight:600;color:var(--white)">${f.name}</div>
+            ${f.requiredFor?.length ? `<div style="font-size:10px;color:var(--muted);margin-top:2px">${f.requiredFor.slice(0,2).join(', ')}</div>` : ''}
+          </div>
+          <span style="width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0"></span>
+        </div>`).join('')
+    : '<div style="color:var(--muted);font-size:13px">No APIs connected yet.</div>';
+
+  document.getElementById('feed-grid-pending').innerHTML = pending.length
+    ? pending.map(f => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:7px">
+          <div>
+            <div style="font-size:13px;color:var(--muted)">${f.name}</div>
+            ${f.signupUrl ? `<a href="${f.signupUrl}" target="_blank" style="font-size:10px;color:var(--sky)">Get access →</a>` : ''}
+          </div>
+          <span style="width:8px;height:8px;border-radius:50%;background:var(--border);flex-shrink:0"></span>
+        </div>`).join('')
+    : '<div style="color:var(--green);font-size:13px">All APIs connected!</div>';
 
   document.getElementById('feature-flags').innerHTML = Object.entries(data.features).map(([key, val]) => `
-    <div style="display:flex;align-items:center;justify-content:space-between">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:7px">
       <div>
         <div style="font-size:13px;color:var(--white)">${key.replace(/([A-Z])/g, ' $1').trim()}</div>
-        <div style="font-size:11px;color:var(--muted)">FEATURE_${key.replace(/([A-Z])/g, '_$1').toUpperCase()}</div>
+        <div style="font-size:10px;color:var(--muted)">FEATURE_${key.replace(/([A-Z])/g, '_$1').toUpperCase().slice(1)}</div>
       </div>
-      <span class="badge ${val ? 'badge-ok' : 'badge-pending'}">${val ? 'Enabled' : 'Disabled'}</span>
+      <span class="badge ${val ? 'badge-ok' : 'badge-pending'}">${val ? 'ON' : 'OFF'}</span>
     </div>
   `).join('');
 }
@@ -664,7 +732,10 @@ async function loadDatasets() {
   const data = await api('/datasets');
   if (!data) return;
 
-  document.getElementById('datasets-list').innerHTML = data.datasets.map(d => `
+  // Filter out hidden/unavailable sources
+  const visible = data.datasets.filter(d => d.status !== 'unavailable' && !d.hidden);
+
+  document.getElementById('datasets-list').innerHTML = visible.map(d => `
     <div class="dataset-row" id="ds-row-${d.key}">
       <div class="dataset-info">
         <div class="dataset-name">${d.name}</div>
