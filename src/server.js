@@ -85,7 +85,16 @@ app.use('/admin', (req, res, next) => {
   }
 });
 
-// Serve static files from /public
+// Admin files — never cache (always need fresh JS/HTML)
+app.use('/admin', express.static(path.join(__dirname, '../public/admin'), {
+  maxAge: 0,
+  etag: false,
+  setHeaders: (res) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+  },
+}));
+
+// All other static files — 1h cache in production
 app.use(express.static(path.join(__dirname, '../public'), {
   maxAge: process.env.NODE_ENV === 'production' ? '1h' : 0,
   etag: true,
