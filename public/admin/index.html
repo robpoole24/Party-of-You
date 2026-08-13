@@ -60,13 +60,25 @@ body { font-family: var(--body); background: var(--navy-d); color: var(--text); 
 .logout-btn:hover { color: var(--white); border-color: rgba(255,255,255,0.25); }
 
 /* ── MAIN CONTENT ── */
-.main { margin-left: 220px; padding: 32px; }
+.main {
+  margin-left: 220px;
+  padding: 32px;
+  display: block;
+  width: calc(100% - 220px);
+  min-width: 0;
+  overflow-x: hidden;
+}
+
 .page-hdr { margin-bottom: 28px; }
 .page-hdr h1 {
-  font-family: var(--cond); font-size: 32px; font-weight: 900;
-  text-transform: uppercase; color: var(--white);
+  font-family: var(--cond);
+  font-size: 32px;
+  font-weight: 900;
+  text-transform: uppercase;
+  color: var(--white);
+  white-space: nowrap;
 }
-.page-hdr p { font-size: 13px; color: var(--muted); margin-top: 4px; }
+.page-hdr p { font-size: 13px; color: var(--muted); margin-top: 4px; white-space: normal; }
 
 /* ── STAT CARDS ── */
 .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 28px; }
@@ -194,7 +206,18 @@ body { font-family: var(--body); background: var(--navy-d); color: var(--text); 
 
 /* ── SECTIONS ── */
 .section { display: none; }
-.section.active { display: block; }
+.section.active { display: block; min-width: 0; }
+
+/* Global fix — prevent ALL text from word-wrapping to single characters */
+p, span, div, td, th, label {
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+.page-hdr p, .panel-body p, .dataset-desc {
+  white-space: normal;
+  word-break: normal;
+  max-width: 100%;
+}
 
 /* ── CANDIDATE DETAIL MODAL ── */
 .modal-overlay {
@@ -289,7 +312,7 @@ body { font-family: var(--body); background: var(--navy-d); color: var(--text); 
     </a>
     <div class="sidebar-footer">
       <div style="font-size:10px;color:rgba(255,255,255,0.2);margin-bottom:8px;text-align:center;letter-spacing:0.08em">
-        Admin v1.0.4
+        Admin v1.0.5
       </div>
       <button class="logout-btn" onclick="logout()">Sign Out</button>
     </div>
@@ -514,7 +537,7 @@ body { font-family: var(--body); background: var(--navy-d); color: var(--text); 
 
 <script>
 // ── VERSION ──────────────────────────────────────────────────────
-const POY_ADMIN_VERSION = '1.0.4';
+const POY_ADMIN_VERSION = '1.0.5';
 console.log(
   `%c Party of You — Admin Dashboard %c v${POY_ADMIN_VERSION} %c`,
   'background:#1a2d5a;color:#fff;padding:4px 8px;border-radius:4px 0 0 4px;font-weight:700',
