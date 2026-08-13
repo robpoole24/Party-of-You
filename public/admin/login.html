@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Login — Party of You</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --navy: #1a2d5a; --navy-d: #0d1b35; --red: #c8102e; --red-d: #a00c24;
+  --white: #f8fafc; --border: rgba(255,255,255,0.1); --muted: rgba(255,255,255,0.45);
+  --cond: 'Barlow Condensed', sans-serif; --body: 'Barlow', sans-serif;
+}
+body {
+  font-family: var(--body); background: var(--navy-d); color: var(--white);
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.login-box {
+  width: 100%; max-width: 420px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 12px; padding: 40px;
+}
+.login-logo { width: 160px; margin: 0 auto 28px; display: block; border-radius: 6px; }
+.login-label {
+  font-family: var(--cond); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--red); text-align: center; margin-bottom: 8px;
+}
+h1 {
+  font-family: var(--cond); font-size: 28px; font-weight: 900;
+  text-transform: uppercase; text-align: center; color: var(--white);
+  margin-bottom: 32px;
+}
+.field { margin-bottom: 16px; }
+label {
+  display: block; font-size: 11px; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 7px;
+}
+input {
+  width: 100%; height: 44px; padding: 0 14px;
+  background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+  border-radius: 7px; color: var(--white); font-size: 15px;
+  font-family: var(--body); outline: none; transition: border-color 0.15s;
+}
+input:focus { border-color: var(--red); }
+input::placeholder { color: rgba(255,255,255,0.25); }
+.btn {
+  width: 100%; height: 46px; background: var(--red); color: white;
+  border: none; border-radius: 7px; font-family: var(--cond);
+  font-size: 16px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 0.08em; cursor: pointer; margin-top: 8px;
+  transition: background 0.15s;
+}
+.btn:hover { background: var(--red-d); }
+.error {
+  background: rgba(200,16,46,0.12); border: 1px solid rgba(200,16,46,0.3);
+  border-radius: 6px; padding: 10px 14px; font-size: 13px;
+  color: #ff8fa3; margin-bottom: 16px; display: none;
+}
+.error.show { display: block; }
+</style>
+</head>
+<body>
+<div class="login-box">
+  <img src="/images/partyofyoulogo.png" alt="Party of You" class="login-logo">
+  <div class="login-label">System Administration</div>
+  <h1>Admin Login</h1>
+  <div class="error" id="error"></div>
+  <div class="field">
+    <label>Username</label>
+    <input type="text" id="username" placeholder="Admin username" autocomplete="username">
+  </div>
+  <div class="field">
+    <label>Password</label>
+    <input type="password" id="password" placeholder="Admin password" autocomplete="current-password">
+  </div>
+  <button class="btn" onclick="login()">Sign In →</button>
+</div>
+<script>
+async function login() {
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
+  const err = document.getElementById('error');
+  err.classList.remove('show');
+
+  if (!username || !password) {
+    err.textContent = 'Username and password required.';
+    err.classList.add('show'); return;
+  }
+
+  try {
+    const res = await fetch('/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      window.location.href = data.redirect || '/admin/';
+    } else {
+      err.textContent = data.error || 'Login failed.';
+      err.classList.add('show');
+    }
+  } catch (e) {
+    err.textContent = 'Network error. Please try again.';
+    err.classList.add('show');
+  }
+}
+document.addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+</script>
+</body>
+</html>

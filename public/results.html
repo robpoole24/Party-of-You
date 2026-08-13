@@ -29,30 +29,6 @@
 
 body { font-family: var(--body); color: var(--text); background: var(--gray); -webkit-font-smoothing: antialiased; }
 
-/* ── NAV ─────────────────────────────────────────────────────── */
-nav {
-  background: var(--navy-d); border-bottom: 2px solid var(--red);
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 32px; height: 56px; position: sticky; top: 0; z-index: 100;
-}
-.nav-logo img { height: 36px; border-radius: 4px; }
-.nav-back {
-  font-family: var(--cond); font-size: 13px; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 0.08em;
-  color: rgba(255,255,255,0.6); text-decoration: none;
-  display: flex; align-items: center; gap: 6px;
-  transition: color 0.15s;
-}
-.nav-back:hover { color: var(--white); }
-.nav-cta-btn {
-  font-family: var(--cond); font-size: 13px; font-weight: 800;
-  text-transform: uppercase; letter-spacing: 0.06em;
-  background: var(--red); color: var(--white);
-  padding: 7px 16px; border-radius: 4px;
-  text-decoration: none; transition: background 0.15s;
-}
-.nav-cta-btn:hover { background: var(--red-d); }
-
 /* ── PAGE LAYOUT ─────────────────────────────────────────────── */
 .page { max-width: 1100px; margin: 0 auto; padding: 32px 24px 80px; }
 
@@ -330,14 +306,7 @@ nav {
 </head>
 <body>
 
-<nav>
-  <a href="/" class="nav-back">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
-    New Search
-  </a>
-  <a class="nav-logo" href="/"><img src="/images/partyofyoulogo.png" alt="Party of You"></a>
-  <a href="/apply.html" class="nav-cta-btn">Run for Office →</a>
-</nav>
+<script src="/nav.js"></script>
 
 <div class="page">
 

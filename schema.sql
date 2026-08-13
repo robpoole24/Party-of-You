@@ -561,3 +561,30 @@ CREATE TABLE audit_log (
 
 CREATE INDEX idx_audit_candidate ON audit_log(candidate_id, created_at DESC);
 CREATE INDEX idx_audit_action ON audit_log(action, created_at DESC);
+
+-- ═══════════════════════════════════════════════════
+-- AUTH & PLEDGE ADDITIONS
+-- ═══════════════════════════════════════════════════
+
+-- Permanent platform pledge record
+CREATE TABLE IF NOT EXISTS candidate_pledges (
+  id                UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  candidate_id      UUID REFERENCES candidates(id) ON DELETE CASCADE,
+  pledges           JSONB NOT NULL,
+  signature         TEXT NOT NULL,
+  pledged_at        TIMESTAMPTZ NOT NULL,
+  ip_address        TEXT,
+  user_agent        TEXT,
+  platform_version  TEXT DEFAULT '1.0',
+  UNIQUE(candidate_id)
+);
+
+-- Platform announcements (shown on all candidate dashboards)
+CREATE TABLE IF NOT EXISTS platform_announcements (
+  id         UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  message    TEXT NOT NULL,
+  type       TEXT DEFAULT 'info',
+  expires_at TIMESTAMPTZ,
+  created_by TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);

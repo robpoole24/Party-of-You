@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard — Party of You</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --navy: #1a2d5a; --navy-d: #0d1b35; --navy-m: #1e2d44;
+  --red: #c8102e; --red-d: #a00c24; --sky: #2b7fc1;
+  --white: #f8fafc; --border: rgba(255,255,255,0.08);
+  --muted: rgba(255,255,255,0.45); --text: rgba(255,255,255,0.85);
+  --green: #22c55e; --amber: #f59e0b;
+  --cond: 'Barlow Condensed', sans-serif; --body: 'Barlow', sans-serif;
+}
+body { font-family: var(--body); background: var(--navy-d); color: var(--text); min-height: 100vh; }
+
+/* ── LAYOUT ── */
+.shell { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  background: #080f1e;
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  position: fixed; top: 0; left: 0; bottom: 0; width: 220px;
+  overflow-y: auto;
+}
+.sidebar-logo {
+  padding: 16px; border-bottom: 1px solid var(--border);
+}
+.sidebar-logo img { width: 100%; border-radius: 4px; }
+.sidebar-label {
+  font-size: 9px; font-weight: 700; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--red);
+  padding: 20px 16px 8px; display: block;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px; font-size: 13px; font-weight: 500;
+  color: var(--muted); text-decoration: none; cursor: pointer;
+  border: none; background: none; width: 100%; text-align: left;
+  font-family: var(--body); transition: all 0.12s; border-radius: 0;
+}
+.nav-item:hover { color: var(--white); background: rgba(255,255,255,0.04); }
+.nav-item.active { color: var(--white); background: rgba(200,16,46,0.15); border-right: 2px solid var(--red); }
+.nav-item .ni { font-size: 16px; width: 20px; flex-shrink: 0; }
+.sidebar-footer {
+  margin-top: auto; padding: 16px;
+  border-top: 1px solid var(--border);
+}
+.logout-btn {
+  width: 100%; padding: 8px; background: transparent;
+  border: 1px solid var(--border); border-radius: 6px;
+  color: var(--muted); font-size: 12px; font-family: var(--body);
+  cursor: pointer; transition: all 0.12s;
+}
+.logout-btn:hover { color: var(--white); border-color: rgba(255,255,255,0.25); }
+
+/* ── MAIN CONTENT ── */
+.main { margin-left: 220px; padding: 32px; }
+.page-hdr { margin-bottom: 28px; }
+.page-hdr h1 {
+  font-family: var(--cond); font-size: 32px; font-weight: 900;
+  text-transform: uppercase; color: var(--white);
+}
+.page-hdr p { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+/* ── STAT CARDS ── */
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 28px; }
+.stat-card {
+  background: var(--navy-m); border: 1px solid var(--border);
+  border-radius: 10px; padding: 20px;
+}
+.stat-num {
+  font-family: var(--cond); font-size: 40px; font-weight: 900;
+  color: var(--white); line-height: 1;
+}
+.stat-num.red { color: var(--red); }
+.stat-num.green { color: var(--green); }
+.stat-num.amber { color: var(--amber); }
+.stat-label { font-size: 11px; color: var(--muted); margin-top: 6px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+
+/* ── PANELS ── */
+.panel {
+  background: var(--navy-m); border: 1px solid var(--border);
+  border-radius: 10px; overflow: hidden; margin-bottom: 20px;
+}
+.panel-hdr {
+  padding: 14px 20px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.panel-hdr h2 {
+  font-family: var(--cond); font-size: 16px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.06em; color: var(--white);
+}
+.panel-body { padding: 20px; }
+
+/* ── TABLE ── */
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table th {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--muted);
+  padding: 8px 12px; border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+.data-table td {
+  padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-size: 13px; color: var(--text);
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+/* ── STATUS BADGES ── */
+.badge {
+  display: inline-block; font-size: 10px; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 4px;
+}
+.badge-active { background: rgba(34,197,94,0.15); color: var(--green); }
+.badge-onboarding { background: rgba(245,158,11,0.15); color: var(--amber); }
+.badge-suspended { background: rgba(200,16,46,0.15); color: #ff8fa3; }
+.badge-closed { background: rgba(90,106,138,0.15); color: #64748b; }
+.badge-ok { background: rgba(34,197,94,0.1); color: var(--green); }
+.badge-error { background: rgba(200,16,46,0.1); color: #ff8fa3; }
+.badge-pending { background: rgba(245,158,11,0.1); color: var(--amber); }
+
+/* ── API FEED GRID ── */
+.feed-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+.feed-card {
+  background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+  border-radius: 8px; padding: 14px;
+}
+.feed-name { font-size: 12px; font-weight: 600; color: var(--white); margin-bottom: 5px; }
+.feed-status { font-size: 11px; display: flex; align-items: center; gap: 6px; }
+.dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.dot-green { background: var(--green); }
+.dot-red { background: var(--red); }
+.dot-amber { background: var(--amber); }
+
+/* ── DATASET ROW ── */
+.dataset-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 0; border-bottom: 1px solid var(--border);
+}
+.dataset-row:last-child { border-bottom: none; }
+.dataset-info { flex: 1; }
+.dataset-name { font-size: 13px; font-weight: 600; color: var(--white); margin-bottom: 3px; }
+.dataset-desc { font-size: 11px; color: var(--muted); }
+.dataset-actions { display: flex; gap: 8px; align-items: center; }
+
+/* ── BUTTONS ── */
+.btn-sm {
+  font-family: var(--cond); font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  padding: 6px 12px; border-radius: 5px; border: none;
+  cursor: pointer; transition: all 0.12s;
+}
+.btn-sm.primary { background: var(--red); color: white; }
+.btn-sm.primary:hover { background: var(--red-d); }
+.btn-sm.secondary { background: rgba(255,255,255,0.07); color: var(--text); border: 1px solid var(--border); }
+.btn-sm.secondary:hover { background: rgba(255,255,255,0.12); }
+.btn-sm.danger { background: rgba(200,16,46,0.15); color: #ff8fa3; border: 1px solid rgba(200,16,46,0.25); }
+.btn-sm.danger:hover { background: var(--red); color: white; }
+
+/* ── SEARCH/FILTER BAR ── */
+.filter-bar {
+  display: flex; gap: 10px; align-items: center;
+  margin-bottom: 16px; flex-wrap: wrap;
+}
+.filter-input {
+  height: 36px; padding: 0 12px;
+  background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+  border-radius: 6px; color: var(--white); font-size: 13px;
+  font-family: var(--body); outline: none; transition: border-color 0.15s;
+}
+.filter-input:focus { border-color: rgba(255,255,255,0.3); }
+.filter-input::placeholder { color: rgba(255,255,255,0.25); }
+
+/* ── TABS ── */
+.tab-strip { display: flex; gap: 4px; margin-bottom: 24px; border-bottom: 1px solid var(--border); }
+.tab {
+  font-family: var(--cond); font-size: 13px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  padding: 10px 16px; color: var(--muted);
+  border: none; background: none; cursor: pointer;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  transition: all 0.15s; font-family: var(--cond);
+}
+.tab:hover { color: var(--white); }
+.tab.active { color: var(--white); border-bottom-color: var(--red); }
+
+/* ── SECTIONS ── */
+.section { display: none; }
+.section.active { display: block; }
+
+/* ── CANDIDATE DETAIL MODAL ── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+  align-items: center; justify-content: center; padding: 20px;
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: var(--navy-m); border: 1px solid var(--border);
+  border-radius: 12px; width: 100%; max-width: 600px;
+  max-height: 85vh; overflow-y: auto; padding: 28px; position: relative;
+}
+.modal-close {
+  position: absolute; top: 16px; right: 16px;
+  background: none; border: none; color: var(--muted);
+  font-size: 20px; cursor: pointer; line-height: 1;
+}
+.modal-close:hover { color: var(--white); }
+.modal-name {
+  font-family: var(--cond); font-size: 24px; font-weight: 900;
+  text-transform: uppercase; color: var(--white); margin-bottom: 4px;
+}
+.modal-meta { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
+.modal-section { margin-bottom: 20px; }
+.modal-section-title {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.15em;
+  text-transform: uppercase; color: var(--red); margin-bottom: 10px;
+}
+.modal-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-size: 13px;
+}
+.modal-row:last-child { border-bottom: none; }
+.modal-row-label { color: var(--muted); }
+.modal-row-value { color: var(--white); font-weight: 500; }
+.modal-actions { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+
+/* ── TOGGLE SWITCH ── */
+.toggle {
+  position: relative; width: 40px; height: 22px;
+  display: inline-block;
+}
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute; cursor: pointer; inset: 0;
+  background: rgba(255,255,255,0.1); border-radius: 22px;
+  transition: 0.2s;
+}
+.toggle-slider::before {
+  content: ''; position: absolute;
+  height: 16px; width: 16px; left: 3px; bottom: 3px;
+  background: white; border-radius: 50%; transition: 0.2s;
+}
+.toggle input:checked + .toggle-slider { background: var(--green); }
+.toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
+
+/* ── SPINNER ── */
+.spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.2); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <img src="/images/partyofyoulogo.png" alt="Party of You">
+    </div>
+    <span class="sidebar-label">Administration</span>
+    <button class="nav-item active" onclick="showSection('overview')">
+      <span class="ni">📊</span> Overview
+    </button>
+    <button class="nav-item" onclick="showSection('candidates')">
+      <span class="ni">👤</span> Candidates
+    </button>
+    <button class="nav-item" onclick="showSection('feeds')">
+      <span class="ni">📡</span> Data Feeds
+    </button>
+    <button class="nav-item" onclick="showSection('datasets')">
+      <span class="ni">🗄️</span> Bulk Datasets
+    </button>
+    <button class="nav-item" onclick="showSection('operations')">
+      <span class="ni">⚙️</span> Operations
+    </button>
+    <span class="sidebar-label">Platform</span>
+    <a href="/" class="nav-item" target="_blank">
+      <span class="ni">🌐</span> View Site
+    </a>
+    <div class="sidebar-footer">
+      <button class="logout-btn" onclick="logout()">Sign Out</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- OVERVIEW -->
+    <div class="section active" id="sec-overview">
+      <div class="page-hdr">
+        <h1>Platform Overview</h1>
+        <p id="overview-timestamp">Loading...</p>
+      </div>
+      <div class="stat-grid" id="stat-grid">
+        <div class="stat-card"><div class="stat-num" id="stat-active">—</div><div class="stat-label">Active Candidates</div></div>
+        <div class="stat-card"><div class="stat-num amber" id="stat-onboarding">—</div><div class="stat-label">In Onboarding</div></div>
+        <div class="stat-card"><div class="stat-num red" id="stat-suspended">—</div><div class="stat-label">Suspended</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-apis">—</div><div class="stat-label">APIs Connected</div></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-hdr">
+          <h2>Recent Signups</h2>
+          <button class="btn-sm secondary" onclick="loadOverview()">↻ Refresh</button>
+        </div>
+        <div class="panel-body">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Name</th><th>Email</th><th>State</th><th>Office</th><th>Status</th><th>Signed Up</th><th></th>
+              </tr>
+            </thead>
+            <tbody id="recent-signups">
+              <tr><td colspan="7" style="color:var(--muted);text-align:center;padding:20px">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- CANDIDATES -->
+    <div class="section" id="sec-candidates">
+      <div class="page-hdr">
+        <h1>Candidate Management</h1>
+        <p>View, activate, suspend, or export any candidate's data.</p>
+      </div>
+      <div class="filter-bar">
+        <input class="filter-input" id="cand-search" placeholder="Search by name or email..." style="flex:1;min-width:200px" oninput="searchCandidates()">
+        <select class="filter-input" id="cand-status-filter" onchange="searchCandidates()">
+          <option value="">All statuses</option>
+          <option value="active">Active</option>
+          <option value="onboarding">Onboarding</option>
+          <option value="suspended">Suspended</option>
+          <option value="closed">Closed</option>
+        </select>
+        <select class="filter-input" id="cand-state-filter" onchange="searchCandidates()">
+          <option value="">All states</option>
+          <!-- States populated by JS -->
+        </select>
+      </div>
+      <div class="panel">
+        <div class="panel-hdr">
+          <h2>All Candidates</h2>
+          <span id="cand-count" style="font-size:12px;color:var(--muted)"></span>
+        </div>
+        <div class="panel-body" style="padding:0">
+          <table class="data-table">
+            <thead>
+              <tr><th>Name</th><th>State / Office</th><th>Status</th><th>Pledge</th><th>Volunteers</th><th>Last Login</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="candidates-tbody">
+              <tr><td colspan="7" style="color:var(--muted);text-align:center;padding:24px">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- DATA FEEDS -->
+    <div class="section" id="sec-feeds">
+      <div class="page-hdr">
+        <h1>Data Feeds</h1>
+        <p>Live status of all external API connections.</p>
+      </div>
+      <div class="feed-grid" id="feed-grid">
+        <div style="color:var(--muted);font-size:13px">Loading feed status...</div>
+      </div>
+
+      <div class="panel" style="margin-top:20px">
+        <div class="panel-hdr"><h2>Feature Flags</h2></div>
+        <div class="panel-body">
+          <div id="feature-flags" style="display:grid;gap:12px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BULK DATASETS -->
+    <div class="section" id="sec-datasets">
+      <div class="page-hdr">
+        <h1>Bulk Datasets</h1>
+        <p>Upload raw data files and trigger ingestion. Files go in <code style="background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:4px;font-size:12px">data/raw/[source]/</code> on the server before triggering.</p>
+      </div>
+      <div class="panel">
+        <div class="panel-hdr"><h2>Dataset Status</h2></div>
+        <div class="panel-body">
+          <div id="datasets-list">Loading...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OPERATIONS -->
+    <div class="section" id="sec-operations">
+      <div class="page-hdr">
+        <h1>Platform Operations</h1>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div class="panel">
+          <div class="panel-hdr"><h2>Cache</h2></div>
+          <div class="panel-body">
+            <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Flush the Redis cache to force-refresh all API data. Use after ingesting new datasets.</p>
+            <button class="btn-sm danger" onclick="flushCache()">Flush Redis Cache</button>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-hdr"><h2>Announcement</h2></div>
+          <div class="panel-body">
+            <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Post a notice that appears on all candidate dashboards.</p>
+            <textarea id="ann-text" style="width:100%;height:80px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:6px;color:var(--white);font-size:13px;padding:10px;font-family:var(--body);resize:vertical;margin-bottom:10px" placeholder="Announcement text..."></textarea>
+            <button class="btn-sm primary" onclick="postAnnouncement()">Post to All Dashboards</button>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-hdr"><h2>Cost Dashboard</h2></div>
+          <div class="panel-body" id="costs-panel">
+            <p style="font-size:13px;color:var(--muted)">Loading cost data...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- CANDIDATE DETAIL MODAL -->
+<div class="modal-overlay" id="cand-modal" onclick="closeModal(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="document.getElementById('cand-modal').classList.remove('show')">✕</button>
+    <div class="modal-name" id="modal-name">—</div>
+    <div class="modal-meta" id="modal-meta">—</div>
+    <div class="modal-section">
+      <div class="modal-section-title">Account Details</div>
+      <div id="modal-details"></div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title">Platform Pledge</div>
+      <div id="modal-pledge"></div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title">Campaign Stats</div>
+      <div id="modal-stats"></div>
+    </div>
+    <div class="modal-actions" id="modal-actions"></div>
+  </div>
+</div>
+
+<script>
+// ── STATE ────────────────────────────────────────────────────────
+let currentSection = 'overview';
+let candidateData = [];
+
+// ── NAVIGATION ───────────────────────────────────────────────────
+function showSection(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('sec-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+  currentSection = name;
+
+  // Load data for section
+  const loaders = {
+    overview: loadOverview,
+    candidates: loadCandidates,
+    feeds: loadFeeds,
+    datasets: loadDatasets,
+    operations: loadOperations,
+  };
+  loaders[name]?.();
+}
+
+// ── API HELPER ───────────────────────────────────────────────────
+async function api(path, opts = {}) {
+  const res = await fetch('/api/admin' + path, {
+    headers: { 'Content-Type': 'application/json', ...opts.headers },
+    ...opts,
+    body: opts.body ? JSON.stringify(opts.body) : undefined,
+  });
+  if (res.status === 401) { window.location.href = '/admin/login'; return null; }
+  return res.json();
+}
+
+// ── OVERVIEW ─────────────────────────────────────────────────────
+async function loadOverview() {
+  const data = await api('/status');
+  if (!data) return;
+
+  document.getElementById('overview-timestamp').textContent =
+    'Last updated: ' + new Date().toLocaleTimeString();
+  document.getElementById('stat-active').textContent = data.candidates.active || 0;
+  document.getElementById('stat-onboarding').textContent = data.candidates.onboarding || 0;
+  document.getElementById('stat-suspended').textContent = data.candidates.suspended || 0;
+  document.getElementById('stat-apis').textContent =
+    `${data.apis.connected}/${data.apis.total}`;
+
+  const tbody = document.getElementById('recent-signups');
+  if (!data.recentSignups.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="color:var(--muted);text-align:center;padding:20px">No candidates yet</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.recentSignups.map(c => `
+    <tr>
+      <td style="font-weight:600">${c.full_name}</td>
+      <td style="color:var(--muted)">${c.email}</td>
+      <td>${c.state || '—'}</td>
+      <td style="color:var(--muted)">${c.office_sought || '—'}</td>
+      <td>${badge(c.status)}</td>
+      <td style="color:var(--muted)">${fmtDate(c.created_at)}</td>
+      <td><button class="btn-sm secondary" onclick="openCandidate('${c.id}')">View</button></td>
+    </tr>
+  `).join('');
+}
+
+// ── CANDIDATES ───────────────────────────────────────────────────
+let searchTimer;
+function searchCandidates() {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(loadCandidates, 300);
+}
+
+async function loadCandidates() {
+  const search = document.getElementById('cand-search')?.value || '';
+  const status = document.getElementById('cand-status-filter')?.value || '';
+  const state = document.getElementById('cand-state-filter')?.value || '';
+
+  const params = new URLSearchParams();
+  if (search) params.set('search', search);
+  if (status) params.set('status', status);
+  if (state) params.set('state', state);
+
+  const data = await api('/candidates?' + params.toString());
+  if (!data) return;
+
+  document.getElementById('cand-count').textContent = `${data.total} candidates`;
+  candidateData = data.candidates;
+
+  const tbody = document.getElementById('candidates-tbody');
+  if (!data.candidates.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="color:var(--muted);text-align:center;padding:24px">No candidates found</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = data.candidates.map(c => `
+    <tr>
+      <td style="font-weight:600">${c.full_name}</td>
+      <td style="color:var(--muted)">${c.state || '?'}${c.office_sought ? ' — ' + c.office_sought : ''}</td>
+      <td>${badge(c.status)}</td>
+      <td>${c.pledged_at ? `<span class="badge badge-ok">✓ Signed</span>` : `<span class="badge badge-pending">Pending</span>`}</td>
+      <td style="color:var(--muted)">${c.volunteer_count || 0}</td>
+      <td style="color:var(--muted)">${c.last_login ? fmtDate(c.last_login) : 'Never'}</td>
+      <td>
+        <button class="btn-sm secondary" onclick="openCandidate('${c.id}')">View</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+async function openCandidate(id) {
+  const data = await api('/candidates/' + id);
+  if (!data) return;
+  const c = data.candidate;
+  const s = data.stats;
+
+  document.getElementById('modal-name').textContent = c.full_name;
+  document.getElementById('modal-meta').textContent =
+    `${c.email} · ${c.state || '—'} · ${c.office_sought || 'No race selected'}`;
+
+  document.getElementById('modal-details').innerHTML = `
+    <div class="modal-row"><span class="modal-row-label">Status</span><span class="modal-row-value">${badge(c.status)}</span></div>
+    <div class="modal-row"><span class="modal-row-label">Onboarding Step</span><span class="modal-row-value">${c.onboarding_step || 1} / 5</span></div>
+    <div class="modal-row"><span class="modal-row-label">Account Created</span><span class="modal-row-value">${fmtDate(c.account_created)}</span></div>
+    <div class="modal-row"><span class="modal-row-label">Last Login</span><span class="modal-row-value">${c.last_login ? fmtDate(c.last_login) : 'Never'}</span></div>
+    <div class="modal-row"><span class="modal-row-label">Subdomain</span><span class="modal-row-value">${c.subdomain ? c.subdomain + '.partyofyou.org' : 'Not set'}</span></div>
+  `;
+
+  document.getElementById('modal-pledge').innerHTML = c.pledged_at
+    ? `<div class="modal-row"><span class="modal-row-label">Signed</span><span class="modal-row-value" style="color:var(--green)">✓ ${fmtDate(c.pledged_at)}</span></div>
+       <div class="modal-row"><span class="modal-row-label">Signature</span><span class="modal-row-value">"${c.signature}"</span></div>`
+    : `<p style="color:var(--amber);font-size:13px">Platform pledge not yet completed.</p>`;
+
+  document.getElementById('modal-stats').innerHTML = `
+    <div class="modal-row"><span class="modal-row-label">Volunteers</span><span class="modal-row-value">${s.volunteers}</span></div>
+    <div class="modal-row"><span class="modal-row-label">Events</span><span class="modal-row-value">${s.events}</span></div>
+    <div class="modal-row"><span class="modal-row-label">Donations</span><span class="modal-row-value">${s.donationCount} ($${s.donationTotal.toFixed(2)})</span></div>
+  `;
+
+  const isActive = c.status === 'active';
+  document.getElementById('modal-actions').innerHTML = `
+    ${isActive
+      ? `<button class="btn-sm danger" onclick="setStatus('${c.id}','suspended')">Suspend Account</button>`
+      : `<button class="btn-sm primary" onclick="setStatus('${c.id}','active')">Activate Account</button>`
+    }
+    <button class="btn-sm secondary" onclick="requestExport('${c.id}')">Request Data Export</button>
+    <button class="btn-sm secondary" onclick="document.getElementById('cand-modal').classList.remove('show')">Close</button>
+  `;
+
+  document.getElementById('cand-modal').classList.add('show');
+}
+
+async function setStatus(id, status) {
+  const reason = status === 'suspended'
+    ? prompt('Reason for suspension (shown in audit log):')
+    : null;
+  if (status === 'suspended' && !reason) return;
+
+  const data = await api('/candidates/' + id + '/status', {
+    method: 'PATCH',
+    body: { status, reason },
+  });
+  if (data?.success) {
+    alert(`Candidate ${status === 'suspended' ? 'suspended' : 'activated'} successfully.`);
+    document.getElementById('cand-modal').classList.remove('show');
+    loadCandidates();
+  }
+}
+
+async function requestExport(id) {
+  const data = await api('/candidates/' + id + '/export', { method: 'POST' });
+  if (data?.success) {
+    alert(data.message);
+    document.getElementById('cand-modal').classList.remove('show');
+  }
+}
+
+// ── FEEDS ────────────────────────────────────────────────────────
+async function loadFeeds() {
+  const data = await api('/feeds');
+  if (!data) return;
+
+  document.getElementById('feed-grid').innerHTML = data.feeds.map(f => `
+    <div class="feed-card">
+      <div class="feed-name">${f.name}</div>
+      <div class="feed-status">
+        <span class="dot ${f.connected ? 'dot-green' : 'dot-red'}"></span>
+        <span style="color:${f.connected ? 'var(--green)' : 'var(--muted)'}">
+          ${f.connected ? 'Connected' : 'Not configured'}
+        </span>
+      </div>
+      ${f.requiredFor?.length ? `<div style="font-size:10px;color:var(--muted);margin-top:5px">${f.requiredFor.slice(0,2).join(', ')}</div>` : ''}
+    </div>
+  `).join('');
+
+  document.getElementById('feature-flags').innerHTML = Object.entries(data.features).map(([key, val]) => `
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:13px;color:var(--white)">${key.replace(/([A-Z])/g, ' $1').trim()}</div>
+        <div style="font-size:11px;color:var(--muted)">FEATURE_${key.replace(/([A-Z])/g, '_$1').toUpperCase()}</div>
+      </div>
+      <span class="badge ${val ? 'badge-ok' : 'badge-pending'}">${val ? 'Enabled' : 'Disabled'}</span>
+    </div>
+  `).join('');
+}
+
+// ── DATASETS ─────────────────────────────────────────────────────
+async function loadDatasets() {
+  const data = await api('/datasets');
+  if (!data) return;
+
+  document.getElementById('datasets-list').innerHTML = data.datasets.map(d => `
+    <div class="dataset-row">
+      <div class="dataset-info">
+        <div class="dataset-name">${d.name}</div>
+        <div class="dataset-desc">${d.description}</div>
+      </div>
+      <div class="dataset-actions">
+        <span class="badge ${d.loaded ? 'badge-ok' : 'badge-pending'}">
+          ${d.loaded ? '✓ Loaded' : d.status === 'pending-approval' ? 'Awaiting Approval' : 'Not Loaded'}
+        </span>
+        ${!d.loaded && d.status !== 'pending-approval'
+          ? `<button class="btn-sm primary" onclick="triggerIngest('${d.key}')">Ingest</button>`
+          : ''
+        }
+      </div>
+    </div>
+  `).join('');
+}
+
+async function triggerIngest(source) {
+  if (!confirm(`Trigger ingestion for ${source}? Make sure raw files are in data/raw/${source}/`)) return;
+  const data = await api('/datasets/' + source + '/ingest', { method: 'POST' });
+  if (data) alert(data.message);
+}
+
+// ── OPERATIONS ───────────────────────────────────────────────────
+async function loadOperations() {
+  const data = await api('/costs');
+  if (!data) return;
+
+  const panel = document.getElementById('costs-panel');
+  panel.innerHTML = `
+    <div class="modal-row"><span class="modal-row-label">Railway</span><span class="modal-row-value">${data.infrastructure.railway.estimatedMonthly}/mo</span></div>
+    <div class="modal-row"><span class="modal-row-label">Cloudflare R2</span><span class="modal-row-value">${data.infrastructure.cloudflareR2.freeTier}</span></div>
+    <div style="margin-top:14px;font-size:11px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;font-weight:600;margin-bottom:8px">Pending Funding</div>
+    ${data.dataApis.pendingFunding.map(p => `
+      <div class="modal-row">
+        <span class="modal-row-label">${p.name}</span>
+        <span class="modal-row-value" style="color:var(--amber)">${p.estimatedAnnual}/yr</span>
+      </div>
+    `).join('')}
+  `;
+}
+
+async function flushCache() {
+  if (!confirm('Flush the Redis cache? All cached API responses will be cleared.')) return;
+  const data = await api('/cache/flush', { method: 'POST' });
+  if (data) alert(data.message);
+}
+
+async function postAnnouncement() {
+  const msg = document.getElementById('ann-text').value.trim();
+  if (!msg) { alert('Enter an announcement message.'); return; }
+  const data = await api('/announcement', { method: 'POST', body: { message: msg } });
+  if (data?.success) {
+    alert('Announcement posted.');
+    document.getElementById('ann-text').value = '';
+  }
+}
+
+// ── AUTH ─────────────────────────────────────────────────────────
+async function logout() {
+  await fetch('/api/admin/logout', { method: 'POST' });
+  window.location.href = '/admin/login';
+}
+
+// ── HELPERS ──────────────────────────────────────────────────────
+function badge(status) {
+  const map = {
+    active: 'badge-active', onboarding: 'badge-onboarding',
+    suspended: 'badge-suspended', closed: 'badge-closed',
+  };
+  return `<span class="badge ${map[status] || ''}">${status}</span>`;
+}
+
+function fmtDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('cand-modal')) {
+    document.getElementById('cand-modal').classList.remove('show');
+  }
+}
+
+// ── INIT ─────────────────────────────────────────────────────────
+loadOverview();
+
+// Populate state filter
+const states = ['AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'];
+const stateFilter = document.getElementById('cand-state-filter');
+if (stateFilter) {
+  states.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s; opt.textContent = s;
+    stateFilter.appendChild(opt);
+  });
+}
+</script>
+</body>
+</html>

@@ -5,150 +5,325 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Platform & Values — Party of You</title>
 <meta name="description" content="What Party of You stands for, who it's for, and exactly who it is not for. A left-populist candidate infrastructure platform with no corporate money.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Barlow:wght@400;500;600&display=swap');
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --navy: #0b1120; --navy-mid: #111827; --navy-light: #1e2d44;
-    --red: #dc2626; --red-dim: #991b1b;
-    --slate: #64748b; --slate-light: #94a3b8;
-    --white: #f8fafc; --off-white: #e2e8f0;
-    --condensed: 'Barlow Condensed', sans-serif;
-    --body: 'Barlow', sans-serif;
-  }
-  body { background: var(--navy); color: var(--off-white); font-family: var(--body); font-size: 16px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
-  .page { max-width: 860px; margin: 0 auto; padding: 0 24px 80px; }
-  .hero { padding: 72px 0 56px; border-bottom: 1px solid rgba(255,255,255,0.08); }
-  .hero-eyebrow { font-family: var(--body); font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--red); margin-bottom: 20px; }
-  .hero h1 { font-family: var(--condensed); font-size: clamp(52px, 8vw, 88px); font-weight: 900; line-height: 0.95; color: var(--white); text-transform: uppercase; letter-spacing: -0.01em; margin-bottom: 28px; }
-  .hero h1 .accent { color: var(--red); }
-  .hero-lead { font-size: 19px; line-height: 1.6; color: var(--slate-light); max-width: 600px; }
-  .hero-lead strong { color: var(--white); font-weight: 600; }
-  section { padding: 56px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
-  section:last-child { border-bottom: none; }
-  .section-label { font-family: var(--body); font-size: 10px; font-weight: 600; letter-spacing: 0.25em; text-transform: uppercase; color: var(--red); margin-bottom: 16px; }
-  h2 { font-family: var(--condensed); font-size: clamp(32px, 5vw, 52px); font-weight: 800; text-transform: uppercase; color: var(--white); line-height: 1; margin-bottom: 24px; letter-spacing: -0.01em; }
-  h3 { font-family: var(--condensed); font-size: 22px; font-weight: 700; text-transform: uppercase; color: var(--white); letter-spacing: 0.02em; margin-bottom: 8px; }
-  p { color: var(--slate-light); margin-bottom: 16px; }
-  p:last-child { margin-bottom: 0; }
-  p strong { color: var(--off-white); font-weight: 600; }
-  .planks { display: grid; gap: 2px; margin-top: 32px; }
-  .plank { display: grid; grid-template-columns: 48px 1fr; background: var(--navy-mid); border: 1px solid rgba(255,255,255,0.06); }
-  .plank:first-child { border-radius: 8px 8px 0 0; }
-  .plank:last-child { border-radius: 0 0 8px 8px; }
-  .plank-num { background: var(--red); display: flex; align-items: center; justify-content: center; font-family: var(--condensed); font-weight: 900; font-size: 18px; color: white; }
-  .plank-body { padding: 18px 20px; }
-  .plank-body h3 { font-size: 15px; margin-bottom: 4px; letter-spacing: 0.04em; }
-  .plank-body p { font-size: 14px; color: var(--slate); margin: 0; line-height: 1.5; }
-  .line-section { background: rgba(220,38,38,0.06); border-radius: 12px; padding: 40px; margin-top: 32px; border: 1px solid rgba(220,38,38,0.2); }
-  .line-section h2 { font-size: clamp(28px, 4vw, 42px); margin-bottom: 16px; }
-  .line-section > p { margin-bottom: 28px; font-size: 15px; }
-  .exclusion-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
-  .exclusion-list li { display: flex; align-items: flex-start; gap: 14px; font-size: 14px; color: var(--slate-light); line-height: 1.5; }
-  .exclusion-list li::before { content: 'X'; flex-shrink: 0; width: 22px; height: 22px; background: var(--red); color: white; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; border-radius: 4px; margin-top: 1px; }
-  .exclusion-list li strong { color: var(--off-white); }
-  .promise-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-top: 32px; }
-  .promise-card { background: var(--navy-mid); border: 1px solid rgba(255,255,255,0.07); border-radius: 10px; padding: 24px; }
-  .promise-icon { width: 36px; height: 36px; background: rgba(220,38,38,0.15); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; font-size: 16px; }
-  .promise-card h3 { font-size: 14px; letter-spacing: 0.05em; margin-bottom: 8px; }
-  .promise-card p { font-size: 13px; color: var(--slate); line-height: 1.5; margin: 0; }
-  .agreement { background: var(--navy-light); border-radius: 12px; padding: 40px; margin-top: 32px; border: 1px solid rgba(255,255,255,0.08); }
-  .agreement p { font-size: 15px; margin-bottom: 12px; }
-  .cta-row { margin-top: 28px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
-  .btn-primary { background: var(--red); color: white; font-family: var(--condensed); font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; padding: 14px 32px; border-radius: 6px; border: none; cursor: pointer; text-decoration: none; display: inline-block; }
-  .btn-primary:hover { background: var(--red-dim); }
-  .callout { border-left: 3px solid var(--red); padding: 4px 0 4px 24px; margin: 32px 0; }
-  .callout p { font-family: var(--condensed); font-size: clamp(20px, 3vw, 28px); font-weight: 700; text-transform: uppercase; color: var(--white); line-height: 1.2; letter-spacing: 0.02em; margin: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --navy:   #1a2d5a;
+  --navy-d: #0d1b35;
+  --navy-m: #223570;
+  --red:    #c8102e;
+  --red-d:  #a00c24;
+  --sky:    #2b7fc1;
+  --sky-l:  #4a9fd4;
+  --white:  #ffffff;
+  --gray:   #f4f6fb;
+  --border: #dde3ef;
+  --text:   #0d1b35;
+  --muted:  #5a6a8a;
+  --cond:   'Barlow Condensed', sans-serif;
+  --body:   'Barlow', sans-serif;
+}
+body {
+  font-family: var(--body);
+  color: var(--text);
+  background: var(--navy-d);
+  -webkit-font-smoothing: antialiased;
+  padding-top: 56px;
+}
+
+/* ── PAGE SHELL ── */
+.page { max-width: 860px; margin: 0 auto; padding: 0 24px 80px; }
+
+/* ── HERO ── */
+.hero {
+  padding: 64px 0 56px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  display: flex; flex-direction: column; align-items: flex-start;
+}
+.hero-logo {
+  width: 200px; margin-bottom: 32px;
+  border-radius: 6px;
+}
+.eyebrow {
+  font-family: var(--body); font-size: 11px; font-weight: 600;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--red); margin-bottom: 16px;
+}
+.hero h1 {
+  font-family: var(--cond);
+  font-size: clamp(52px, 8vw, 88px);
+  font-weight: 900; line-height: 0.95;
+  color: var(--white); text-transform: uppercase;
+  letter-spacing: -0.01em; margin-bottom: 24px;
+}
+.hero h1 .accent { color: var(--red); }
+.hero-lead {
+  font-size: 18px; line-height: 1.6;
+  color: rgba(255,255,255,0.6); max-width: 600px;
+}
+.hero-lead strong { color: var(--white); font-weight: 600; }
+
+/* ── SECTIONS ── */
+section {
+  padding: 56px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+section:last-child { border-bottom: none; }
+.section-label {
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 0.25em; text-transform: uppercase;
+  color: var(--red); margin-bottom: 16px;
+}
+h2 {
+  font-family: var(--cond);
+  font-size: clamp(32px, 5vw, 52px);
+  font-weight: 800; text-transform: uppercase;
+  color: var(--white); line-height: 1; margin-bottom: 20px;
+  letter-spacing: -0.01em;
+}
+p { color: rgba(255,255,255,0.55); margin-bottom: 14px; line-height: 1.7; }
+p:last-child { margin-bottom: 0; }
+p strong { color: var(--white); font-weight: 600; }
+
+/* ── PLANKS ── */
+.planks { display: grid; gap: 2px; margin-top: 28px; }
+.plank {
+  display: grid; grid-template-columns: 52px 1fr;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+}
+.plank:first-child { border-radius: 8px 8px 0 0; }
+.plank:last-child  { border-radius: 0 0 8px 8px; }
+.plank-num {
+  background: var(--red);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--cond); font-weight: 900; font-size: 18px; color: white;
+  flex-shrink: 0;
+}
+.plank-body { padding: 18px 20px; }
+.plank-body h3 {
+  font-family: var(--cond); font-size: 15px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--white); margin-bottom: 5px;
+}
+.plank-body p { font-size: 13px; color: rgba(255,255,255,0.5); margin: 0; line-height: 1.55; }
+
+/* ── COMMONS MODEL ── */
+.commons-box {
+  background: rgba(200,16,46,0.07);
+  border: 1px solid rgba(200,16,46,0.25);
+  border-radius: 10px; padding: 32px; margin-top: 28px;
+}
+.commons-box h3 {
+  font-family: var(--cond); font-size: 26px; font-weight: 900;
+  text-transform: uppercase; color: var(--white); margin-bottom: 12px;
+}
+.commons-box > p { margin-bottom: 24px; font-size: 15px; }
+.commons-list { list-style: none; display: flex; flex-direction: column; gap: 14px; }
+.commons-list li {
+  display: flex; gap: 12px; align-items: flex-start;
+  font-size: 13px; color: rgba(255,255,255,0.55); line-height: 1.55;
+}
+.commons-list .ci {
+  flex-shrink: 0; width: 22px; height: 22px;
+  background: rgba(34,197,94,0.2); color: #4ade80;
+  font-size: 12px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 4px; margin-top: 1px;
+}
+.commons-list li strong { color: var(--white); }
+.commons-note { margin-top: 20px; font-size: 12px; color: rgba(255,255,255,0.3); }
+
+/* ── LINE IN THE SAND ── */
+.line-box {
+  background: rgba(200,16,46,0.06);
+  border: 1px solid rgba(200,16,46,0.22);
+  border-radius: 10px; padding: 36px; margin-top: 28px;
+}
+.line-box h3 {
+  font-family: var(--cond); font-size: 32px; font-weight: 900;
+  text-transform: uppercase; color: var(--white); margin-bottom: 14px;
+}
+.line-box > p { margin-bottom: 24px; font-size: 14px; }
+.exclusion-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+.exclusion-list li {
+  display: flex; gap: 12px; align-items: flex-start;
+  font-size: 14px; color: rgba(255,255,255,0.55); line-height: 1.5;
+}
+.exclusion-list .xi {
+  flex-shrink: 0; width: 22px; height: 22px;
+  background: var(--red); color: white; font-size: 10px;
+  font-weight: 800; display: flex; align-items: center; justify-content: center;
+  border-radius: 4px; margin-top: 2px;
+}
+.exclusion-list li strong { color: var(--white); }
+
+/* ── PROMISES ── */
+.promise-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px; margin-top: 28px;
+}
+.promise-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px; padding: 22px;
+  border-top: 3px solid var(--navy-m);
+  transition: border-top-color 0.2s;
+}
+.promise-card:hover { border-top-color: var(--red); }
+.promise-icon {
+  width: 34px; height: 34px;
+  background: rgba(200,16,46,0.15);
+  border-radius: 7px; display: flex; align-items: center;
+  justify-content: center; margin-bottom: 12px; font-size: 16px;
+}
+.promise-card h3 {
+  font-family: var(--cond); font-size: 14px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--white); margin-bottom: 7px;
+}
+.promise-card p { font-size: 12px; color: rgba(255,255,255,0.45); line-height: 1.55; margin: 0; }
+
+/* ── CALLOUT ── */
+.callout {
+  border-left: 3px solid var(--red);
+  padding: 4px 0 4px 24px; margin: 36px 0;
+}
+.callout p {
+  font-family: var(--cond);
+  font-size: clamp(20px, 3vw, 28px);
+  font-weight: 700; text-transform: uppercase;
+  color: var(--white); line-height: 1.2;
+  letter-spacing: 0.02em; margin: 0;
+}
+
+/* ── AGREEMENT ── */
+.agreement {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 10px; padding: 36px; margin-top: 28px;
+}
+.agreement p { font-size: 14px; margin-bottom: 12px; }
+.agreement .note { font-size: 12px; color: rgba(255,255,255,0.3); margin-top: 16px; }
+.cta-row { margin-top: 24px; display: flex; gap: 14px; flex-wrap: wrap; }
+.btn-primary {
+  background: var(--red); color: white;
+  font-family: var(--cond); font-size: 16px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  padding: 13px 30px; border-radius: 6px; border: none;
+  cursor: pointer; text-decoration: none; display: inline-block;
+  transition: background 0.15s;
+}
+.btn-primary:hover { background: var(--red-d); }
+.btn-secondary {
+  font-family: var(--body); font-size: 13px;
+  color: rgba(255,255,255,0.4); text-decoration: underline;
+  background: none; border: none; cursor: pointer;
+  padding: 0; align-self: center;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 640px) {
+  .hero { padding: 40px 0 40px; }
+  .hero-logo { width: 160px; }
+  section { padding: 40px 0; }
+  .line-box, .commons-box, .agreement { padding: 24px; }
+  .cta-row { flex-direction: column; }
+}
 </style>
 </head>
 <body>
+<script src="/nav.js"></script>
+
 <div class="page">
+
   <div class="hero">
-    <div class="hero-eyebrow">Platform &amp; Values</div>
+    <img src="/images/partyofyoulogo.png" alt="Party of You" class="hero-logo">
+    <div class="eyebrow">Platform &amp; Values</div>
     <h1>The Party<br>of <span class="accent">You</span></h1>
-    <p class="hero-lead">You don't need a political party. You need a platform, a community, and the tools to win. <strong>This is the infrastructure for people who are done waiting for someone else to fix it.</strong></p>
+    <p class="hero-lead">
+      You don't need a political party. You need a platform, a community, and the tools to win.
+      <strong>This is the infrastructure for people who are done waiting for someone else to fix it.</strong>
+    </p>
   </div>
 
+  <!-- CORE BELIEFS -->
   <section>
     <div class="section-label">What We Stand For</div>
     <h2>Core Beliefs</h2>
     <p>Every candidate who joins this platform agrees to these principles. They are not negotiable. They are not open to corporate interpretation. They are what we mean when we say we work for working people.</p>
     <div class="planks">
       <div class="plank"><div class="plank-num">1</div><div class="plank-body"><h3>Healthcare is a human right</h3><p>Every person deserves access to healthcare regardless of their income, employment status, or zip code. We support universal, publicly funded healthcare and oppose any legislation that cuts, privatizes, or restricts access to Medicaid, Medicare, or public health programs.</p></div></div>
-      <div class="plank"><div class="plank-num">2</div><div class="plank-body"><h3>Workers come before shareholders</h3><p>We support a living wage, the right to organize, overtime protections, and safe working conditions. We oppose union-busting, right-to-work laws designed to destroy collective bargaining, and the continued transfer of wealth from workers to the investor class.</p></div></div>
+      <div class="plank"><div class="plank-num">2</div><div class="plank-body"><h3>Workers come before shareholders</h3><p>We support a living wage, the right to organize, overtime protections, and safe working conditions. We oppose union-busting, right-to-work laws, and the continued transfer of wealth from workers to the investor class.</p></div></div>
       <div class="plank"><div class="plank-num">3</div><div class="plank-body"><h3>Housing is a necessity, not an investment vehicle</h3><p>Every person deserves a stable, affordable place to live. We support tenant protections, social housing, and restrictions on speculative real estate practices that price working families out of their own communities.</p></div></div>
-      <div class="plank"><div class="plank-num">4</div><div class="plank-body"><h3>Public education must be fully funded</h3><p>Every child deserves a quality public education. We oppose the defunding and privatization of public schools through voucher programs and charters designed to extract taxpayer money for private profit. We support canceling student debt and making public college tuition-free.</p></div></div>
-      <div class="plank"><div class="plank-num">5</div><div class="plank-body"><h3>The climate crisis demands immediate action</h3><p>We accept the scientific consensus on climate change without qualification. We support aggressive investment in clean energy, a just transition for fossil fuel workers, and holding the corporations most responsible for the crisis accountable.</p></div></div>
-      <div class="plank"><div class="plank-num">6</div><div class="plank-body"><h3>Civil rights are non-negotiable</h3><p>We stand unconditionally for the rights of Black Americans, Indigenous peoples, immigrants, women, LGBTQ+ people, people with disabilities, and every other marginalized community. We will not trade their rights for votes or compromise them to appear electable.</p></div></div>
-      <div class="plank"><div class="plank-num">7</div><div class="plank-body"><h3>Democracy belongs to people, not donors</h3><p>We oppose Citizens United and the entire architecture of dark money in politics. We support public campaign financing, ranked choice voting, automatic voter registration, and every measure that makes our government more responsive to citizens and less responsive to corporations.</p></div></div>
-      <div class="plank"><div class="plank-num">8</div><div class="plank-body"><h3>Wealthy individuals and corporations must pay their share</h3><p>The concentration of wealth at the top is not an accident — it is the result of policy decisions made by politicians funded by the people who benefit. We support progressive taxation, closing loopholes that allow billionaires to pay lower rates than their employees, and investing that revenue in public goods.</p></div></div>
+      <div class="plank"><div class="plank-num">4</div><div class="plank-body"><h3>Public education must be fully funded</h3><p>Every child deserves a quality public education. We oppose the defunding and privatization of public schools. We support canceling student debt and making public college tuition-free.</p></div></div>
+      <div class="plank"><div class="plank-num">5</div><div class="plank-body"><h3>The climate crisis demands immediate action</h3><p>We accept the scientific consensus on climate change without qualification. We support aggressive investment in clean energy, a just transition for fossil fuel workers, and holding corporations accountable.</p></div></div>
+      <div class="plank"><div class="plank-num">6</div><div class="plank-body"><h3>Civil rights are non-negotiable</h3><p>We stand unconditionally for the rights of Black Americans, Indigenous peoples, immigrants, women, LGBTQ+ people, people with disabilities, and every marginalized community. We will not trade their rights for votes.</p></div></div>
+      <div class="plank"><div class="plank-num">7</div><div class="plank-body"><h3>Democracy belongs to people, not donors</h3><p>We oppose Citizens United and the entire architecture of dark money in politics. We support public campaign financing, ranked choice voting, automatic voter registration, and every measure that makes government more responsive to citizens.</p></div></div>
+      <div class="plank"><div class="plank-num">8</div><div class="plank-body"><h3>Wealthy individuals and corporations must pay their share</h3><p>The concentration of wealth at the top is the result of policy decisions made by politicians funded by those who benefit. We support progressive taxation and closing loopholes that allow billionaires to pay lower rates than their employees.</p></div></div>
     </div>
   </section>
 
-  <section>
-    <div class="line-section">
-      <div class="section-label">Who This Is Not For</div>
-      <h2>The Line in the Sand</h2>
-      <p>Most political platforms tell you what they're for. We're also going to be clear about what we won't allow — because a platform that claims to serve working people while welcoming those who exploit them is not a platform, it's a con.</p>
-      <ul class="exclusion-list">
-        <li><div><strong>Candidates who accept corporate PAC money or dark money contributions.</strong> If a corporation is funding your campaign, you work for them — not for the people in your district. This is a hard disqualification.</div></li>
-        <li><div><strong>Candidates who oppose abortion rights or bodily autonomy.</strong> The right to make decisions about one's own body is fundamental. There is no version of working-class politics that requires women to surrender control over their lives.</div></li>
-        <li><div><strong>Candidates who oppose LGBTQ+ rights or use our platform to target marginalized communities.</strong> Full stop.</div></li>
-        <li><div><strong>Candidates who support privatizing Social Security, Medicare, or Medicaid.</strong> These programs keep tens of millions of Americans out of poverty.</div></li>
-        <li><div><strong>Self-described conservatives running as "independents" to circumvent accountability.</strong> We are a left-populist platform. We are not a home for rebranded Republican politics.</div></li>
-        <li><div><strong>Corporate Democrats who use progressive language while voting for corporate interests.</strong> The problem we're solving is not just Republicans. It is an entire political culture that treats corporate donors as the real constituency.</div></li>
-      </ul>
-    </div>
-  </section>
-
-  <div class="callout"><p>"The goal is not to reform a broken system from within — it's to build the power to replace it."</p></div>
-
+  <!-- ON COSTS -->
   <section>
     <div class="section-label">On Costs — The Honest Version</div>
     <h2>Free Infrastructure.<br>Shared When It Isn't.</h2>
     <p>This platform will never charge you a subscription. There are no premium tiers, no feature paywalls, no commission on donations. The tools we build are yours.</p>
-    <p>But we're going to be honest with you about something the fine print usually hides: some of the most valuable data in politics — comprehensive local race databases, verified election deadlines, hyperlocal candidate filings — is owned by third-party organizations that charge for API access. Ballotpedia, for instance, charges thousands of dollars per year for the data that would make the open seat tracker genuinely complete at the school board and city council level.</p>
+    <p>But we're going to be honest about something the fine print usually hides: some of the most valuable data in politics — comprehensive local race databases, verified election deadlines, hyperlocal candidate filings — is owned by third-party organizations that charge for API access. Ballotpedia charges thousands of dollars per year for data that makes the open seat tracker genuinely complete at the city council and school board level.</p>
     <p><strong>Here is exactly how we handle that:</strong></p>
-    <div class="line-section" style="margin-top: 24px;">
-      <h2 style="font-size: clamp(22px,3vw,32px); margin-bottom: 16px;">The Commons Model</h2>
-      <p style="margin-bottom: 20px; font-size: 15px;">When a paid data source would meaningfully improve a feature for every candidate on the platform, we will tell you openly: what it costs, what it unlocks, and how many candidates contributing would make it sustainable. The first candidates who fund access unlock it permanently — for every current and future candidate, in every district, at every level.</p>
-      <ul class="exclusion-list" style="list-style: none;">
-        <li style="display:flex; gap:14px; margin-bottom:12px; font-size:14px; color: var(--slate-light);">
-          <span style="flex-shrink:0; width:22px; height:22px; background: rgba(34,197,94,0.2); color:#4ade80; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; border-radius:4px; margin-top:1px;">✓</span>
-          <span><strong style="color:var(--off-white);">We name the cost before asking for it.</strong> No surprises. You'll see exactly what a data source costs, broken down to what each contributing candidate's share would be.</span>
-        </li>
-        <li style="display:flex; gap:14px; margin-bottom:12px; font-size:14px; color: var(--slate-light);">
-          <span style="flex-shrink:0; width:22px; height:22px; background: rgba(34,197,94,0.2); color:#4ade80; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; border-radius:4px; margin-top:1px;">✓</span>
-          <span><strong style="color:var(--off-white);">Every feature works without it.</strong> Paid data sources enhance features — they don't gate them. A candidate in a state where we have no Ballotpedia access still gets FEC data, Census demographics, OpenStates legislative data, and live polling. The free version is genuinely useful.</span>
-        </li>
-        <li style="display:flex; gap:14px; margin-bottom:12px; font-size:14px; color: var(--slate-light);">
-          <span style="flex-shrink:0; width:22px; height:22px; background: rgba(34,197,94,0.2); color:#4ade80; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; border-radius:4px; margin-top:1px;">✓</span>
-          <span><strong style="color:var(--off-white);">Once unlocked, it stays unlocked.</strong> A candidate in Wisconsin who contributes toward Ballotpedia access is directly funding better tools for a candidate in Georgia they'll never meet. That's not a side effect of the model — that's the point of it.</span>
-        </li>
-        <li style="display:flex; gap:14px; font-size:14px; color: var(--slate-light);">
-          <span style="flex-shrink:0; width:22px; height:22px; background: rgba(34,197,94,0.2); color:#4ade80; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; border-radius:4px; margin-top:1px;">✓</span>
-          <span><strong style="color:var(--off-white);">We publish our costs.</strong> Every dollar that goes toward platform infrastructure is publicly disclosed. We are not building a black box that extracts value from grassroots campaigns. We are building shared infrastructure — and you should be able to see exactly what it costs to run it.</span>
-        </li>
+    <div class="commons-box">
+      <h3>The Commons Model</h3>
+      <p>When a paid data source would meaningfully improve a feature for every candidate on the platform, we tell you openly: what it costs, what it unlocks, and how many candidates contributing would make it sustainable. The first candidates who fund access unlock it permanently — for every current and future candidate, in every district, at every level.</p>
+      <ul class="commons-list">
+        <li><span class="ci">✓</span><div><strong>We name the cost before asking for it.</strong> No surprises. You'll see exactly what a data source costs, broken down to what each contributing candidate's share would be.</div></li>
+        <li><span class="ci">✓</span><div><strong>Every feature works without it.</strong> Paid data sources enhance features — they don't gate them. The free version is genuinely useful.</div></li>
+        <li><span class="ci">✓</span><div><strong>Once unlocked, it stays unlocked.</strong> A candidate in Wisconsin who contributes toward Ballotpedia access is directly funding better tools for a candidate in Georgia they'll never meet. That's not a side effect — that's the point.</div></li>
+        <li><span class="ci">✓</span><div><strong>We publish our costs.</strong> Every dollar that goes toward platform infrastructure is publicly disclosed. We are building shared infrastructure — you should be able to see what it costs to run it.</div></li>
       </ul>
-      <p style="margin-top: 20px; font-size: 13px; color: var(--slate);">This is the same principle behind every union, every co-op, and every mutual aid network that has ever worked: when working people pool resources, they build something none of them could afford alone. Party of You is political infrastructure built on that logic.</p>
+      <p class="commons-note">This is the same principle behind every union, co-op, and mutual aid network that has ever worked: when working people pool resources, they build something none of them could afford alone.</p>
     </div>
   </section>
 
+  <!-- LINE IN THE SAND -->
+  <section>
+    <div class="section-label">Who This Is Not For</div>
+    <div class="line-box">
+      <h3>The Line in the Sand</h3>
+      <p>Most political platforms tell you what they're for. We're also going to be clear about what we won't allow — because a platform that claims to serve working people while welcoming those who exploit them is not a platform. It's a con.</p>
+      <ul class="exclusion-list">
+        <li><span class="xi">✕</span><div><strong>Candidates who accept corporate PAC money or dark money contributions.</strong> If a corporation is funding your campaign, you work for them — not for the people in your district. Hard disqualification.</div></li>
+        <li><span class="xi">✕</span><div><strong>Candidates who oppose abortion rights or bodily autonomy.</strong> The right to make decisions about one's own body is fundamental. There is no version of working-class politics that requires women to surrender control over their lives.</div></li>
+        <li><span class="xi">✕</span><div><strong>Candidates who oppose LGBTQ+ rights or use our platform to target marginalized communities.</strong> Full stop.</div></li>
+        <li><span class="xi">✕</span><div><strong>Candidates who support privatizing Social Security, Medicare, or Medicaid.</strong> These programs keep tens of millions of Americans out of poverty.</div></li>
+        <li><span class="xi">✕</span><div><strong>Self-described conservatives running as "independents" to circumvent accountability.</strong> We are a left-populist platform. We are not a home for rebranded Republican politics.</div></li>
+        <li><span class="xi">✕</span><div><strong>Corporate Democrats who use progressive language while voting for corporate interests.</strong> The problem we're solving is not just Republicans. It is an entire political culture that treats corporate donors as the real constituency.</div></li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="callout">
+    <p>"The goal is not to reform a broken system from within — it's to build the power to replace it."</p>
+  </div>
+
+  <!-- PROMISES -->
   <section>
     <div class="section-label">Our Commitment</div>
     <h2>What We Promise You</h2>
     <p>We ask you to take a stand. Here's what we commit to in return.</p>
     <div class="promise-grid">
-      <div class="promise-card"><div class="promise-icon">🔒</div><h3>Free — With One Honest Exception</h3><p>The platform, our tools, and every data source we can provide for free will always be free. Some premium third-party data feeds — like Ballotpedia's local race database — carry a cost we pass through transparently. But here's how that works: the first candidates who fund access unlock it for every candidate on the platform permanently. You're not paying for yourself. You're paying it into the commons.</p></div>
+      <div class="promise-card"><div class="promise-icon">🔒</div><h3>Free — With One Honest Exception</h3><p>No subscription, no premium tier. Every tool is available to every qualifying candidate. Third-party data costs are shared transparently through the Commons Model above.</p></div>
       <div class="promise-card"><div class="promise-icon">📡</div><h3>No Ads, No Data Sales</h3><p>We will never run ads. We will never sell your data or your supporters' data. We make no money from your campaign.</p></div>
       <div class="promise-card"><div class="promise-icon">💸</div><h3>Your Money Stays Yours</h3><p>Every dollar donated to your campaign belongs to your campaign. We do not take a cut. We are not a fundraising platform extracting fees.</p></div>
-      <div class="promise-card"><div class="promise-icon">🗂️</div><h3>Your Data Belongs to You</h3><p>If you ever leave the platform, you get a full export of every piece of data associated with your campaign within 14 days. No hostage data.</p></div>
+      <div class="promise-card"><div class="promise-icon">🗂️</div><h3>Your Data Belongs to You</h3><p>If you ever leave the platform, you receive a full export of every piece of data associated with your campaign within 14 business days. No hostage data.</p></div>
       <div class="promise-card"><div class="promise-icon">⚖️</div><h3>Transparent Enforcement</h3><p>If we believe a candidate has violated these principles, we follow a documented process: formal notice, opportunity to respond, and an appeal window before any account action.</p></div>
-      <div class="promise-card"><div class="promise-icon">🏗️</div><h3>We Build With You</h3><p>This platform is built in public. Candidates can see what we're working on, request features, and provide feedback that shapes what gets built next.</p></div>
+      <div class="promise-card"><div class="promise-icon">🏗️</div><h3>We Build With You</h3><p>This platform is built in public. Candidates see what we're working on, request features, and provide feedback that shapes what gets built next. You are not a user — you are a stakeholder.</p></div>
     </div>
   </section>
 
-  <section>
+  <!-- AGREEMENT -->
+  <section id="agreement">
     <div class="section-label">Ready to Run</div>
     <h2>The Candidate Agreement</h2>
     <div class="agreement">
@@ -156,11 +331,15 @@
       <p><strong>I will not accept contributions from corporate PACs, dark money groups, or any entity that exists to advance corporate political interests.</strong></p>
       <p><strong>I agree with and will campaign on the core platform above.</strong> I may have additional positions. I may emphasize different issues depending on my district. But I do not fundamentally oppose any of the eight planks.</p>
       <p><strong>I understand that the platform can terminate my access if I violate these commitments</strong>, and that I will receive a full export of my campaign data within 14 business days of any account closure.</p>
-      <p><strong>I am not a conservative candidate.</strong> I am running to represent the people in my district — especially the ones who have been ignored the longest.</p>
-      <p style="margin-top:20px;font-size:13px;color:var(--slate);">This is not a legal document. The full Terms of Service govern your use of the platform. The above is a statement of values and intent — what you're signing up for in plain language.</p>
-      <div class="cta-row"><a href="/apply" class="btn-primary">Apply to Run</a></div>
+      <p><strong>I am not a conservative candidate.</strong> I am not a candidate funded by or primarily accountable to corporate donors. I am running to represent the people in my district — especially the ones who have been ignored the longest.</p>
+      <p class="note">This is not a legal document. The full Terms of Service govern your use of the platform. The above is a statement of values and intent — what you're signing up for in plain language.</p>
+      <div class="cta-row">
+        <a href="/apply.html" class="btn-primary">Apply to Run</a>
+        <button class="btn-secondary" onclick="window.scrollTo({top:0,behavior:'smooth'})">Read the platform again ↑</button>
+      </div>
     </div>
   </section>
+
 </div>
 </body>
 </html>

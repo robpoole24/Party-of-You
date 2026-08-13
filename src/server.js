@@ -1,10 +1,6 @@
 /**
  * PARTY OF YOU — SERVER ENTRY POINT
  * src/server.js
- *
- * Express application. Railway boots this via `npm start`.
- * Starts with health check and API status endpoints so the
- * deploy succeeds even before modules are built out.
  */
 
 require('dotenv').config();
@@ -13,22 +9,53 @@ const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
 const compression = require('compression');
+const cookieParser = require('cookie-parser');
+const path = require('path');
 
 const { getApiStatus, getConnectedApis, getPendingApis } = require('./config/apis');
+const { requireAdmin, requireCandidate, adminLogin, candidateLogin, logout } = require('./middleware/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// ─────────────────────────────────────────────────
+// DB MIDDLEWARE
+// Attaches db client to every request.
+// Until PostgreSQL is connected, gracefully handles missing DB.
+// ─────────────────────────────────────────────────
+
+let db = null;
+
+function initDb() {
+  if (!process.env.DATABASE_URL) {
+    console.warn('DATABASE_URL not set — running without database. Auth and data features will not work.');
+    return;
+  }
+  const { Pool } = require('pg');
+  const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  });
+  pool.on('error', err => console.error('DB pool error:', err.message));
+  db = { query: (...args) => pool.query(...args) };
+  console.log('PostgreSQL connected.');
+}
+
+function attachDb(req, res, next) {
+  req.db = db;
+  next();
+}
 
 // ─────────────────────────────────────────────────
 // MIDDLEWARE
 // ─────────────────────────────────────────────────
 
 app.use(compression());
+app.use(cookieParser());
 
 // Serve static files from /public
-// Makes index.html, results.html, platform.html, /images/, /widgets/ all accessible
-app.use(express.static('public', {
-  maxAge: '1h',
+app.use(express.static(path.join(__dirname, '../public'), {
+  maxAge: process.env.NODE_ENV === 'production' ? '1h' : 0,
   etag: true,
 }));
 
@@ -36,11 +63,12 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://maps.googleapis.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://maps.googleapis.com", "https://fonts.googleapis.com"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'", "https://api.census.gov", "https://civicinfo.googleapis.com"],
+      connectSrc: ["'self'", "https://api.census.gov", "https://civicinfo.googleapis.com",
+                   "https://v3.openstates.org", "https://api.open.fec.gov", "https://votehub.com"],
     },
   },
 }));
@@ -54,10 +82,10 @@ app.use(cors({
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+app.use(attachDb);
 
 // ─────────────────────────────────────────────────
-// HEALTH CHECK — Railway uses this to confirm the
-// container is alive. Must return 200 quickly.
+// HEALTH CHECK
 // ─────────────────────────────────────────────────
 
 app.get('/health', (req, res) => {
@@ -66,81 +94,95 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
     version: process.env.npm_package_version || '0.1.0',
     environment: process.env.NODE_ENV || 'development',
+    database: db ? 'connected' : 'not connected',
   });
 });
 
 // ─────────────────────────────────────────────────
-// API STATUS — Shows which data sources are connected
-// Useful during setup to confirm keys are loaded
+// AUTH ROUTES
+// ─────────────────────────────────────────────────
+
+// Admin login (no guard)
+app.post('/api/admin/login', adminLogin);
+app.post('/api/admin/logout', (req, res) => {
+  res.clearCookie('poy_token');
+  res.json({ success: true, redirect: '/admin/login.html' });
+});
+
+// Candidate auth
+app.post('/api/auth/login', (req, res) => candidateLogin(req, res, db));
+app.post('/api/auth/logout', logout);
+
+// Candidate signup + onboarding
+const signupRouter = require('./auth/signup');
+app.use('/api/auth', signupRouter);
+
+// ─────────────────────────────────────────────────
+// ADMIN API (protected)
+// ─────────────────────────────────────────────────
+
+const adminRouter = require('./admin/routes');
+app.use('/api/admin', adminRouter);
+
+// ─────────────────────────────────────────────────
+// PUBLIC API ROUTES
 // ─────────────────────────────────────────────────
 
 app.get('/api/status', (req, res) => {
   const allApis = getApiStatus();
   const connected = Object.values(allApis).filter(a => a.connected).length;
   const total = Object.values(allApis).length;
-
   res.json({
     platform: 'Party of You',
     domain: 'partyofyou.org',
-    apiConnections: {
-      connected,
-      total,
-      summary: allApis,
-    },
+    apiConnections: { connected, total, summary: allApis },
     features: {
       openSeatTracker: process.env.FEATURE_OPEN_SEAT_TRACKER === 'true',
       pollingIntelligence: process.env.FEATURE_POLLING_INTELLIGENCE === 'true',
       demographics: process.env.FEATURE_DEMOGRAPHICS === 'true',
-      ballotAccessGuide: process.env.FEATURE_BALLOT_ACCESS_GUIDE === 'true',
       candidateDashboard: process.env.FEATURE_CANDIDATE_DASHBOARD === 'true',
-      volunteerPortal: process.env.FEATURE_VOLUNTEER_PORTAL === 'true',
-      eventManagement: process.env.FEATURE_EVENT_MANAGEMENT === 'true',
-      voterContactTools: process.env.FEATURE_VOTER_CONTACT_TOOLS === 'true',
-      videoAdCreator: process.env.FEATURE_VIDEO_AD_CREATOR === 'true',
-      fecReporting: process.env.FEATURE_FEC_REPORTING === 'true',
     },
     datasets: {
       mitElectionLab: process.env.DATASET_MIT_ELECTION_LAB_LOADED === 'true',
       pewResearch: process.env.DATASET_PEW_RESEARCH_LOADED === 'true',
       openSecrets: process.env.DATASET_OPENSECRETS_LOADED === 'true',
       govtrack: process.env.DATASET_GOVTRACK_LOADED === 'true',
+      anes: process.env.DATASET_ANES_LOADED === 'true',
     },
   });
 });
 
-// ─────────────────────────────────────────────────
-// CORE API ROUTES
-// Each module registers its own router here as built.
-// Guarded by feature flags — returns 503 if not yet active.
-// ─────────────────────────────────────────────────
-
 // Module 2: Open Seat Tracker
 app.use('/api/races', featureGuard('FEATURE_OPEN_SEAT_TRACKER'), require('./routes/races'));
 
-// Module 5: District Intelligence (Polling + Demographics)
+// Module 5: District Intelligence
 app.use('/api/intelligence', featureGuard('FEATURE_POLLING_INTELLIGENCE'), require('./routes/intelligence'));
 
-// Module 4: Candidate Dashboard (auth required)
-// app.use('/api/candidates', featureGuard('FEATURE_CANDIDATE_DASHBOARD'), require('./routes/candidates'));
-
-// More routes added as modules are built...
-
-// Root route is handled by express.static serving public/index.html
-
 // ─────────────────────────────────────────────────
-// 404 HANDLER
+// PROTECTED CANDIDATE ROUTES (future modules)
 // ─────────────────────────────────────────────────
 
-app.use((req, res) => {
-  res.status(404).json({
-    error: 'Not found',
-    path: req.path,
-  });
+// app.use('/api/dashboard', requireCandidate, require('./routes/dashboard'));
+
+// ─────────────────────────────────────────────────
+// SPA FALLBACK — serve index.html for unknown routes
+// so client-side routing works (when we add it)
+// ─────────────────────────────────────────────────
+
+app.get('*', (req, res, next) => {
+  // Don't intercept /api/ routes
+  if (req.path.startsWith('/api/')) return next();
+  // Serve index.html for everything else that isn't a static file
+  res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
 // ─────────────────────────────────────────────────
-// ERROR HANDLER
+// ERROR HANDLERS
 // ─────────────────────────────────────────────────
+
+app.use((req, res) => {
+  res.status(404).json({ error: 'Not found', path: req.path });
+});
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
@@ -154,6 +196,8 @@ app.use((err, req, res, next) => {
 // START
 // ─────────────────────────────────────────────────
 
+initDb();
+
 app.listen(PORT, () => {
   console.log(`\n═══════════════════════════════════`);
   console.log(`  Party of You — Platform Server`);
@@ -161,13 +205,10 @@ app.listen(PORT, () => {
   console.log(`  Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`═══════════════════════════════════\n`);
 
-  // Log which APIs are connected on startup
   const connected = getConnectedApis();
   const pending = getPendingApis();
   console.log(`APIs connected: ${Object.keys(connected).length}`);
-  if (Object.keys(connected).length) {
-    Object.values(connected).forEach(api => console.log(`  ✓ ${api.name}`));
-  }
+  Object.values(connected).forEach(api => console.log(`  ✓ ${api.name}`));
   if (Object.keys(pending).length) {
     console.log(`APIs pending:`);
     Object.values(pending).forEach(api => console.log(`  ○ ${api.name}`));
@@ -175,21 +216,12 @@ app.listen(PORT, () => {
   console.log('');
 });
 
-// ─────────────────────────────────────────────────
-// HELPERS
-// ─────────────────────────────────────────────────
-
-/**
- * Feature flag middleware
- * Returns 503 with a clear message if a module isn't enabled yet
- */
 function featureGuard(flagName) {
   return (req, res, next) => {
     if (process.env[flagName] !== 'true') {
       return res.status(503).json({
         error: 'Module not yet available',
         module: flagName,
-        message: 'This feature is under construction. Set the feature flag to enable it.',
       });
     }
     next();

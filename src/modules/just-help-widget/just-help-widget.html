@@ -1,0 +1,351 @@
+<!--
+  JUST HELP WIDGET — Embeddable on candidate campaign websites
+  
+  How to embed on a candidate's site:
+    <script src="https://partyofyou.org/widgets/just-help.js"></script>
+    <div id="just-help-widget"></div>
+
+  Or paste this HTML directly into any page.
+
+  On "Find Help" click:
+    Opens justhelp.up.railway.app/map in a new tab with the zip/city
+    and selected service checkboxes pre-applied as URL params.
+    The Just Help map page reads those params and runs the search automatically.
+
+  URL format passed to Just Help:
+    /map?location=53221&services=food,shelter,clothing
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Find Community Help — Just Help Widget</title>
+<style>
+  /* ── Reset ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* ── Widget shell ──
+     Designed to sit inside any candidate website.
+     Max-width contains it; inherits surrounding font. */
+  .jh-widget {
+    max-width: 540px;
+    background: #0f172a;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 24px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: #e2e8f0;
+  }
+
+  /* ── Header ── */
+  .jh-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .jh-icon {
+    width: 36px;
+    height: 36px;
+    background: #dc2626;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 18px;
+  }
+  .jh-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #f8fafc;
+    line-height: 1.2;
+  }
+  .jh-subtitle {
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 3px;
+    line-height: 1.4;
+  }
+
+  /* ── Search bar ── */
+  .jh-search {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+  .jh-input {
+    flex: 1;
+    height: 40px;
+    background: #1e293b;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 8px;
+    color: #f1f5f9;
+    font-size: 14px;
+    padding: 0 14px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .jh-input::placeholder { color: #475569; }
+  .jh-input:focus { border-color: #dc2626; }
+
+  /* ── Category label ── */
+  .jh-category-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #64748b;
+    margin-bottom: 10px;
+  }
+
+  /* ── Checkbox grid — 2 columns, tight ── */
+  .jh-checkboxes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 16px;
+    margin-bottom: 20px;
+  }
+
+  .jh-checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 5px 0;
+    user-select: none;
+  }
+  .jh-checkbox-item input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid #475569;
+    border-radius: 4px;
+    background: #1e293b;
+    flex-shrink: 0;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.12s;
+  }
+  .jh-checkbox-item input[type="checkbox"]:checked {
+    background: #dc2626;
+    border-color: #dc2626;
+  }
+  .jh-checkbox-item input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 1px;
+    width: 5px;
+    height: 9px;
+    border: 2px solid white;
+    border-top: none;
+    border-left: none;
+    transform: rotate(45deg);
+  }
+  .jh-checkbox-item label {
+    font-size: 13px;
+    color: #cbd5e1;
+    cursor: pointer;
+    line-height: 1.3;
+  }
+
+  /* ── Select all row ── */
+  .jh-select-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .jh-link-btn {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    font-size: 12px;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 0;
+    font-family: inherit;
+  }
+  .jh-link-btn:hover { color: #e2e8f0; }
+
+  /* ── Find Help button ── */
+  .jh-btn {
+    width: 100%;
+    height: 44px;
+    background: #dc2626;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.15s;
+    font-family: inherit;
+  }
+  .jh-btn:hover { background: #b91c1c; }
+  .jh-btn:active { transform: scale(0.99); }
+  .jh-btn svg { width: 16px; height: 16px; }
+
+  /* ── Footer ── */
+  .jh-footer {
+    margin-top: 14px;
+    font-size: 11px;
+    color: #475569;
+    text-align: center;
+    line-height: 1.5;
+  }
+  .jh-footer a { color: #64748b; text-decoration: none; }
+  .jh-footer a:hover { color: #94a3b8; }
+
+  /* ── Validation ── */
+  .jh-error {
+    font-size: 12px;
+    color: #f87171;
+    margin-top: -12px;
+    margin-bottom: 12px;
+    display: none;
+  }
+  .jh-error.visible { display: block; }
+</style>
+</head>
+<body style="background: transparent; padding: 16px;">
+
+<div class="jh-widget" role="search" aria-label="Find community help resources">
+
+  <div class="jh-header">
+    <div class="jh-icon" aria-hidden="true">🤝</div>
+    <div>
+      <div class="jh-title">Find Help in Your Community</div>
+      <div class="jh-subtitle">Free resources near you — food, shelter, healthcare, and more</div>
+    </div>
+  </div>
+
+  <!-- Location input -->
+  <div class="jh-search">
+    <input
+      class="jh-input"
+      id="jh-location"
+      type="text"
+      placeholder="Enter zip code or city name"
+      aria-label="Your zip code or city"
+      maxlength="60"
+      autocomplete="postal-code"
+    />
+  </div>
+  <div class="jh-error" id="jh-error">Please enter a zip code or city name to search.</div>
+
+  <!-- Service checkboxes -->
+  <div class="jh-category-label">What do you need?</div>
+
+  <div class="jh-select-row">
+    <button class="jh-link-btn" onclick="setAll(true)" type="button">Select all</button>
+    <button class="jh-link-btn" onclick="setAll(false)" type="button">Clear all</button>
+  </div>
+
+  <div class="jh-checkboxes" id="jh-checkboxes">
+    <!-- Generated by JS below for maintainability -->
+  </div>
+
+  <button class="jh-btn" onclick="findHelp()" type="button" id="jh-find-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+    </svg>
+    Find Help Near Me
+  </button>
+
+  <div class="jh-footer">
+    Powered by <a href="https://justhelp.up.railway.app" target="_blank" rel="noopener">Just Help</a>
+    — a free service from <a href="https://altruisticapps.com" target="_blank" rel="noopener">Altruistic Apps</a>.
+    No accounts. No ads. No data collected.
+  </div>
+
+</div>
+
+<script>
+  // ── Service categories — matches Just Help's internal service keys ──
+  const SERVICES = [
+    { id: 'food',          label: 'Food Pantries'           },
+    { id: 'shelter',       label: 'Shelter'                 },
+    { id: 'domestic_violence', label: 'DV Safe Housing'    },
+    { id: 'clothing',      label: 'Clothing'                },
+    { id: 'rent_assistance', label: 'Rent Assistance'       },
+    { id: 'utility',       label: 'Utility Assistance'      },
+    { id: 'healthcare',    label: 'Free Clinics'            },
+    { id: 'dental',        label: 'Free/Low-Cost Dental'   },
+    { id: 'holiday_meals', label: 'Holiday Meals'           },
+    { id: 'holiday_gifts', label: 'Holiday Gifts (Kids)'   },
+    { id: 'school_supplies', label: 'School Supplies'       },
+  ];
+
+  // ── Base URL for Just Help map ──
+  // Update this when Just Help gets its own domain
+  const JUST_HELP_MAP_URL = 'https://justhelp.up.railway.app/map';
+
+  // ── Render checkboxes ──
+  const container = document.getElementById('jh-checkboxes');
+  SERVICES.forEach(svc => {
+    const item = document.createElement('label');
+    item.className = 'jh-checkbox-item';
+    item.innerHTML = `
+      <input type="checkbox" id="jh-${svc.id}" name="service" value="${svc.id}" checked>
+      <span>${svc.label}</span>
+    `;
+    container.appendChild(item);
+  });
+
+  // ── Select / clear all ──
+  function setAll(checked) {
+    document.querySelectorAll('#jh-checkboxes input[type="checkbox"]')
+      .forEach(cb => cb.checked = checked);
+  }
+
+  // ── Find Help — build URL and open Just Help map in new tab ──
+  function findHelp() {
+    const location = document.getElementById('jh-location').value.trim();
+    const error = document.getElementById('jh-error');
+
+    if (!location) {
+      error.classList.add('visible');
+      document.getElementById('jh-location').focus();
+      return;
+    }
+    error.classList.remove('visible');
+
+    // Collect checked services
+    const selected = Array.from(
+      document.querySelectorAll('#jh-checkboxes input[type="checkbox"]:checked')
+    ).map(cb => cb.value);
+
+    // Build deep-link URL
+    // Just Help map page reads these params on load and auto-runs the search
+    const params = new URLSearchParams();
+    params.set('location', location);
+    if (selected.length > 0 && selected.length < SERVICES.length) {
+      // Only pass services param if it's not "all" — Just Help defaults to all
+      params.set('services', selected.join(','));
+    }
+
+    const url = `${JUST_HELP_MAP_URL}?${params.toString()}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }
+
+  // ── Allow Enter key in location input ──
+  document.getElementById('jh-location').addEventListener('keydown', e => {
+    if (e.key === 'Enter') findHelp();
+  });
+
+  // ── Clear error on input ──
+  document.getElementById('jh-location').addEventListener('input', () => {
+    document.getElementById('jh-error').classList.remove('visible');
+  });
+</script>
+
+</body>
+</html>
