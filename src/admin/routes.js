@@ -318,22 +318,79 @@ router.get('/feeds', async (req, res) => {
 // ─────────────────────────────────────────────────
 
 // GET /api/admin/datasets — status of all bulk datasets
-router.get('/datasets', (req, res) => {
+router.get('/datasets', async (req, res) => {
+  const db = req.db;
   const { BULK_SOURCES } = require('../jobs/ingest');
 
-  const datasets = Object.entries(BULK_SOURCES).map(([key, source]) => ({
-    key,
-    name: source.name,
-    description: source.description,
-    status: source.status,
-    envFlag: source.envFlag,
-    loaded: process.env[source.envFlag] === 'true',
-    targetTable: source.targetTable,
-    hidden: source.hidden || false,
-    downloadInstructions: source.downloadInstructions,
-  }));
+  // Query actual DB counts for each target table
+  const tableCounts = {};
+  const tableQueries = [
+    { table: 'historical_election_results', key: 'historical_election_results' },
+    { table: 'district_partisan_lean',      key: 'district_partisan_lean' },
+    { table: 'precinct_results_2024',       key: 'precinct_results_2024' },
+    { table: 'pew_survey_responses',        key: 'pew_survey_responses' },
+    { table: 'gss_survey_responses',        key: 'gss_survey_responses' },
+    { table: 'anes_survey_responses',       key: 'anes_survey_responses' },
+    { table: 'voting_records',              key: 'voting_records' },
+    { table: 'legislators',                 key: 'legislators' },
+    { table: 'house_expenditures',          key: 'house_expenditures' },
+  ];
 
-  res.json({ datasets });
+  for (const { table, key } of tableQueries) {
+    try {
+      const result = await db.query(
+        `SELECT COUNT(*) as count FROM ${table}`
+      );
+      tableCounts[key] = parseInt(result.rows[0].count);
+    } catch (e) {
+      tableCounts[key] = null; // Table doesn't exist yet
+    }
+  }
+
+  // Map target tables to loaded status based on actual row counts
+  const tableToLoaded = (targetTable) => {
+    const count = tableCounts[targetTable];
+    return {
+      loaded: count !== null && count > 0,
+      rowCount: count,
+    };
+  };
+
+  const datasets = Object.entries(BULK_SOURCES)
+    .filter(([_, source]) => !source.hidden && source.status !== 'unavailable')
+    .map(([key, source]) => {
+      const { loaded, rowCount } = tableToLoaded(source.targetTable);
+      return {
+        key,
+        name: source.name,
+        description: source.description,
+        status: loaded ? 'loaded' : source.status,
+        loaded,
+        rowCount,
+        targetTable: source.targetTable,
+        hidden: source.hidden || false,
+        downloadInstructions: source.downloadInstructions,
+      };
+    });
+
+  // Also check uploaded files on disk
+  const path = require('path');
+  const fs = require('fs');
+  const DATA_DIR = path.join(process.cwd(), 'data', 'raw');
+
+  for (const dataset of datasets) {
+    const dir = path.join(DATA_DIR, dataset.key);
+    if (fs.existsSync(dir)) {
+      const files = fs.readdirSync(dir).filter(f => !f.startsWith('.'));
+      dataset.uploadedFiles = files.length;
+      dataset.uploadedFileNames = files;
+    } else {
+      dataset.uploadedFiles = 0;
+      dataset.uploadedFileNames = [];
+    }
+  }
+
+  res.json({ datasets, tableCounts });
 });
 
 // POST /api/admin/datasets/:source/ingest — trigger ingestion of a dataset

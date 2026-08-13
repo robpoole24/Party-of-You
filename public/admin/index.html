@@ -297,7 +297,7 @@ body { font-family: var(--body); background: var(--navy-d); color: var(--text); 
     </a>
     <div class="sidebar-footer">
       <div style="font-size:10px;color:rgba(255,255,255,0.2);margin-bottom:8px;text-align:center;letter-spacing:0.08em">
-        Admin v1.0.6
+        Admin v1.0.7
       </div>
       <button class="logout-btn" onclick="logout()">Sign Out</button>
     </div>
@@ -522,7 +522,7 @@ body { font-family: var(--body); background: var(--navy-d); color: var(--text); 
 
 <script>
 // ── VERSION ──────────────────────────────────────────────────────
-const POY_ADMIN_VERSION = '1.0.6';
+const POY_ADMIN_VERSION = '1.0.7';
 console.log(
   `%c Party of You — Admin Dashboard %c v${POY_ADMIN_VERSION} %c`,
   'background:#1a2d5a;color:#fff;padding:4px 8px;border-radius:4px 0 0 4px;font-weight:700',
@@ -752,50 +752,74 @@ async function loadDatasets() {
   const data = await api('/datasets');
   if (!data) return;
 
-  // Filter out hidden/unavailable sources
   const visible = data.datasets.filter(d => d.status !== 'unavailable' && !d.hidden);
 
-  document.getElementById('datasets-list').innerHTML = visible.map(d => `
+  document.getElementById('datasets-list').innerHTML = visible.map(d => {
+    const statusBadge = d.loaded
+      ? `<span class="badge badge-ok">✓ ${d.rowCount?.toLocaleString()} rows in DB</span>`
+      : `<span class="badge badge-pending">Not in DB</span>`;
+
+    const filesBadge = d.uploadedFiles > 0
+      ? `<span class="badge" style="background:rgba(43,127,193,0.15);color:#60a5fa;border:1px solid rgba(43,127,193,0.3)">${d.uploadedFiles} file${d.uploadedFiles !== 1 ? 's' : ''} on server</span>`
+      : '';
+
+    return `
     <div class="dataset-row" id="ds-row-${d.key}">
       <div class="dataset-info">
         <div class="dataset-name">${d.name}</div>
         <div class="dataset-desc">${d.description}</div>
-        <div id="ds-files-${d.key}" style="margin-top:8px;font-size:11px;color:var(--muted)">
-          <button class="btn-sm secondary" style="font-size:10px;padding:3px 8px" onclick="loadDatasetFiles('${d.key}')">Show files</button>
+        <div style="margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          ${statusBadge}
+          ${filesBadge}
+          ${d.uploadedFiles > 0
+            ? `<button class="btn-sm secondary" style="font-size:10px;padding:3px 8px" onclick="toggleFiles('${d.key}')">Show files ▾</button>`
+            : ''
+          }
         </div>
+        <div id="ds-files-${d.key}" style="display:none;margin-top:8px"></div>
       </div>
       <div class="dataset-actions">
-        <span class="badge ${d.loaded ? 'badge-ok' : d.status === 'pending-approval' ? 'badge-pending' : 'badge-pending'}">
-          ${d.loaded ? '✓ Loaded' : d.status === 'pending-approval' ? 'Awaiting Approval' : 'Not Loaded'}
-        </span>
         <label class="btn-sm secondary" style="cursor:pointer;position:relative">
           Upload
           <input type="file" multiple accept=".csv,.sav,.tsv,.txt,.json,.zip,.xlsx,.xls"
             style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%"
             onchange="uploadFiles('${d.key}', this)">
         </label>
-        <button class="btn-sm primary" onclick="triggerIngest('${d.key}')">Ingest</button>
+        ${d.uploadedFiles > 0
+          ? `<button class="btn-sm primary" onclick="triggerIngest('${d.key}')">Ingest</button>`
+          : `<button class="btn-sm secondary" style="opacity:0.4;cursor:not-allowed" title="Upload files first">Ingest</button>`
+        }
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
-async function loadDatasetFiles(source) {
+function toggleFiles(source) {
   const el = document.getElementById(`ds-files-${source}`);
-  el.innerHTML = '<span style="color:var(--muted)">Loading...</span>';
+  if (el.style.display === 'none') {
+    el.style.display = 'block';
+    loadDatasetFiles(source, el);
+  } else {
+    el.style.display = 'none';
+  }
+}
+
+async function loadDatasetFiles(source, el) {
+  if (!el) el = document.getElementById(`ds-files-${source}`);
+  el.innerHTML = '<span style="color:var(--muted);font-size:11px">Loading...</span>';
 
   const res = await fetch(`/api/admin/upload/${source}`);
   const data = await res.json();
 
   if (!data.files?.length) {
-    el.innerHTML = '<span style="color:var(--muted)">No files uploaded yet.</span>';
+    el.innerHTML = '<span style="color:var(--muted);font-size:11px">No files on server.</span>';
     return;
   }
 
   el.innerHTML = `
-    <div style="margin-top:6px;background:rgba(255,255,255,0.03);border-radius:6px;padding:10px;border:1px solid var(--border)">
+    <div style="background:rgba(255,255,255,0.03);border-radius:6px;padding:10px;border:1px solid var(--border)">
       <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">
-        ${data.fileCount} file(s) · ${data.totalSize}
+        ${data.fileCount} file(s) · ${data.totalSize} total
       </div>
       ${data.files.map(f => `
         <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04)">
@@ -807,8 +831,7 @@ async function loadDatasetFiles(source) {
           </div>
         </div>
       `).join('')}
-    </div>
-  `;
+    </div>`;
 }
 
 async function uploadFiles(source, input) {
@@ -825,14 +848,13 @@ async function uploadFiles(source, input) {
     const res = await fetch(`/api/admin/upload/${source}`, {
       method: 'POST',
       body: formData,
-      // No Content-Type header — browser sets it with boundary for multipart
     });
     const data = await res.json();
 
     if (data.success) {
       btn.childNodes[0].textContent = `✓ ${data.fileCount} uploaded`;
       setTimeout(() => { btn.childNodes[0].textContent = originalText; }, 3000);
-      loadDatasetFiles(source);
+      loadDatasets(); // Refresh whole list to show updated file count
     } else {
       alert(data.error || 'Upload failed.');
       btn.childNodes[0].textContent = originalText;
@@ -841,8 +863,6 @@ async function uploadFiles(source, input) {
     alert('Upload failed: ' + e.message);
     btn.childNodes[0].textContent = originalText;
   }
-
-  // Reset input so same file can be re-uploaded if needed
   input.value = '';
 }
 
@@ -852,19 +872,19 @@ async function deleteFile(source, filename) {
     method: 'DELETE',
   });
   const data = await res.json();
-  if (data.success) loadDatasetFiles(source);
+  if (data.success) loadDatasets();
 }
 
 async function triggerIngest(source) {
-  if (!confirm(`Trigger ingestion for ${source}?\n\nMake sure files are uploaded first.`)) return;
+  if (!confirm(`Trigger ingestion for ${source}?\n\nThis may take several minutes for large files.`)) return;
   const btn = event.target;
   btn.textContent = 'Running...';
   btn.disabled = true;
   const data = await api('/datasets/' + source + '/ingest', { method: 'POST' });
   btn.textContent = 'Ingest';
   btn.disabled = false;
-  if (data) alert(data.message);
-  loadDatasets();
+  if (data) alert(data.message + '\n\nRefresh the page in a minute to see updated row counts.');
+  setTimeout(loadDatasets, 3000); // Refresh after 3s
 }
 
 
