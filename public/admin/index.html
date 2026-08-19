@@ -297,7 +297,7 @@ body { font-family: var(--body); background: var(--navy-d); color: var(--text); 
     </a>
     <div class="sidebar-footer">
       <div style="font-size:10px;color:rgba(255,255,255,0.2);margin-bottom:8px;text-align:center;letter-spacing:0.08em">
-        Admin v1.0.7
+        Admin v1.0.8
       </div>
       <button class="logout-btn" onclick="logout()">Sign Out</button>
     </div>
@@ -522,7 +522,7 @@ body { font-family: var(--body); background: var(--navy-d); color: var(--text); 
 
 <script>
 // ── VERSION ──────────────────────────────────────────────────────
-const POY_ADMIN_VERSION = '1.0.7';
+const POY_ADMIN_VERSION = '1.0.8';
 console.log(
   `%c Party of You — Admin Dashboard %c v${POY_ADMIN_VERSION} %c`,
   'background:#1a2d5a;color:#fff;padding:4px 8px;border-radius:4px 0 0 4px;font-weight:700',
@@ -771,10 +771,7 @@ async function loadDatasets() {
         <div style="margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           ${statusBadge}
           ${filesBadge}
-          ${d.uploadedFiles > 0
-            ? `<button class="btn-sm secondary" style="font-size:10px;padding:3px 8px" onclick="toggleFiles('${d.key}')">Show files ▾</button>`
-            : ''
-          }
+          <button class="btn-sm secondary" style="font-size:10px;padding:3px 8px" onclick="toggleFiles('${d.key}')">Show Files ▾</button>
         </div>
         <div id="ds-files-${d.key}" style="display:none;margin-top:8px"></div>
       </div>
@@ -808,29 +805,65 @@ async function loadDatasetFiles(source, el) {
   if (!el) el = document.getElementById(`ds-files-${source}`);
   el.innerHTML = '<span style="color:var(--muted);font-size:11px">Loading...</span>';
 
-  const res = await fetch(`/api/admin/upload/${source}`);
-  const data = await res.json();
+  // Try DB log first — persists across deploys
+  try {
+    const logRes = await fetch(`/api/admin/upload/${source}/log`);
+    const logData = await logRes.json();
 
-  if (!data.files?.length) {
-    el.innerHTML = '<span style="color:var(--muted);font-size:11px">No files on server.</span>';
+    if (logData.files?.length) {
+      const ingested = logData.files.filter(f => f.status === 'ingested');
+      const pending  = logData.files.filter(f => f.status === 'uploaded');
+      const failed   = logData.files.filter(f => f.status === 'failed');
+
+      el.innerHTML = `
+        <div style="background:rgba(255,255,255,0.03);border-radius:6px;padding:10px;border:1px solid var(--border)">
+          <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">
+            Upload History — ${logData.files.length} file(s)
+            ${ingested.length ? `<span style="color:var(--green);margin-left:8px">✓ ${ingested.length} ingested</span>` : ''}
+            ${pending.length  ? `<span style="color:var(--amber);margin-left:8px">⏳ ${pending.length} pending</span>` : ''}
+            ${failed.length   ? `<span style="color:#ff8fa3;margin-left:8px">✕ ${failed.length} failed</span>` : ''}
+          </div>
+          ${logData.files.map(f => `
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);gap:12px">
+              <div style="flex:1;min-width:0">
+                <div style="font-size:12px;color:var(--text)">${f.name}</div>
+                <div style="font-size:10px;color:var(--muted);margin-top:3px">
+                  ${f.sizeFormatted || ''}
+                  ${f.rowsInserted != null ? ` · ${Number(f.rowsInserted).toLocaleString()} rows inserted` : ''}
+                  ${f.ingestedAt ? ` · ingested ${new Date(f.ingestedAt).toLocaleDateString()}` : ''}
+                  ${f.uploadedAt ? ` · uploaded ${new Date(f.uploadedAt).toLocaleDateString()}` : ''}
+                </div>
+                ${f.error ? `<div style="font-size:10px;color:#ff8fa3;margin-top:2px">${f.error}</div>` : ''}
+              </div>
+              <span class="badge ${f.status === 'ingested' ? 'badge-ok' : f.status === 'failed' ? 'badge-error' : 'badge-pending'}" style="flex-shrink:0">
+                ${f.status === 'ingested' ? '✓ Ingested' : f.status === 'failed' ? '✕ Failed' : '⏳ Pending'}
+              </span>
+            </div>`).join('')}
+        </div>`;
+      return;
+    }
+  } catch (e) { /* fall through to filesystem */ }
+
+  // Fallback — check filesystem (may be empty after redeploy)
+  const fsRes = await fetch(`/api/admin/upload/${source}`);
+  const fsData = await fsRes.json();
+
+  if (!fsData.files?.length) {
+    el.innerHTML = '<span style="color:var(--muted);font-size:11px">No upload history. Files are logged after upload.</span>';
     return;
   }
 
   el.innerHTML = `
     <div style="background:rgba(255,255,255,0.03);border-radius:6px;padding:10px;border:1px solid var(--border)">
-      <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">
-        ${data.fileCount} file(s) · ${data.totalSize} total
-      </div>
-      ${data.files.map(f => `
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04)">
-          <span style="color:var(--text);font-size:12px">${f.name}</span>
+      <div style="font-size:10px;color:var(--muted);margin-bottom:8px">${fsData.fileCount} file(s) on server · ${fsData.totalSize}</div>
+      ${fsData.files.map(f => `
+        <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:12px">
+          <span style="color:var(--text)">${f.name}</span>
           <div style="display:flex;gap:8px;align-items:center">
-            <span style="color:var(--muted);font-size:11px">${f.sizeFormatted}</span>
-            <button class="btn-sm danger" style="padding:2px 8px;font-size:10px"
-              onclick="deleteFile('${source}','${f.name}')">✕</button>
+            <span style="color:var(--muted)">${f.sizeFormatted}</span>
+            <button class="btn-sm danger" style="padding:2px 8px;font-size:10px" onclick="deleteFile('${source}','${f.name}')">✕</button>
           </div>
-        </div>
-      `).join('')}
+        </div>`).join('')}
     </div>`;
 }
 

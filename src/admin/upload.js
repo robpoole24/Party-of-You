@@ -86,7 +86,42 @@ function createUploader(source) {
   });
 }
 
-// ── LIST FILES ────────────────────────────────────────────────
+// ── GET UPLOAD LOG ────────────────────────────────────────────
+// GET /api/admin/upload/:source/log — DB-persisted history of all uploads
+router.get('/:source/log', async (req, res) => {
+  const { source } = req.params;
+
+  if (!req.db) return res.json({ source, files: [] });
+
+  try {
+    const result = await req.db.query(`
+      SELECT filename, file_size, rows_inserted, rows_total,
+             status, error_message, uploaded_at, ingested_at
+      FROM dataset_upload_log
+      WHERE source = $1
+      ORDER BY uploaded_at DESC
+    `, [source]);
+
+    res.json({
+      source,
+      files: result.rows.map(r => ({
+        name: r.filename,
+        sizeFormatted: formatBytes(r.file_size || 0),
+        rowsInserted: r.rows_inserted,
+        rowsTotal: r.rows_total,
+        status: r.status,
+        error: r.error_message,
+        uploadedAt: r.uploaded_at,
+        ingestedAt: r.ingested_at,
+      })),
+    });
+  } catch (e) {
+    // Table doesn't exist yet
+    res.json({ source, files: [], note: 'Run schema update to enable upload logging.' });
+  }
+});
+
+// ── LIST FILES (filesystem) ────────────────────────────────────
 // GET /api/admin/upload/:source
 router.get('/:source', (req, res) => {
   const { source } = req.params;
@@ -154,8 +189,25 @@ router.post('/:source', (req, res) => {
       name: f.filename,
       originalName: f.originalname,
       size: formatBytes(f.size),
+      sizeBytes: f.size,
       path: `data/raw/${source}/${f.filename}`,
     }));
+
+    // Log uploads to DB if available
+    if (req.db) {
+      for (const f of req.files) {
+        try {
+          await req.db.query(`
+            INSERT INTO dataset_upload_log
+              (source, filename, file_size, status, uploaded_at)
+            VALUES ($1, $2, $3, 'uploaded', NOW())
+            ON CONFLICT DO NOTHING
+          `, [source, f.filename, f.size]);
+        } catch (e) {
+          // Table may not exist yet — non-fatal
+        }
+      }
+    }
 
     // Auto-trigger ingestion if requested
     const autoIngest = req.query.ingest === 'true';

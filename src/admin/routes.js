@@ -411,16 +411,42 @@ router.post('/datasets/:source/ingest', async (req, res) => {
   res.json({
     success: true,
     message: `Ingestion started for ${BULK_SOURCES[source].name}. Check server logs for progress.`,
-    note: 'Large datasets may take several minutes. The DATASET_*_LOADED flag will be set when complete.',
+    note: 'Large datasets may take several minutes. Row counts update when complete.',
   });
 
   // Actually kick off ingestion asynchronously
   setImmediate(async () => {
     try {
-      await ingestSource(source, req.db);
-      console.log(`[Admin] Dataset ingestion complete: ${source}`);
+      const result = await ingestSource(source, req.db);
+      console.log(`[Admin] Dataset ingestion complete: ${source}`, result);
+
+      // Update upload log with ingest results
+      if (req.db) {
+        try {
+          await req.db.query(`
+            UPDATE dataset_upload_log
+            SET status = 'ingested',
+                rows_inserted = $1,
+                rows_total = $2,
+                ingested_at = NOW()
+            WHERE source = $3
+              AND status = 'uploaded'
+          `, [result.inserted || 0, result.rows || 0, source]);
+        } catch (e) { /* non-fatal */ }
+      }
     } catch (err) {
       console.error(`[Admin] Dataset ingestion failed: ${source}`, err.message);
+
+      // Log failure
+      if (req.db) {
+        try {
+          await req.db.query(`
+            UPDATE dataset_upload_log
+            SET status = 'failed', error_message = $1
+            WHERE source = $2 AND status = 'uploaded'
+          `, [err.message, source]);
+        } catch (e) { /* non-fatal */ }
+      }
     }
   });
 });
