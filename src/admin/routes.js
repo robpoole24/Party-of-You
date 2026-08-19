@@ -360,6 +360,10 @@ router.get('/datasets', async (req, res) => {
     .filter(([_, source]) => !source.hidden && source.status !== 'unavailable')
     .map(([key, source]) => {
       const { loaded, rowCount } = tableToLoaded(source.targetTable);
+
+      // Debug — log each source's lookup result
+      console.log(`[datasets] ${key} → targetTable: ${source.targetTable} → count: ${rowCount} → loaded: ${loaded}`);
+
       return {
         key,
         name: source.name,
