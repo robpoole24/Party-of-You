@@ -13,7 +13,7 @@ const cookieParser = require('cookie-parser');
 const path = require('path');
 
 const { getApiStatus, getConnectedApis, getPendingApis } = require('./config/apis');
-const { requireAdmin, requireCandidate, adminLogin, candidateLogin, logout } = require('./middleware/auth');
+const { requireAdmin, requireCandidate, adminLogin, candidateLogin, logout, verifyToken } = require('./middleware/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -156,7 +156,6 @@ app.post('/api/auth/logout', logout);
 
 // Lightweight auth check — used by nav.js to show/hide dashboard link
 app.get('/api/auth/me', (req, res) => {
-  const { verifyToken } = require('./middleware/auth');
   const token = req.cookies?.poy_token;
   if (!token) return res.status(401).json({ authenticated: false });
   const payload = verifyToken(token);

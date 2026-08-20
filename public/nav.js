@@ -200,30 +200,28 @@
   }
 
   // ── CHECK AUTH STATUS ────────────────────────────────────────────
-  // Hits a lightweight endpoint to check if cookie is valid.
-  // Builds nav immediately (unauthenticated), then swaps CTA if logged in.
   function checkAuthAndUpdate() {
     fetch('/api/auth/me', { credentials: 'same-origin' })
-      .then(res => {
-        if (res.ok) return res.json();
-        return null;
-      })
+      .then(res => res.json())
       .then(data => {
-        if (data?.candidateId) {
-          // Swap the CTA links to dashboard
-          const desktopCta = document.querySelector('#poy-nav .poy-nav-cta');
-          const drawerCta = document.querySelector('#poy-nav-drawer .poy-nav-cta');
-          if (desktopCta) {
-            desktopCta.href = '/dashboard/';
-            desktopCta.innerHTML = '<span style="font-size:15px">⚡</span> My Dashboard';
-          }
-          if (drawerCta) {
-            drawerCta.href = '/dashboard/';
-            drawerCta.textContent = '⚡ My Dashboard';
-          }
+        if (data?.authenticated && data?.candidateId) {
+          swapToDashboard();
         }
       })
-      .catch(() => {}); // Fail silently — nav works either way
+      .catch(() => {});
+  }
+
+  function swapToDashboard() {
+    const desktopCta = document.querySelector('#poy-nav .poy-nav-cta');
+    const drawerCta = document.querySelector('#poy-nav-drawer .poy-nav-cta');
+    if (desktopCta) {
+      desktopCta.href = '/dashboard/';
+      desktopCta.innerHTML = '⚡ My Dashboard';
+    }
+    if (drawerCta) {
+      drawerCta.href = '/dashboard/';
+      drawerCta.textContent = '⚡ My Dashboard';
+    }
   }
 
   // ── INJECT ───────────────────────────────────────────────────────
