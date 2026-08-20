@@ -75,6 +75,10 @@
       height: 38px; width: auto;
       border-radius: 4px;
       display: block;
+      filter:
+        drop-shadow(0 0 1px white)
+        drop-shadow(0 0 2px white)
+        drop-shadow(0 0 3px white);
     }
 
     #poy-nav .poy-nav-links {
