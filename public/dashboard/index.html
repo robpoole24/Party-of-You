@@ -986,11 +986,52 @@ function renderCandidateInfo() {
   document.getElementById('sb-race').textContent = candidateData.office_sought || '—';
   document.getElementById('ws-slug').textContent = candidateData.subdomain || 'yourname';
 
-  // Days to election (placeholder — would come from race data)
   const electionDay = new Date('2026-11-03');
   const today = new Date();
   const days = Math.ceil((electionDay - today) / (1000 * 60 * 60 * 24));
   document.getElementById('ov-days').textContent = days > 0 ? days.toLocaleString() : 'Today!';
+
+  // Render key dates timeline
+  renderKeyDates();
+}
+
+function renderKeyDates() {
+  const el = document.getElementById('timeline-body');
+  if (!el) return;
+
+  const today = new Date();
+
+  // Base dates — will be enriched with race-specific data when available
+  const dates = [
+    { date: '2026-08-07', title: 'File Nomination Papers', desc: 'Submit candidacy paperwork to your local election office.', urgent: true },
+    { date: '2026-09-19', title: 'Absentee Request Opens', desc: 'First voter contact should land by this date to capture early voters.' },
+    { date: '2026-10-14', title: 'Community Events Window', desc: 'Identify and attend community events in your area in person.' },
+    { date: '2026-10-19', title: 'Voter Registration Deadline', desc: 'Last day voters can register in most states. Run registration drives.' },
+    { date: '2026-10-20', title: 'Absentee Ballot Deadline', desc: 'Last day to request an absentee ballot in most states.' },
+    { date: '2026-11-03', title: 'Election Day', desc: 'Get out the vote. Poll watchers, volunteer drivers, phone banks.' },
+  ];
+
+  el.innerHTML = dates.map(d => {
+    const date = new Date(d.date);
+    const isPast = date < today;
+    const isUrgent = !isPast && d.urgent;
+    const daysAway = Math.ceil((date - today) / (1000*60*60*24));
+
+    return `
+      <div class="timeline-item">
+        <div class="timeline-dot ${isPast ? 'done' : isUrgent ? 'urgent' : 'upcoming'}">
+          ${isPast ? '✓' : isUrgent ? '!' : '○'}
+        </div>
+        <div style="flex:1">
+          <div class="timeline-date">
+            ${date.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}
+            ${!isPast ? `<span style="color:${daysAway < 30 ? 'var(--red)' : 'var(--muted)'}"> · ${daysAway}d away</span>` : ''}
+          </div>
+          <div class="timeline-title">${d.title}</div>
+          <div class="timeline-desc">${d.desc}</div>
+        </div>
+      </div>`;
+  }).join('');
 }
 
 // ── RENDER VICTORY BANNER ─────────────────────────────────────
@@ -1041,12 +1082,12 @@ function renderVictoryBanner(raceData) {
 function renderIntelligence() {
   if (!intelligenceData) return;
 
-  const { demographics, polling, districtLean } = intelligenceData;
+  const { demographics, polling, districtLean, incumbent } = intelligenceData;
 
   // Lean meter
   if (districtLean) {
-    const lean = districtLean.lean_index || 0;
-    const pct = 50 + (lean / 2); // Convert -100/+100 to 0-100%
+    const lean = parseFloat(districtLean.lean_index) || 0;
+    const pct = 50 + (lean / 2);
     const clampedPct = Math.max(5, Math.min(95, pct));
 
     ['lean-needle', 'lean-needle-2'].forEach(id => {
@@ -1059,28 +1100,102 @@ function renderIntelligence() {
       leanEl.textContent = (lean > 0 ? 'D+' : 'R+') + Math.abs(lean).toFixed(1);
       leanEl.style.color = lean > 0 ? 'var(--navy)' : 'var(--red)';
     }
-    document.getElementById('lean-desc').textContent = districtLean.lean_label || '';
-    document.getElementById('hist-label').textContent = districtLean.lean_label || '';
-    document.getElementById('lean-center-label').textContent =
-      (lean > 0 ? 'D+' : 'R+') + Math.abs(lean).toFixed(1) + ' — ' + (districtLean.lean_label || '');
+    const leanDesc = document.getElementById('lean-desc');
+    if (leanDesc) leanDesc.textContent = districtLean.lean_label + ' — ' + districtLean.office + ' District ' + districtLean.district;
+    const histLabel = document.getElementById('hist-label');
+    if (histLabel) histLabel.textContent = districtLean.lean_label;
+    const centerLabel = document.getElementById('lean-center-label');
+    if (centerLabel) centerLabel.textContent = (lean > 0 ? 'D+' : 'R+') + Math.abs(lean).toFixed(1);
+    const vicLean = document.getElementById('vic-lean');
+    if (vicLean) vicLean.textContent = districtLean.lean_label;
   }
 
   // Demographics
-  if (demographics) {
+  if (demographics && !demographics.error) {
     const dist = demographics.districts?.congressional ||
                  demographics.districts?.stateLeg?.stateHouse ||
                  demographics.districts?.state;
-
     if (dist) {
       renderDemoGrid(dist);
       renderVoterStats(dist);
     }
   }
 
+  // Incumbent profile
+  renderIncumbent(incumbent);
+
   // Polling — top issues
-  if (polling?.data) {
-    renderIssues(polling.data);
+  if (polling?.data || polling?.approvalPolls) {
+    renderIssues(polling);
   }
+
+  // Victory banner
+  renderVictoryBannerFromData();
+}
+
+function renderIncumbent(races) {
+  const el = document.getElementById('incumbent-body');
+  if (!el) return;
+
+  if (!races || !races.length) {
+    el.innerHTML = `<p style="color:var(--muted);font-size:13px">No incumbent data available. This may be an open seat or a race we don't yet have data for.</p>`;
+    return;
+  }
+
+  el.innerHTML = races.map(r => `
+    <div style="padding:14px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">
+        <div>
+          <div style="font-family:var(--cond);font-size:18px;font-weight:800;text-transform:uppercase;color:var(--navy)">
+            ${r.office}
+          </div>
+          <div style="font-size:14px;color:var(--muted);margin-top:4px">
+            ${r.incumbent_name
+              ? `Incumbent: <strong style="color:var(--text)">${r.incumbent_name}</strong> (${r.incumbent_party || 'Unknown party'})`
+              : r.is_open_seat ? '✓ Open Seat — No incumbent' : 'Incumbent data not available'}
+          </div>
+        </div>
+        <div style="text-align:right">
+          ${r.is_open_seat ? `<span class="badge badge-green">Open Seat</span>` : ''}
+          ${r.incumbent_retiring ? `<span class="badge badge-blue">Retiring</span>` : ''}
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">
+        ${r.election_date ? `<div style="background:var(--gray);border-radius:6px;padding:10px"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em">Election Day</div><div style="font-size:14px;font-weight:600;color:var(--text);margin-top:3px">${new Date(r.election_date).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}</div></div>` : ''}
+        ${r.filing_deadline ? `<div style="background:var(--gray);border-radius:6px;padding:10px"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em">Filing Deadline</div><div style="font-size:14px;font-weight:600;color:var(--red);margin-top:3px">${new Date(r.filing_deadline).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}</div></div>` : ''}
+      </div>
+    </div>`).join('');
+}
+
+function renderVictoryBannerFromData() {
+  if (!intelligenceData) return;
+  const { districtLean, demographics, incumbent } = intelligenceData;
+
+  const race = incumbent?.[0];
+  if (race) {
+    document.getElementById('vic-race').textContent = race.office || 'Your Race';
+  }
+
+  const dist = demographics?.districts?.congressional ||
+               demographics?.districts?.stateLeg?.stateHouse;
+
+  let registeredVoters = dist?.population?.total
+    ? Math.round(dist.population.total * 0.72) : 50000;
+  let projectedTurnout = Math.round(registeredVoters * 0.38);
+
+  const leanIndex = parseFloat(districtLean?.lean_index) || 0;
+  const isOpenSeat = race?.is_open_seat;
+  const incumbentAdv = isOpenSeat ? 0 : 5;
+  const thresholdPct = 0.5 + ((-leanIndex - incumbentAdv) / 200);
+  const votesNeeded = Math.max(
+    Math.ceil(projectedTurnout * Math.max(thresholdPct, 0.45)),
+    Math.ceil(projectedTurnout * 0.35)
+  );
+
+  document.getElementById('vic-votes').textContent = votesNeeded.toLocaleString();
+  document.getElementById('vic-reg').textContent = (registeredVoters / 1000).toFixed(0) + 'k';
+  document.getElementById('vic-turnout').textContent = (projectedTurnout / 1000).toFixed(0) + 'k';
+  document.getElementById('vic-sub').textContent = 'Based on historical turnout from ' + (districtLean?.latest_year || 'recent elections');
 }
 
 function renderDemoGrid(dist) {
