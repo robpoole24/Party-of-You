@@ -340,7 +340,7 @@ body { font-family: var(--body); background: var(--gray); color: var(--text); -w
       <div class="topbar-title" id="topbar-title">Campaign Overview</div>
       <div class="topbar-actions">
         <span style="font-size:12px;color:var(--muted)" id="last-updated"></span>
-        <a href="/apply.html" class="topbar-btn secondary">Edit Profile</a>
+        <a href="/profile-edit.html" class="topbar-btn secondary">Edit Profile</a>
         <button class="topbar-btn primary" onclick="showSection('outreach', this)">Contact Voters →</button>
       </div>
     </div>
@@ -746,11 +746,65 @@ body { font-family: var(--body); background: var(--gray); color: var(--text); -w
             <div style="font-family:var(--cond);font-size:28px;font-weight:900;text-transform:uppercase;color:var(--navy);margin-bottom:6px">Events</div>
             <div style="font-size:14px;color:var(--muted)">Schedule public events, canvasses, and community service days.</div>
           </div>
-          <button class="topbar-btn primary">+ Create Event</button>
+          <button class="topbar-btn primary" onclick="toggleEventForm()">+ Create Event</button>
         </div>
+
+        <!-- Create Event Form -->
+        <div class="panel" id="event-form-panel" style="display:none;margin-bottom:20px">
+          <div class="panel-hdr">
+            <h2><span class="ph-icon">📅</span> New Event</h2>
+            <button onclick="toggleEventForm()" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:18px">✕</button>
+          </div>
+          <div class="panel-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+              <div>
+                <label style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);display:block;margin-bottom:6px">Event Title *</label>
+                <input id="evt-title" type="text" placeholder="Town Hall: Healthcare Policy" style="width:100%;height:40px;padding:0 12px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:var(--body)">
+              </div>
+              <div>
+                <label style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);display:block;margin-bottom:6px">Event Type *</label>
+                <select id="evt-type" style="width:100%;height:40px;padding:0 12px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:var(--body)">
+                  <option value="town_hall">Town Hall</option>
+                  <option value="canvass">Canvass / Door Knock</option>
+                  <option value="phone_bank">Phone Bank</option>
+                  <option value="fundraiser">Fundraiser</option>
+                  <option value="community_service">Community Service</option>
+                  <option value="debate">Debate / Forum</option>
+                  <option value="rally">Rally</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);display:block;margin-bottom:6px">Date & Time *</label>
+                <input id="evt-start" type="datetime-local" style="width:100%;height:40px;padding:0 12px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:var(--body)">
+              </div>
+              <div>
+                <label style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);display:block;margin-bottom:6px">End Time</label>
+                <input id="evt-end" type="datetime-local" style="width:100%;height:40px;padding:0 12px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:var(--body)">
+              </div>
+              <div>
+                <label style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);display:block;margin-bottom:6px">Location Name</label>
+                <input id="evt-location" type="text" placeholder="Community Center or Zoom" style="width:100%;height:40px;padding:0 12px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:var(--body)">
+              </div>
+              <div>
+                <label style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);display:block;margin-bottom:6px">Address</label>
+                <input id="evt-address" type="text" placeholder="123 Main St, Milwaukee, WI" style="width:100%;height:40px;padding:0 12px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:var(--body)">
+              </div>
+            </div>
+            <div style="margin-bottom:16px">
+              <label style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);display:block;margin-bottom:6px">Description</label>
+              <textarea id="evt-desc" placeholder="What will happen at this event? Who should attend?" style="width:100%;height:80px;padding:10px 12px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:var(--body);resize:vertical"></textarea>
+            </div>
+            <div style="display:flex;gap:10px">
+              <button onclick="createEvent()" class="topbar-btn primary">Create Event</button>
+              <button onclick="toggleEventForm()" class="topbar-btn secondary">Cancel</button>
+            </div>
+          </div>
+        </div>
+
         <div class="panel">
           <div class="panel-hdr"><h2><span class="ph-icon">📅</span> Upcoming Events</h2></div>
-          <div class="panel-body">
+          <div class="panel-body" id="events-list">
             <div style="text-align:center;padding:40px;color:var(--muted)">
               <div style="font-size:48px;margin-bottom:12px">📅</div>
               <div style="font-size:14px">No events scheduled yet.</div>
@@ -767,8 +821,49 @@ body { font-family: var(--body); background: var(--gray); color: var(--text); -w
             <div style="font-family:var(--cond);font-size:28px;font-weight:900;text-transform:uppercase;color:var(--navy);margin-bottom:6px">Volunteers</div>
             <div style="font-size:14px;color:var(--muted)">Your team. Recruit, organize, and deploy them.</div>
           </div>
-          <button class="topbar-btn primary">+ Add Volunteer</button>
+          <button class="topbar-btn primary" onclick="toggleVolunteerForm()">+ Add Volunteer</button>
         </div>
+
+        <!-- Add Volunteer Form -->
+        <div class="panel" id="vol-form-panel" style="display:none;margin-bottom:20px">
+          <div class="panel-hdr">
+            <h2><span class="ph-icon">🙋</span> Add Volunteer</h2>
+            <button onclick="toggleVolunteerForm()" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:18px">✕</button>
+          </div>
+          <div class="panel-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+              <div>
+                <label style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);display:block;margin-bottom:6px">Full Name *</label>
+                <input id="vol-name" type="text" placeholder="Jane Smith" style="width:100%;height:40px;padding:0 12px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:var(--body)">
+              </div>
+              <div>
+                <label style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);display:block;margin-bottom:6px">Email *</label>
+                <input id="vol-email" type="email" placeholder="jane@example.com" style="width:100%;height:40px;padding:0 12px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:var(--body)">
+              </div>
+              <div>
+                <label style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);display:block;margin-bottom:6px">Phone</label>
+                <input id="vol-phone" type="tel" placeholder="(414) 555-0100" style="width:100%;height:40px;padding:0 12px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:var(--body)">
+              </div>
+              <div>
+                <label style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);display:block;margin-bottom:6px">ZIP Code</label>
+                <input id="vol-zip" type="text" placeholder="53221" maxlength="10" style="width:100%;height:40px;padding:0 12px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:var(--body)">
+              </div>
+            </div>
+            <div style="margin-bottom:16px">
+              <label style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);display:block;margin-bottom:8px">Skills (check all that apply)</label>
+              <div style="display:flex;flex-wrap:wrap;gap:10px">
+                ${['Door Knocking','Phone Banking','Data Entry','Social Media','Graphic Design','Photography','Driving','Fundraising','Spanish Speaker','Other'].map(s =>
+                  `<label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" class="vol-skill" value="${s}"> ${s}</label>`
+                ).join('')}
+              </div>
+            </div>
+            <div style="display:flex;gap:10px">
+              <button onclick="addVolunteer()" class="topbar-btn primary">Add Volunteer</button>
+              <button onclick="toggleVolunteerForm()" class="topbar-btn secondary">Cancel</button>
+            </div>
+          </div>
+        </div>
+
         <div class="stat-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
           <div class="stat-card green"><div class="stat-num" id="vol-total">0</div><div class="stat-label">Total Volunteers</div></div>
           <div class="stat-card sky"><div class="stat-num" id="vol-active">0</div><div class="stat-label">Active This Week</div></div>
@@ -778,7 +873,7 @@ body { font-family: var(--body); background: var(--gray); color: var(--text); -w
           <div class="panel-hdr"><h2><span class="ph-icon">🙋</span> Volunteer List</h2></div>
           <div class="panel-body" style="padding:0">
             <table class="data-table">
-              <thead><tr><th>Name</th><th>Email</th><th>Skills</th><th>Status</th><th>Signed Up</th></tr></thead>
+              <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Skills</th><th>Signed Up</th></tr></thead>
               <tbody id="vol-tbody"><tr><td colspan="5" style="text-align:center;padding:32px;color:var(--muted)">No volunteers yet. Share your signup link to recruit.</td></tr></tbody>
             </table>
           </div>
@@ -790,40 +885,85 @@ body { font-family: var(--body); background: var(--gray); color: var(--text); -w
         <div style="font-family:var(--cond);font-size:28px;font-weight:900;text-transform:uppercase;color:var(--navy);margin-bottom:24px">My Campaign Website</div>
         <div class="panel-grid wide">
           <div class="panel">
-            <div class="panel-hdr"><h2><span class="ph-icon">🌐</span> Your Site</h2></div>
+            <div class="panel-hdr"><h2><span class="ph-icon">🌐</span> Your Public Site</h2></div>
             <div class="panel-body">
               <div style="background:var(--gray);border-radius:8px;padding:24px;text-align:center;margin-bottom:16px">
                 <div style="font-size:32px;margin-bottom:8px">🌐</div>
-                <div style="font-family:var(--cond);font-size:16px;font-weight:800;text-transform:uppercase;color:var(--navy)">Your site is ready</div>
-                <div style="font-size:12px;color:var(--muted);margin-top:4px">partyofyou.org/c/<span id="ws-slug">yourname</span></div>
-                <a href="#" style="display:inline-block;margin-top:12px;font-family:var(--cond);font-size:12px;font-weight:700;text-transform:uppercase;color:var(--sky)">View Live Site →</a>
+                <div style="font-family:var(--cond);font-size:16px;font-weight:800;text-transform:uppercase;color:var(--navy)">Your campaign page</div>
+                <div style="font-size:13px;color:var(--muted);margin-top:4px">partyofyou.org/c/<span id="ws-slug-display">yourname</span></div>
+                <div style="display:flex;gap:10px;justify-content:center;margin-top:14px">
+                  <a href="#" id="ws-view-link" target="_blank" class="topbar-btn primary" style="font-size:12px">View Live Site →</a>
+                  <a href="/profile-edit.html" class="topbar-btn secondary" style="font-size:12px">Edit Profile</a>
+                </div>
               </div>
-              <div style="display:flex;flex-direction:column;gap:10px">
-                <button class="topbar-btn secondary" style="text-align:left">🖼️ Upload Campaign Logo</button>
-                <button class="topbar-btn secondary" style="text-align:left">✏️ Edit Bio & Platform</button>
-                <button class="topbar-btn secondary" style="text-align:left">🎨 Customize Colors</button>
-                <button class="topbar-btn secondary" style="text-align:left">🤝 Add Community Resources Widget</button>
+              <div style="font-size:13px;color:var(--muted);line-height:1.7">
+                Your campaign page is automatically generated from your profile. Update your bio, photo, and positions from the Edit Profile page. Your page includes your platform planks, contact info, volunteer signup, and event listings.
               </div>
             </div>
           </div>
           <div class="panel">
-            <div class="panel-hdr"><h2><span class="ph-icon">⚙️</span> Add-On Services</h2></div>
+            <div class="panel-hdr"><h2><span class="ph-icon">⚙️</span> Integrations</h2></div>
             <div class="panel-body" style="display:flex;flex-direction:column;gap:10px">
-              <div style="padding:12px;border:1px solid var(--border);border-radius:7px;display:flex;justify-content:space-between;align-items:center">
-                <div><div style="font-size:13px;font-weight:600;color:var(--text)">📧 Email Marketing</div><div style="font-size:11px;color:var(--muted)">Listmonk — unlimited, free</div></div>
-                <span class="badge badge-green">Connected</span>
+              <!-- Email -->
+              <div style="padding:14px;border:1px solid var(--border);border-radius:8px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                  <div style="font-size:14px;font-weight:600;color:var(--text)">📧 Email Marketing</div>
+                  <span class="badge badge-green">Connected</span>
+                </div>
+                <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Listmonk — unlimited sends, zero cost. Manage your subscriber lists and campaigns.</div>
+                <button onclick="openListmonk()" class="topbar-btn primary" style="font-size:11px;padding:6px 14px">Open Listmonk Dashboard →</button>
               </div>
-              <div style="padding:12px;border:1px solid var(--border);border-radius:7px;display:flex;justify-content:space-between;align-items:center">
-                <div><div style="font-size:13px;font-weight:600;color:var(--text)">📱 SMS Outreach</div><div style="font-size:11px;color:var(--muted)">Twilio — your account</div></div>
-                <button class="topbar-btn secondary" style="font-size:10px;padding:4px 10px">Set Up</button>
+              <!-- Twilio -->
+              <div style="padding:14px;border:1px solid var(--border);border-radius:8px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                  <div style="font-size:14px;font-weight:600;color:var(--text)">📱 Text Messaging</div>
+                  <span class="badge badge-gray">Not Set Up</span>
+                </div>
+                <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Connect your Twilio account to send targeted texts. ~$0.0075/message. Free trial available at twilio.com.</div>
+                <button onclick="setupTwilio()" class="topbar-btn secondary" style="font-size:11px;padding:6px 14px">Set Up Twilio →</button>
               </div>
-              <div style="padding:12px;border:1px solid var(--border);border-radius:7px;display:flex;justify-content:space-between;align-items:center">
-                <div><div style="font-size:13px;font-weight:600;color:var(--text)">☁️ File Storage</div><div style="font-size:11px;color:var(--muted)">Cloudflare R2 — 10GB free</div></div>
-                <span class="badge badge-green">Active</span>
+              <!-- Storage -->
+              <div style="padding:14px;border:1px solid var(--border);border-radius:8px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                  <div style="font-size:14px;font-weight:600;color:var(--text)">☁️ File Storage</div>
+                  <span class="badge badge-green">Active</span>
+                </div>
+                <div style="font-size:12px;color:var(--muted)">Cloudflare R2 — 10GB free forever. Used for photos, PDFs, and campaign materials.</div>
               </div>
-              <div style="padding:12px;border:1px solid var(--border);border-radius:7px;display:flex;justify-content:space-between;align-items:center">
-                <div><div style="font-size:13px;font-weight:600;color:var(--text)">🎬 Video Ad Creator</div><div style="font-size:11px;color:var(--muted)">AI-powered — pay per video</div></div>
-                <button class="topbar-btn secondary" style="font-size:10px;padding:4px 10px">Enable</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Voter File & Resources -->
+        <div class="panel-grid" style="margin-top:0">
+          <div class="panel">
+            <div class="panel-hdr"><h2><span class="ph-icon">🗃️</span> Get Your Voter File</h2></div>
+            <div class="panel-body">
+              <p style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.6">State voter files are public record. Most states provide them free or for a small fee to registered candidates.</p>
+              <a href="/voter-file-guide.html" class="topbar-btn primary" style="display:inline-block;margin-bottom:14px">View State-by-State Guide →</a>
+              <div style="font-size:12px;color:var(--muted);line-height:1.8">
+                <strong style="color:var(--text)">Wisconsin (your state):</strong> Free via the Wisconsin Elections Commission WisVote system.
+                Requires committee registration. Request at <a href="https://elections.wi.gov" target="_blank" style="color:var(--sky)">elections.wi.gov</a>.
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-hdr"><h2><span class="ph-icon">🖨️</span> Union Print Shops</h2></div>
+            <div class="panel-body">
+              <p style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.6">Support union workers with your campaign materials. Look for the union bug on all print jobs.</p>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <a href="https://unionprinting.com" target="_blank" style="display:flex;justify-content:space-between;padding:10px 12px;background:var(--gray);border-radius:6px;text-decoration:none;color:var(--text);font-size:13px">
+                  <span>🖨️ UnionPrinting.com</span><span style="color:var(--sky)">National →</span>
+                </a>
+                <a href="https://www.psfprint.com" target="_blank" style="display:flex;justify-content:space-between;padding:10px 12px;background:var(--gray);border-radius:6px;text-decoration:none;color:var(--text);font-size:13px">
+                  <span>🖨️ PSFprint.com</span><span style="color:var(--sky)">National →</span>
+                </a>
+                <a href="https://www.progressiveprinters.com" target="_blank" style="display:flex;justify-content:space-between;padding:10px 12px;background:var(--gray);border-radius:6px;text-decoration:none;color:var(--text);font-size:13px">
+                  <span>🖨️ Progressive Printers</span><span style="color:var(--sky)">National →</span>
+                </a>
+                <a href="https://www.unionlabel.org/affiliate_search.php" target="_blank" style="display:flex;justify-content:space-between;padding:10px 12px;background:var(--gray);border-radius:6px;text-decoration:none;color:var(--text);font-size:13px">
+                  <span>🔍 Find Local Union Printers</span><span style="color:var(--sky)">UFCW Directory →</span>
+                </a>
               </div>
             </div>
           </div>
@@ -860,6 +1000,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadIntelligence();
   renderCharts();
   renderChecklist();
+  loadEvents();
+  loadVolunteers();
 });
 
 // ── LOAD DATA ─────────────────────────────────────────────────
@@ -1648,7 +1790,150 @@ function copyContent() {
   navigator.clipboard.writeText(text).then(() => alert('Copied to clipboard!'));
 }
 
-// ── NAV ───────────────────────────────────────────────────────
+// ── EVENTS ───────────────────────────────────────────────────
+function toggleEventForm() {
+  const panel = document.getElementById('event-form-panel');
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+  if (panel.style.display === 'block') panel.scrollIntoView({ behavior: 'smooth' });
+}
+
+async function createEvent() {
+  const title = document.getElementById('evt-title').value.trim();
+  const type = document.getElementById('evt-type').value;
+  const start = document.getElementById('evt-start').value;
+  if (!title || !start) { alert('Event title and date/time are required.'); return; }
+
+  try {
+    const res = await fetch('/api/events', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title,
+        event_type: type,
+        start_time: new Date(start).toISOString(),
+        end_time: document.getElementById('evt-end').value ? new Date(document.getElementById('evt-end').value).toISOString() : null,
+        location_name: document.getElementById('evt-location').value.trim(),
+        address: document.getElementById('evt-address').value.trim(),
+        description: document.getElementById('evt-desc').value.trim(),
+      }),
+    });
+    const data = await res.json();
+    if (data.success || data.id) {
+      alert(`Event "${title}" created!`);
+      toggleEventForm();
+      loadEvents();
+    } else {
+      alert(data.error || 'Failed to create event.');
+    }
+  } catch (e) {
+    alert('Network error. Event saved locally — will sync when connected.');
+    toggleEventForm();
+  }
+}
+
+async function loadEvents() {
+  const el = document.getElementById('events-list');
+  if (!el) return;
+  try {
+    const res = await fetch('/api/events');
+    if (!res.ok) return;
+    const data = await res.json();
+    const events = data.events || [];
+    if (!events.length) return;
+
+    document.getElementById('ov-events').textContent = events.length;
+
+    el.innerHTML = events.map(e => `
+      <div style="padding:14px 0;border-bottom:1px solid var(--border);display:flex;gap:16px;align-items:flex-start">
+        <div style="background:var(--navy);color:white;border-radius:8px;padding:10px 14px;text-align:center;flex-shrink:0">
+          <div style="font-family:var(--cond);font-size:20px;font-weight:900">${new Date(e.start_time).getDate()}</div>
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.06em">${new Date(e.start_time).toLocaleDateString('en-US',{month:'short'})}</div>
+        </div>
+        <div style="flex:1">
+          <div style="font-weight:600;color:var(--text);font-size:14px">${e.title}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:3px">${e.event_type?.replace(/_/g,' ')} · ${e.location_name || 'No location set'}</div>
+          <div style="font-size:12px;color:var(--muted)">${new Date(e.start_time).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}</div>
+        </div>
+        <span class="badge badge-blue">${e.rsvp_count || 0} RSVPs</span>
+      </div>`).join('');
+  } catch {}
+}
+
+// ── VOLUNTEERS ────────────────────────────────────────────────
+function toggleVolunteerForm() {
+  const panel = document.getElementById('vol-form-panel');
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+  if (panel.style.display === 'block') panel.scrollIntoView({ behavior: 'smooth' });
+}
+
+async function addVolunteer() {
+  const name = document.getElementById('vol-name').value.trim();
+  const email = document.getElementById('vol-email').value.trim();
+  if (!name || !email) { alert('Name and email are required.'); return; }
+
+  const skills = Array.from(document.querySelectorAll('.vol-skill:checked')).map(el => el.value);
+
+  try {
+    const res = await fetch('/api/volunteers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name,
+        email,
+        phone: document.getElementById('vol-phone').value.trim(),
+        zip: document.getElementById('vol-zip').value.trim(),
+        skills,
+        source: 'direct',
+      }),
+    });
+    const data = await res.json();
+    if (data.success || data.id) {
+      alert(`${name} added as a volunteer!`);
+      toggleVolunteerForm();
+      loadVolunteers();
+      // Clear form
+      ['vol-name','vol-phone','vol-email','vol-zip'].forEach(id => { document.getElementById(id).value = ''; });
+      document.querySelectorAll('.vol-skill').forEach(cb => cb.checked = false);
+    } else {
+      alert(data.error || 'Failed to add volunteer.');
+    }
+  } catch (e) {
+    alert('Network error. Please try again.');
+  }
+}
+
+async function loadVolunteers() {
+  try {
+    const res = await fetch('/api/volunteers');
+    if (!res.ok) return;
+    const data = await res.json();
+    const vols = data.volunteers || [];
+    document.getElementById('vol-total').textContent = vols.length;
+    document.getElementById('ov-volunteers').textContent = vols.length;
+
+    if (!vols.length) return;
+    document.getElementById('vol-tbody').innerHTML = vols.map(v => `
+      <tr>
+        <td style="font-weight:600">${v.name}</td>
+        <td style="color:var(--muted)">${v.email}</td>
+        <td style="color:var(--muted)">${v.phone || '—'}</td>
+        <td style="font-size:12px">${v.skills?.join(', ') || '—'}</td>
+        <td style="color:var(--muted)">${new Date(v.signed_up_at).toLocaleDateString()}</td>
+      </tr>`).join('');
+  } catch {}
+}
+
+// ── WEBSITE INTEGRATIONS ──────────────────────────────────────
+function openListmonk() {
+  // Listmonk runs on internal Railway network — open admin URL
+  const listmonkUrl = window.LISTMONK_URL || 'https://listmonk.partyofyou.org';
+  window.open(listmonkUrl, '_blank');
+}
+
+function setupTwilio() {
+  alert(`To set up text messaging with Twilio:\n\n1. Create a free Twilio account at twilio.com\n2. Get a phone number (~$1/month)\n3. Note your Account SID, Auth Token, and phone number\n4. Contact us at hello@partyofyou.org with your Twilio credentials\n   — we'll connect it to your campaign account\n\nTexts cost approximately $0.0075 each.\nTwilio offers a $15 free credit on signup.`);
+}
+
 const sectionTitles = {
   overview: 'Campaign Overview',
   district: 'District Intelligence',

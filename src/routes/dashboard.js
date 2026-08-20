@@ -134,3 +134,85 @@ router.get('/checklist', async (req, res) => {
 });
 
 module.exports = router;
+
+// PATCH /api/dashboard/profile — update candidate profile
+router.patch('/profile', async (req, res) => {
+  const db = req.db;
+  const candidateId = req.candidate?.id;
+  if (!candidateId) return res.status(401).json({ error: 'Not authenticated' });
+
+  const {
+    full_name, preferred_name, bio, phone,
+    address, city, state, zip,
+    campaign_address, campaign_city, campaign_state, campaign_zip,
+    campaign_email, campaign_phone, campaign_website,
+    fec_committee_id, subdomain, password,
+  } = req.body;
+
+  try {
+    // Update users table
+    await db.query(`
+      UPDATE users SET
+        full_name = COALESCE($1, full_name),
+        phone = COALESCE($2, phone),
+        address = COALESCE($3, address),
+        city = COALESCE($4, city),
+        state = COALESCE($5, state),
+        zip = COALESCE($6, zip)
+      WHERE id = (SELECT user_id FROM candidates WHERE id = $7)
+    `, [full_name, phone, address, city, state, zip, candidateId]);
+
+    // Update candidates table
+    await db.query(`
+      UPDATE candidates SET
+        full_name = COALESCE($1, full_name),
+        preferred_name = $2,
+        bio = $3,
+        campaign_email = $4,
+        campaign_phone = $5,
+        campaign_website = $6,
+        fec_committee_id = $7,
+        subdomain = $8,
+        updated_at = NOW()
+      WHERE id = $9
+    `, [
+      full_name, preferred_name || null, bio || null,
+      campaign_email || null, campaign_phone || null,
+      campaign_website || null, fec_committee_id || null,
+      subdomain || null, candidateId,
+    ]);
+
+    // Update campaign address fields if columns exist
+    try {
+      await db.query(`
+        UPDATE candidates SET
+          campaign_address = $1,
+          campaign_city = $2,
+          campaign_state = $3,
+          campaign_zip = $4
+        WHERE id = $5
+      `, [
+        campaign_address || null, campaign_city || null,
+        campaign_state || null, campaign_zip || null,
+        candidateId,
+      ]);
+    } catch (e) {
+      // Columns may not exist yet — non-fatal
+    }
+
+    // Update password if provided
+    if (password && password.length >= 10) {
+      const bcrypt = require('bcrypt');
+      const hash = await bcrypt.hash(password, 12);
+      await db.query(
+        'UPDATE users SET password_hash = $1 WHERE id = (SELECT user_id FROM candidates WHERE id = $2)',
+        [hash, candidateId]
+      );
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Profile update error:', err.message);
+    res.status(500).json({ error: 'Profile update failed', detail: err.message });
+  }
+});

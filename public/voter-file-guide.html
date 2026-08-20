@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>State Voter File Guide — Party of You</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --navy: #1a2d5a; --red: #c8102e; --sky: #2b7fc1;
+  --white: #f8fafc; --gray: #f4f6fb; --border: #dde3ef;
+  --text: #0d1b35; --muted: #5a6a8a; --green: #15803d;
+  --cond: 'Barlow Condensed', sans-serif; --body: 'Barlow', sans-serif;
+}
+body { font-family: var(--body); background: var(--white); color: var(--text); padding-top: 56px; }
+.container { max-width: 1100px; margin: 0 auto; padding: 48px 24px 80px; }
+.page-hdr { margin-bottom: 36px; }
+.eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--red); margin-bottom: 12px; }
+h1 { font-family: var(--cond); font-size: 52px; font-weight: 900; text-transform: uppercase; color: var(--navy); line-height: 1; margin-bottom: 16px; }
+.intro { font-size: 16px; color: var(--muted); line-height: 1.7; max-width: 680px; margin-bottom: 8px; }
+.intro strong { color: var(--text); }
+
+.alert-box { background: rgba(43,127,193,0.08); border: 1px solid rgba(43,127,193,0.25); border-radius: 8px; padding: 16px 20px; margin-bottom: 32px; font-size: 14px; color: var(--sky); line-height: 1.6; }
+
+/* Search/filter */
+.filter-bar { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+.search-input { height: 42px; padding: 0 14px; border: 1px solid var(--border); border-radius: 7px; font-size: 14px; font-family: var(--body); color: var(--text); outline: none; flex: 1; min-width: 200px; }
+.search-input:focus { border-color: var(--sky); }
+.filter-select { height: 42px; padding: 0 12px; border: 1px solid var(--border); border-radius: 7px; font-size: 14px; font-family: var(--body); color: var(--text); outline: none; background: var(--white); cursor: pointer; }
+
+/* Table */
+.table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; }
+table { width: 100%; border-collapse: collapse; }
+th { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding: 12px 14px; border-bottom: 1px solid var(--border); text-align: left; background: var(--gray); white-space: nowrap; }
+td { padding: 14px; border-bottom: 1px solid rgba(221,227,239,0.6); font-size: 13px; vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--gray); }
+td:first-child { font-weight: 700; color: var(--navy); white-space: nowrap; }
+
+.cost-free { color: var(--green); font-weight: 600; }
+.cost-low { color: var(--sky); font-weight: 600; }
+.cost-paid { color: var(--muted); }
+.badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 3px; white-space: nowrap; }
+.badge-green { background: rgba(21,128,61,0.1); color: var(--green); }
+.badge-blue { background: rgba(43,127,193,0.1); color: var(--sky); }
+.badge-red { background: rgba(200,16,46,0.1); color: var(--red); }
+.badge-gray { background: var(--gray); color: var(--muted); }
+a.link { color: var(--sky); text-decoration: none; }
+a.link:hover { text-decoration: underline; }
+
+.state-row { display: none; }
+.state-row.visible { display: table-row; }
+
+.summary-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 12px; margin-bottom: 28px; }
+.summary-card { background: var(--gray); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
+.summary-num { font-family: var(--cond); font-size: 32px; font-weight: 900; color: var(--navy); }
+.summary-label { font-size: 11px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.06em; }
+</style>
+</head>
+<body>
+<script src="/nav.js?v=5"></script>
+
+<div class="container">
+  <div class="page-hdr">
+    <div class="eyebrow">Voter Outreach Resources</div>
+    <h1>State Voter File Guide</h1>
+    <p class="intro">
+      State voter files are public record. Every state maintains a list of registered voters and is required to make it available.
+      Most states provide files free or for a small processing fee to registered candidates and political committees.
+      <strong>You generally need to be a registered candidate or have a committee ID to request one.</strong>
+    </p>
+  </div>
+
+  <div class="alert-box">
+    📋 <strong>Before you request:</strong> Register your campaign committee with your state first. Most states require a committee ID on voter file requests. Get your EIN from the IRS (Form SS-4, free online), open a campaign bank account, then register with your state's campaign finance office. This usually takes 1-2 weeks.
+  </div>
+
+  <div class="summary-bar">
+    <div class="summary-card"><div class="summary-num" id="count-free">—</div><div class="summary-label">Free to candidates</div></div>
+    <div class="summary-card"><div class="summary-num" id="count-low">—</div><div class="summary-label">Under $25</div></div>
+    <div class="summary-card"><div class="summary-num" id="count-csv">—</div><div class="summary-label">CSV/Excel format</div></div>
+    <div class="summary-card"><div class="summary-num" id="count-phone">—</div><div class="summary-label">Includes phone #s</div></div>
+  </div>
+
+  <div class="filter-bar">
+    <input type="text" class="search-input" id="search" placeholder="Search by state name..." oninput="filterTable()">
+    <select class="filter-select" id="filter-cost" onchange="filterTable()">
+      <option value="">All costs</option>
+      <option value="free">Free</option>
+      <option value="low">Under $25</option>
+      <option value="paid">Paid</option>
+    </select>
+    <select class="filter-select" id="filter-phone" onchange="filterTable()">
+      <option value="">Phone numbers?</option>
+      <option value="yes">Includes phones</option>
+      <option value="no">No phones</option>
+    </select>
+  </div>
+
+  <div class="table-wrap">
+    <table id="voter-table">
+      <thead>
+        <tr>
+          <th>State</th>
+          <th>Agency</th>
+          <th>Cost</th>
+          <th>Format</th>
+          <th>Who Can Request</th>
+          <th>Includes Phones</th>
+          <th>Request Method</th>
+          <th>Link</th>
+        </tr>
+      </thead>
+      <tbody id="table-body">
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const STATES = [
+  { state:'Alabama', abbr:'AL', agency:'Secretary of State', cost:'$25', costType:'low', format:'CSV', phones:'No', who:'Candidates, Political Committees', method:'Written request + form', url:'https://www.sos.alabama.gov/alabama-votes/voter/voter-registration-statistics' },
+  { state:'Alaska', abbr:'AK', agency:'Division of Elections', cost:'Free', costType:'free', format:'CSV', phones:'No', who:'Candidates, Political Parties', method:'Online form', url:'https://www.elections.alaska.gov/Core/voterregistrationdatarequest.php' },
+  { state:'Arizona', abbr:'AZ', agency:'Secretary of State', cost:'$223 full file', costType:'paid', format:'CSV', phones:'No', who:'Candidates, Political Committees, PACs', method:'Online request', url:'https://azsos.gov/elections/voter-registration/voter-registration-data' },
+  { state:'Arkansas', abbr:'AR', agency:'Secretary of State', cost:'Free', costType:'free', format:'Excel', phones:'No', who:'Candidates, Political Committees', method:'Written request', url:'https://www.sos.arkansas.gov/elections/voter-information/voter-registration-file' },
+  { state:'California', abbr:'CA', agency:'Secretary of State', cost:'$5–$10/county', costType:'low', format:'CSV', phones:'No', who:'Candidates, Political Committees', method:'County registrar', url:'https://www.sos.ca.gov/elections/voter-registration/voter-registration-statistics' },
+  { state:'Colorado', abbr:'CO', agency:'Secretary of State', cost:'Free', costType:'free', format:'CSV/Tab', phones:'Yes', who:'Candidates, Political Committees', method:'Online SCORE system', url:'https://www.sos.state.co.us/voter/pages/pub/olvr/findVoterReg.xhtml' },
+  { state:'Connecticut', abbr:'CT', agency:'Secretary of State', cost:'$300 statewide', costType:'paid', format:'CSV', phones:'No', who:'Candidates, Political Parties', method:'Written request + fee', url:'https://portal.ct.gov/SOTS/Election-Services/Voter-Registration-Information/Voter-Registration-Data' },
+  { state:'Delaware', abbr:'DE', agency:'Department of Elections', cost:'Free', costType:'free', format:'CSV', phones:'No', who:'Candidates', method:'Written request', url:'https://elections.delaware.gov/services/voter/voterreg.shtml' },
+  { state:'Florida', abbr:'FL', agency:'Division of Elections', cost:'$5/county up to $2,500 statewide', costType:'paid', format:'CSV', phones:'No', who:'Candidates, Political Parties, Committees', method:'County supervisor or FVRS', url:'https://dos.myflorida.com/elections/data-statistics/voter-registration-statistics/' },
+  { state:'Georgia', abbr:'GA', agency:'Secretary of State', cost:'$250 statewide', costType:'paid', format:'CSV', phones:'No', who:'Candidates, Political Committees', method:'Online eNet system', url:'https://sos.ga.gov/index.php/elections/order_voter_registration_lists_and_files' },
+  { state:'Hawaii', abbr:'HI', agency:'Office of Elections', cost:'Free', costType:'free', format:'CSV', phones:'No', who:'Candidates, Political Parties', method:'Written request', url:'https://elections.hawaii.gov/voter-registration/voter-registration-statistics/' },
+  { state:'Idaho', abbr:'ID', agency:'Secretary of State', cost:'$25', costType:'low', format:'CSV', phones:'No', who:'Candidates, Political Committees', method:'Written request', url:'https://sos.idaho.gov/elections-division/voter-registration/' },
+  { state:'Illinois', abbr:'IL', agency:'State Board of Elections', cost:'$500 statewide or $5/county', costType:'paid', format:'CSV', phones:'No', who:'Candidates, Political Committees', method:'Written request + FOIA', url:'https://www.elections.il.gov/ElectionOperations/VoterRegistrationData.aspx' },
+  { state:'Indiana', abbr:'IN', agency:'Election Division', cost:'$4/county up to $75 statewide', costType:'low', format:'Excel', phones:'No', who:'Candidates, Political Parties', method:'Written request', url:'https://www.in.gov/sos/elections/voter-information/voter-registration-statistics/' },
+  { state:'Iowa', abbr:'IA', agency:'Secretary of State', cost:'$25', costType:'low', format:'CSV', phones:'No', who:'Candidates, Political Organizations', method:'Written request', url:'https://sos.iowa.gov/elections/voterreg/voterreg.html' },
+  { state:'Kansas', abbr:'KS', agency:'Secretary of State', cost:'$25', costType:'low', format:'CSV', phones:'No', who:'Candidates, Political Committees', method:'Written request', url:'https://sos.kansas.gov/elections/voter-registration/voter-registration-statistics/' },
+  { state:'Kentucky', abbr:'KY', agency:'Secretary of State', cost:'Free', costType:'free', format:'CSV', phones:'No', who:'Candidates, Political Parties', method:'Written request', url:'https://elect.ky.gov/registrationstatistics/Pages/default.aspx' },
+  { state:'Louisiana', abbr:'LA', agency:'Secretary of State', cost:'$25 + $0.02/record', costType:'paid', format:'DBF/CSV', phones:'No', who:'Candidates, Political Committees', method:'Written request', url:'https://www.sos.la.gov/ElectionsAndVoting/Pages/OnlineVoterRegistration.aspx' },
+  { state:'Maine', abbr:'ME', agency:'Secretary of State', cost:'Free', costType:'free', format:'CSV', phones:'No', who:'Candidates, Political Parties', method:'Written request', url:'https://www.maine.gov/sos/cec/elec/voter-info/voterfile.html' },
+  { state:'Maryland', abbr:'MD', agency:'State Board of Elections', cost:'$10', costType:'low', format:'CSV', phones:'No', who:'Candidates, Political Organizations', method:'Online MDVoters system', url:'https://elections.maryland.gov/voter_registration/data_request.html' },
+  { state:'Massachusetts', abbr:'MA', agency:'Secretary of State', cost:'$70 statewide', costType:'paid', format:'CSV', phones:'No', who:'Candidates, Political Parties', method:'Written request', url:'https://www.sec.state.ma.us/ele/eleresources/resourcesidx.htm' },
+  { state:'Michigan', abbr:'MI', agency:'Bureau of Elections', cost:'$25 statewide', costType:'low', format:'CSV', phones:'Yes (cell only)', who:'Candidates, Political Committees', method:'Online QVF system', url:'https://mvic.sos.state.mi.us/' },
+  { state:'Minnesota', abbr:'MN', agency:'Secretary of State', cost:'Free', costType:'free', format:'CSV', phones:'No', who:'Candidates, Political Parties, Committees', method:'Online Voter Registration System', url:'https://www.sos.mn.gov/elections-voting/data-maps/voter-registration-statistics/' },
+  { state:'Mississippi', abbr:'MS', agency:'Secretary of State', cost:'$75', costType:'paid', format:'DBF', phones:'No', who:'Candidates, Political Parties', method:'Written request', url:'https://www.sos.ms.gov/elections-voting/voter-registration-data' },
+  { state:'Missouri', abbr:'MO', agency:'Secretary of State', cost:'Free', costType:'free', format:'CSV', phones:'No', who:'Candidates, Political Committees', method:'Online request', url:'https://www.sos.mo.gov/elections/voterregistration/registrationstatistics.asp' },
+  { state:'Montana', abbr:'MT', agency:'Secretary of State', cost:'$25', costType:'low', format:'CSV', phones:'No', who:'Candidates, Political Parties', method:'Written request', url:'https://sosmt.gov/elections/voter_information/' },
+  { state:'Nebraska', abbr:'NE', agency:'Secretary of State', cost:'$50', costType:'paid', format:'CSV', phones:'No', who:'Candidates, Political Committees', method:'Written request', url:'https://sos.nebraska.gov/elections/voter-registration-data' },
+  { state:'Nevada', abbr:'NV', agency:'Secretary of State', cost:'Free', costType:'free', format:'CSV', phones:'No', who:'Candidates, Political Parties', method:'County clerk or SOS', url:'https://www.nvsos.gov/sos/elections/voters/voter-registration-statistics' },
+  { state:'New Hampshire', abbr:'NH', agency:'Secretary of State', cost:'$25', costType:'low', format:'CSV', phones:'No', who:'Candidates, Political Committees', method:'Written request', url:'https://sos.nh.gov/elections/voters/' },
+  { state:'New Jersey', abbr:'NJ', agency:'Division of Elections', cost:'$50 statewide', costType:'paid', format:'CSV', phones:'No', who:'Candidates, Political Organizations', method:'Written request', url:'https://nj.gov/state/elections/voter-registration.shtml' },
+  { state:'New Mexico', abbr:'NM', agency:'Secretary of State', cost:'Free', costType:'free', format:'CSV', phones:'No', who:'Candidates, Political Parties, Committees', method:'Online request', url:'https://www.sos.nm.gov/voting-and-elections/voter-information-portal/voter-registration-statistics/' },
+  { state:'New York', abbr:'NY', agency:'Board of Elections', cost:'$200 statewide or free county files', costType:'paid', format:'CSV', phones:'No', who:'Candidates (enrolled party or registered)', method:'County board or SOS', url:'https://www.elections.ny.gov/VoterRegDataReq.html' },
+  { state:'North Carolina', abbr:'NC', agency:'State Board of Elections', cost:'Free', costType:'free', format:'CSV', phones:'Yes', who:'Candidates, Political Organizations, Researchers', method:'Online NCSBE system', url:'https://www.ncsbe.gov/results-data/voter-registration-data' },
+  { state:'North Dakota', abbr:'ND', agency:'Secretary of State', cost:'Free', costType:'free', format:'CSV', phones:'No', who:'Candidates, Political Parties', method:'Written request', url:'https://vip.sos.nd.gov/PortalListDetails.aspx?speccode=VOTEREG' },
+  { state:'Ohio', abbr:'OH', agency:'Secretary of State', cost:'Free', costType:'free', format:'CSV', phones:'No', who:'Candidates, Political Parties, Committees', method:'Online request', url:'https://www.ohiosos.gov/elections/election-results-and-data/voter-registration-data-download/' },
+  { state:'Oklahoma', abbr:'OK', agency:'State Election Board', cost:'$25', costType:'low', format:'CSV', phones:'No', who:'Candidates, Political Organizations', method:'Written request', url:'https://oklahoma.gov/elections/voter-registration/voter-registration-statistics.html' },
+  { state:'Oregon', abbr:'OR', agency:'Secretary of State', cost:'Free', costType:'free', format:'CSV', phones:'No', who:'Candidates, Political Committees, Parties', method:'Online ORESTAR system', url:'https://sos.oregon.gov/elections/Pages/voter-registration-statistics.aspx' },
+  { state:'Pennsylvania', abbr:'PA', agency:'Department of State', cost:'$20 county + $10 statewide', costType:'low', format:'CSV', phones:'No', who:'Candidates, Political Organizations', method:'County election board', url:'https://www.vote.pa.gov/About-Elections/Pages/Election-Data-Resources.aspx' },
+  { state:'Rhode Island', abbr:'RI', agency:'Board of Elections', cost:'$10', costType:'low', format:'CSV', phones:'No', who:'Candidates, Political Parties', method:'Written request', url:'https://vote.sos.ri.gov/Voter/Registration' },
+  { state:'South Carolina', abbr:'SC', agency:'State Election Commission', cost:'$25', costType:'low', format:'CSV', phones:'No', who:'Candidates, Political Parties, Committees', method:'Written request', url:'https://www.scvotes.gov/data-downloads' },
+  { state:'South Dakota', abbr:'SD', agency:'Secretary of State', cost:'$25', costType:'low', format:'CSV', phones:'No', who:'Candidates, Political Parties', method:'Written request', url:'https://sdsos.gov/elections-voting/voter-information/voter-registration-data.aspx' },
+  { state:'Tennessee', abbr:'TN', agency:'Secretary of State', cost:'$1,000 statewide', costType:'paid', format:'DBF', phones:'No', who:'Candidates, Political Parties, Committees', method:'Written request', url:'https://sos.tn.gov/elections/voter-registration' },
+  { state:'Texas', abbr:'TX', agency:'Secretary of State', cost:'Free to candidates', costType:'free', format:'CSV', phones:'No', who:'Candidates, Political Parties', method:'County voter registrar', url:'https://www.sos.state.tx.us/elections/voter/electrecords.shtml' },
+  { state:'Utah', abbr:'UT', agency:'Lieutenant Governor Election Office', cost:'$1,000 statewide', costType:'paid', format:'CSV', phones:'No', who:'Candidates, Political Parties, Committees', method:'Written request', url:'https://elections.utah.gov/voter-information/voter-registration-statistics' },
+  { state:'Vermont', abbr:'VT', agency:'Secretary of State', cost:'Free', costType:'free', format:'CSV', phones:'No', who:'Candidates, Political Parties', method:'Town clerk or SOS', url:'https://sos.vermont.gov/elections/voters/voter-registration/' },
+  { state:'Virginia', abbr:'VA', agency:'Department of Elections', cost:'$1,000+ statewide', costType:'paid', format:'CSV', phones:'No', who:'Candidates, Political Parties, Committees', method:'Written request + application', url:'https://www.elections.virginia.gov/registration/data-lists/' },
+  { state:'Washington', abbr:'WA', agency:'Secretary of State', cost:'$25 + $0.005/record', costType:'paid', format:'CSV', phones:'No', who:'Candidates, Political Parties, Committees', method:'Online request', url:'https://www.sos.wa.gov/elections/data-research/election-data-and-maps/registered-voters-and-ballots-cast' },
+  { state:'West Virginia', abbr:'WV', agency:'Secretary of State', cost:'Free', costType:'free', format:'CSV', phones:'No', who:'Candidates, Political Organizations', method:'Written request', url:'https://sos.wv.gov/elections/Pages/VoterRegistrationStatistics.aspx' },
+  { state:'Wisconsin', abbr:'WI', agency:'Wisconsin Elections Commission', cost:'Free', costType:'free', format:'CSV', phones:'No', who:'Candidates, Political Committees', method:'Online WisVote system', url:'https://elections.wi.gov/voters/voter-registration-data' },
+  { state:'Wyoming', abbr:'WY', agency:'Secretary of State', cost:'$25', costType:'low', format:'CSV', phones:'No', who:'Candidates, Political Parties', method:'Written request', url:'https://sos.wyo.gov/Elections/default.aspx' },
+];
+
+function buildTable() {
+  const tbody = document.getElementById('table-body');
+  tbody.innerHTML = STATES.map(s => `
+    <tr class="state-row visible" data-state="${s.state.toLowerCase()}" data-cost="${s.costType}" data-phones="${s.phones.toLowerCase().startsWith('yes') ? 'yes' : 'no'}">
+      <td>${s.state} (${s.abbr})</td>
+      <td style="color:var(--muted)">${s.agency}</td>
+      <td class="cost-${s.costType}">${s.cost}</td>
+      <td><span class="badge badge-blue">${s.format}</span></td>
+      <td style="font-size:12px;color:var(--muted)">${s.who}</td>
+      <td>${s.phones.startsWith('Yes') ? `<span class="badge badge-green">✓ ${s.phones}</span>` : `<span class="badge badge-gray">No</span>`}</td>
+      <td style="font-size:12px">${s.method}</td>
+      <td><a href="${s.url}" target="_blank" class="link" rel="noopener">→ Request</a></td>
+    </tr>
+  `).join('');
+
+  // Summary counts
+  document.getElementById('count-free').textContent = STATES.filter(s => s.costType === 'free').length;
+  document.getElementById('count-low').textContent = STATES.filter(s => s.costType === 'low').length;
+  document.getElementById('count-csv').textContent = STATES.filter(s => s.format.includes('CSV')).length;
+  document.getElementById('count-phone').textContent = STATES.filter(s => s.phones.toLowerCase().startsWith('yes')).length;
+}
+
+function filterTable() {
+  const search = document.getElementById('search').value.toLowerCase();
+  const costFilter = document.getElementById('filter-cost').value;
+  const phoneFilter = document.getElementById('filter-phone').value;
+
+  document.querySelectorAll('.state-row').forEach(row => {
+    const stateName = row.dataset.state;
+    const cost = row.dataset.cost;
+    const phones = row.dataset.phones;
+
+    const matchSearch = !search || stateName.includes(search);
+    const matchCost = !costFilter || cost === costFilter;
+    const matchPhone = !phoneFilter || phones === phoneFilter;
+
+    row.classList.toggle('visible', matchSearch && matchCost && matchPhone);
+  });
+}
+
+buildTable();
+</script>
+</body>
+</html>

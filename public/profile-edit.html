@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Edit Profile — Party of You</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --navy: #1a2d5a; --navy-d: #0d1b35; --red: #c8102e; --red-d: #a00c24;
+  --sky: #2b7fc1; --white: #f8fafc; --gray: #f4f6fb; --border: #dde3ef;
+  --text: #0d1b35; --muted: #5a6a8a;
+  --cond: 'Barlow Condensed', sans-serif; --body: 'Barlow', sans-serif;
+}
+body { font-family: var(--body); background: var(--gray); color: var(--text); min-height: 100vh; }
+.shell { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+.sidebar {
+  background: var(--navy-d); border-right: 1px solid rgba(255,255,255,0.06);
+  position: fixed; top: 0; left: 0; bottom: 0; width: 240px;
+  display: flex; flex-direction: column; padding: 20px 0; z-index: 50;
+}
+.sidebar-logo { padding: 0 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.06); margin-bottom: 16px; }
+.sidebar-logo img { width: 100%; border-radius: 4px; }
+.sidebar a, .sidebar button {
+  display: block; padding: 9px 20px; font-size: 13px; color: rgba(255,255,255,0.55);
+  text-decoration: none; background: none; border: none; width: 100%; text-align: left;
+  font-family: var(--body); cursor: pointer;
+}
+.sidebar a:hover, .sidebar button:hover { color: var(--white); }
+.sidebar-footer { margin-top: auto; padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.06); }
+.sidebar-footer button { padding: 8px; border: 1px solid rgba(255,255,255,0.15); border-radius: 5px; color: rgba(255,255,255,0.4); font-size: 11px; }
+
+.main { margin-left: 240px; padding: 40px 40px 80px; max-width: 860px; }
+h1 { font-family: var(--cond); font-size: 36px; font-weight: 900; text-transform: uppercase; color: var(--navy); margin-bottom: 6px; }
+.page-sub { font-size: 14px; color: var(--muted); margin-bottom: 32px; }
+
+.card { background: var(--white); border: 1px solid var(--border); border-radius: 10px; padding: 28px; margin-bottom: 20px; }
+.card-title { font-family: var(--cond); font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--navy); margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+.field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.field-grid.one { grid-template-columns: 1fr; }
+.field-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+input, select, textarea {
+  height: 42px; padding: 0 12px;
+  background: var(--gray); border: 1px solid var(--border);
+  border-radius: 7px; color: var(--text); font-size: 14px;
+  font-family: var(--body); outline: none; transition: border-color 0.15s;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--sky); background: var(--white); }
+textarea { height: 100px; padding: 10px 12px; resize: vertical; }
+.hint { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+.btn-row { display: flex; gap: 12px; margin-top: 28px; }
+.btn-primary { background: var(--red); color: white; font-family: var(--cond); font-size: 15px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; padding: 12px 28px; border-radius: 7px; border: none; cursor: pointer; transition: background 0.15s; }
+.btn-primary:hover { background: var(--red-d); }
+.btn-secondary { background: var(--gray); color: var(--muted); font-family: var(--cond); font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 12px 20px; border-radius: 7px; border: 1px solid var(--border); cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; }
+.btn-secondary:hover { color: var(--text); }
+
+.alert { padding: 12px 16px; border-radius: 6px; font-size: 13px; margin-bottom: 16px; display: none; }
+.alert.success { background: rgba(21,128,61,0.08); border: 1px solid rgba(21,128,61,0.25); color: #15803d; display: block; }
+.alert.error { background: rgba(200,16,46,0.08); border: 1px solid rgba(200,16,46,0.25); color: var(--red); display: block; }
+
+.badge-connected { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: #15803d; background: rgba(21,128,61,0.08); padding: 4px 10px; border-radius: 4px; }
+.optional-tag { font-size: 10px; font-weight: 600; color: var(--muted); background: var(--gray); padding: 2px 6px; border-radius: 3px; margin-left: 6px; vertical-align: middle; }
+
+@media (max-width: 700px) {
+  .shell { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .main { margin-left: 0; padding: 24px 16px; }
+  .field-grid, .field-grid.three { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <img src="/images/partyofyoulogo.png" alt="Party of You">
+    </div>
+    <a href="/dashboard/">← Back to Dashboard</a>
+    <div class="sidebar-footer">
+      <button onclick="logout()">Sign Out</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <h1>Edit Profile</h1>
+    <p class="page-sub">Update your campaign information. Your home address is used for district intelligence and is never shown publicly.</p>
+
+    <div id="alert" class="alert"></div>
+
+    <!-- Personal Info -->
+    <div class="card">
+      <div class="card-title">Personal Information</div>
+      <div class="field-grid">
+        <div class="field">
+          <label>Full Name</label>
+          <input type="text" id="full_name" placeholder="Your full legal name">
+        </div>
+        <div class="field">
+          <label>Preferred Name <span class="optional-tag">Optional</span></label>
+          <input type="text" id="preferred_name" placeholder="How you want to be addressed">
+        </div>
+      </div>
+      <div class="field-grid">
+        <div class="field">
+          <label>Email Address</label>
+          <input type="email" id="email" placeholder="your@email.com">
+        </div>
+        <div class="field">
+          <label>Phone Number <span class="optional-tag">Optional</span></label>
+          <input type="tel" id="phone" placeholder="(414) 555-0100">
+        </div>
+      </div>
+      <div class="field-grid one">
+        <div class="field">
+          <label>Bio <span class="optional-tag">Optional</span></label>
+          <textarea id="bio" placeholder="A brief candidate bio for your public campaign page (2-3 sentences)"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Home Address -->
+    <div class="card">
+      <div class="card-title">Home Address <span style="font-size:12px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0">— Used for district intelligence, never shown publicly</span></div>
+      <div class="field-grid one">
+        <div class="field">
+          <label>Street Address</label>
+          <input type="text" id="address" placeholder="123 Main St">
+        </div>
+      </div>
+      <div class="field-grid three">
+        <div class="field">
+          <label>City</label>
+          <input type="text" id="city" placeholder="Milwaukee">
+        </div>
+        <div class="field">
+          <label>State</label>
+          <select id="state">
+            <option value="">State</option>
+            <option>AL</option><option>AK</option><option>AZ</option><option>AR</option>
+            <option>CA</option><option>CO</option><option>CT</option><option>DE</option>
+            <option>FL</option><option>GA</option><option>HI</option><option>ID</option>
+            <option>IL</option><option>IN</option><option>IA</option><option>KS</option>
+            <option>KY</option><option>LA</option><option>ME</option><option>MD</option>
+            <option>MA</option><option>MI</option><option>MN</option><option>MS</option>
+            <option>MO</option><option>MT</option><option>NE</option><option>NV</option>
+            <option>NH</option><option>NJ</option><option>NM</option><option>NY</option>
+            <option>NC</option><option>ND</option><option>OH</option><option>OK</option>
+            <option>OR</option><option>PA</option><option>RI</option><option>SC</option>
+            <option>SD</option><option>TN</option><option>TX</option><option>UT</option>
+            <option>VT</option><option>VA</option><option>WA</option><option>WV</option>
+            <option>WI</option><option>WY</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>ZIP Code</label>
+          <input type="text" id="zip" placeholder="53221" maxlength="10">
+        </div>
+      </div>
+    </div>
+
+    <!-- Campaign Office Address -->
+    <div class="card">
+      <div class="card-title">Campaign Office Address <span class="optional-tag">Optional</span></div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Used on public campaign materials — mailers, website, press releases. If blank, only your city and state appear on public materials.</p>
+      <div class="field-grid one">
+        <div class="field">
+          <label>Street Address or PO Box</label>
+          <input type="text" id="campaign_address" placeholder="PO Box 1234 or 456 Campaign Ave">
+          <div class="hint">Most candidates use a PO Box to keep their home address private.</div>
+        </div>
+      </div>
+      <div class="field-grid three">
+        <div class="field">
+          <label>City</label>
+          <input type="text" id="campaign_city" placeholder="Milwaukee">
+        </div>
+        <div class="field">
+          <label>State</label>
+          <select id="campaign_state">
+            <option value="">State</option>
+            <option>AL</option><option>AK</option><option>AZ</option><option>AR</option>
+            <option>CA</option><option>CO</option><option>CT</option><option>DE</option>
+            <option>FL</option><option>GA</option><option>HI</option><option>ID</option>
+            <option>IL</option><option>IN</option><option>IA</option><option>KS</option>
+            <option>KY</option><option>LA</option><option>ME</option><option>MD</option>
+            <option>MA</option><option>MI</option><option>MN</option><option>MS</option>
+            <option>MO</option><option>MT</option><option>NE</option><option>NV</option>
+            <option>NH</option><option>NJ</option><option>NM</option><option>NY</option>
+            <option>NC</option><option>ND</option><option>OH</option><option>OK</option>
+            <option>OR</option><option>PA</option><option>RI</option><option>SC</option>
+            <option>SD</option><option>TN</option><option>TX</option><option>UT</option>
+            <option>VT</option><option>VA</option><option>WA</option><option>WV</option>
+            <option>WI</option><option>WY</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>ZIP Code</label>
+          <input type="text" id="campaign_zip" placeholder="53221" maxlength="10">
+        </div>
+      </div>
+    </div>
+
+    <!-- Campaign Info -->
+    <div class="card">
+      <div class="card-title">Campaign Information</div>
+      <div class="field-grid">
+        <div class="field">
+          <label>Campaign Email <span class="optional-tag">Optional</span></label>
+          <input type="email" id="campaign_email" placeholder="name@yourcampaign.com">
+          <div class="hint">Public-facing email for voters to contact you.</div>
+        </div>
+        <div class="field">
+          <label>Campaign Phone <span class="optional-tag">Optional</span></label>
+          <input type="tel" id="campaign_phone" placeholder="(414) 555-0200">
+        </div>
+      </div>
+      <div class="field-grid">
+        <div class="field">
+          <label>Campaign Website <span class="optional-tag">Optional</span></label>
+          <input type="url" id="campaign_website" placeholder="https://yourcampaign.com">
+        </div>
+        <div class="field">
+          <label>FEC Committee ID <span class="optional-tag">Optional</span></label>
+          <input type="text" id="fec_committee_id" placeholder="C00123456">
+          <div class="hint">Assigned after you register with the FEC.</div>
+        </div>
+      </div>
+      <div class="field-grid one">
+        <div class="field">
+          <label>Campaign Subdomain</label>
+          <div style="display:flex;align-items:center;gap:0;border:1px solid var(--border);border-radius:7px;overflow:hidden;background:var(--gray)">
+            <span style="padding:0 12px;font-size:14px;color:var(--muted);background:var(--border);height:42px;display:flex;align-items:center;white-space:nowrap">partyofyou.org/c/</span>
+            <input type="text" id="subdomain" placeholder="yourname" style="border:none;border-radius:0;background:var(--gray);flex:1">
+          </div>
+          <div class="hint">Letters, numbers, and hyphens only. This is your public campaign page URL.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Password -->
+    <div class="card">
+      <div class="card-title">Change Password <span class="optional-tag">Optional</span></div>
+      <div class="field-grid">
+        <div class="field">
+          <label>New Password</label>
+          <input type="password" id="new_password" placeholder="Leave blank to keep current password">
+        </div>
+        <div class="field">
+          <label>Confirm New Password</label>
+          <input type="password" id="confirm_password" placeholder="Repeat new password">
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-primary" onclick="saveProfile()">Save Changes</button>
+      <a href="/dashboard/" class="btn-secondary">Cancel</a>
+    </div>
+  </main>
+</div>
+
+<script>
+async function loadProfile() {
+  try {
+    const res = await fetch('/api/dashboard/profile', { credentials: 'same-origin' });
+    if (!res.ok) { window.location.href = '/apply.html'; return; }
+    const data = await res.json();
+
+    // Populate fields
+    setValue('full_name', data.full_name);
+    setValue('preferred_name', data.preferred_name);
+    setValue('email', data.email);
+    setValue('phone', data.phone);
+    setValue('bio', data.bio);
+    setValue('address', data.address);
+    setValue('city', data.city);
+    setValue('zip', data.zip);
+    setValue('campaign_address', data.campaign_address);
+    setValue('campaign_city', data.campaign_city);
+    setValue('campaign_zip', data.campaign_zip);
+    setValue('campaign_email', data.campaign_email);
+    setValue('campaign_phone', data.campaign_phone);
+    setValue('campaign_website', data.campaign_website);
+    setValue('fec_committee_id', data.fec_committee_id);
+    setValue('subdomain', data.subdomain);
+
+    // State selects
+    if (data.state) {
+      document.getElementById('state').value = data.state;
+    }
+    if (data.campaign_state) {
+      document.getElementById('campaign_state').value = data.campaign_state;
+    }
+  } catch (e) {
+    showAlert('Could not load profile. Please refresh.', 'error');
+  }
+}
+
+function setValue(id, val) {
+  const el = document.getElementById(id);
+  if (el && val != null) el.value = val;
+}
+
+async function saveProfile() {
+  const newPass = document.getElementById('new_password').value;
+  const confirmPass = document.getElementById('confirm_password').value;
+
+  if (newPass && newPass !== confirmPass) {
+    showAlert('Passwords do not match.', 'error');
+    return;
+  }
+  if (newPass && newPass.length < 10) {
+    showAlert('Password must be at least 10 characters.', 'error');
+    return;
+  }
+
+  const subdomain = document.getElementById('subdomain').value.trim();
+  if (subdomain && !/^[a-z0-9-]+$/.test(subdomain)) {
+    showAlert('Subdomain can only contain lowercase letters, numbers, and hyphens.', 'error');
+    return;
+  }
+
+  const payload = {
+    full_name: document.getElementById('full_name').value.trim(),
+    preferred_name: document.getElementById('preferred_name').value.trim(),
+    phone: document.getElementById('phone').value.trim(),
+    bio: document.getElementById('bio').value.trim(),
+    address: document.getElementById('address').value.trim(),
+    city: document.getElementById('city').value.trim(),
+    state: document.getElementById('state').value,
+    zip: document.getElementById('zip').value.trim(),
+    campaign_address: document.getElementById('campaign_address').value.trim(),
+    campaign_city: document.getElementById('campaign_city').value.trim(),
+    campaign_state: document.getElementById('campaign_state').value,
+    campaign_zip: document.getElementById('campaign_zip').value.trim(),
+    campaign_email: document.getElementById('campaign_email').value.trim(),
+    campaign_phone: document.getElementById('campaign_phone').value.trim(),
+    campaign_website: document.getElementById('campaign_website').value.trim(),
+    fec_committee_id: document.getElementById('fec_committee_id').value.trim(),
+    subdomain: subdomain || null,
+    ...(newPass ? { password: newPass } : {}),
+  };
+
+  try {
+    const res = await fetch('/api/dashboard/profile', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      showAlert('Profile saved successfully.', 'success');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      showAlert(data.error || 'Save failed. Please try again.', 'error');
+    }
+  } catch (e) {
+    showAlert('Network error. Please try again.', 'error');
+  }
+}
+
+function showAlert(msg, type) {
+  const el = document.getElementById('alert');
+  el.textContent = msg;
+  el.className = 'alert ' + type;
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function logout() {
+  fetch('/api/auth/logout', { method: 'POST' }).then(() => window.location.href = '/');
+}
+
+loadProfile();
+</script>
+</body>
+</html>

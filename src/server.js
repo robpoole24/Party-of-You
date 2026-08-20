@@ -85,6 +85,19 @@ app.use('/admin', (req, res, next) => {
   }
 });
 
+// Profile edit — requires candidate auth
+app.get('/profile-edit.html', (req, res) => {
+  const token = req.cookies?.poy_token;
+  if (!token) return res.redirect('/apply.html');
+  try {
+    const payload = verifyToken(token);
+    if (!payload || payload.role !== 'candidate') return res.redirect('/apply.html');
+    res.sendFile(path.join(__dirname, '../public/profile-edit.html'));
+  } catch {
+    res.redirect('/apply.html');
+  }
+});
+
 // nav.js — never cache so auth state updates immediately
 app.get('/nav.js', (req, res) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
@@ -259,6 +272,50 @@ app.use('/dashboard', (req, res) => {
 // ─────────────────────────────────────────────────
 app.use('/api/dashboard', requireCandidate, require('./routes/dashboard'));
 app.use('/api/content', requireCandidate, require('./routes/content'));
+
+// Events API
+app.get('/api/events', requireCandidate, async (req, res) => {
+  try {
+    const result = await req.db.query(
+      'SELECT * FROM events WHERE candidate_id = $1 AND start_time > NOW() ORDER BY start_time LIMIT 20',
+      [req.candidate.id]
+    );
+    res.json({ events: result.rows });
+  } catch (e) { res.json({ events: [] }); }
+});
+
+app.post('/api/events', requireCandidate, async (req, res) => {
+  const { title, event_type, start_time, end_time, location_name, address, description } = req.body;
+  try {
+    const result = await req.db.query(`
+      INSERT INTO events (candidate_id, title, event_type, start_time, end_time, location_name, address, description, is_public, created_at)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,true,NOW()) RETURNING id
+    `, [req.candidate.id, title, event_type, start_time, end_time, location_name, address, description]);
+    res.json({ success: true, id: result.rows[0].id });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// Volunteers API
+app.get('/api/volunteers', requireCandidate, async (req, res) => {
+  try {
+    const result = await req.db.query(
+      'SELECT * FROM volunteers WHERE candidate_id = $1 ORDER BY signed_up_at DESC LIMIT 100',
+      [req.candidate.id]
+    );
+    res.json({ volunteers: result.rows });
+  } catch (e) { res.json({ volunteers: [] }); }
+});
+
+app.post('/api/volunteers', requireCandidate, async (req, res) => {
+  const { name, email, phone, zip, skills, source } = req.body;
+  try {
+    const result = await req.db.query(`
+      INSERT INTO volunteers (candidate_id, name, email, phone, zip, skills, source, status, signed_up_at)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,'active',NOW()) RETURNING id
+    `, [req.candidate.id, name, email, phone || null, zip || null, skills || [], source || 'direct']);
+    res.json({ success: true, id: result.rows[0].id });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
 
 // ─────────────────────────────────────────────────
 // SPA FALLBACK — serve index.html for unknown routes
