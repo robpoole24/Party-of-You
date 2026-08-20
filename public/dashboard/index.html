@@ -24,7 +24,7 @@ html { scroll-behavior: smooth; }
 body { font-family: var(--body); background: var(--gray); color: var(--text); -webkit-font-smoothing: antialiased; }
 
 /* ── LAYOUT ── */
-.shell { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+.shell { min-height: 100vh; }
 
 /* ── SIDEBAR ── */
 .sidebar {
@@ -73,7 +73,7 @@ body { font-family: var(--body); background: var(--gray); color: var(--text); -w
 .sidebar-footer button:hover { color: var(--white); border-color: rgba(255,255,255,0.3); }
 
 /* ── MAIN ── */
-.main { margin-left: 240px; }
+.main { margin-left: 240px; min-width: 0; box-sizing: border-box; }
 
 /* ── TOPBAR ── */
 .topbar {
@@ -286,42 +286,42 @@ body { font-family: var(--body); background: var(--gray); color: var(--text); -w
 
     <div class="nav-section">
       <span class="nav-label">Campaign</span>
-      <button class="nav-item active" onclick="showSection('overview')">
+      <button class="nav-item active" onclick="showSection('overview', this)">
         <span class="icon">📊</span> Overview
       </button>
-      <button class="nav-item" onclick="showSection('district')">
+      <button class="nav-item" onclick="showSection('district', this)">
         <span class="icon">🗺️</span> District Intelligence
       </button>
-      <button class="nav-item" onclick="showSection('voters')">
+      <button class="nav-item" onclick="showSection('voters', this)">
         <span class="icon">👥</span> Voter Demographics
       </button>
-      <button class="nav-item" onclick="showSection('tracker')">
+      <button class="nav-item" onclick="showSection('tracker', this)">
         <span class="icon">✅</span> Campaign Tracker
       </button>
     </div>
 
     <div class="nav-section">
       <span class="nav-label">Tools</span>
-      <button class="nav-item" onclick="showSection('outreach')">
+      <button class="nav-item" onclick="showSection('outreach', this)">
         <span class="icon">📞</span> Voter Outreach
       </button>
-      <button class="nav-item" onclick="showSection('content')">
+      <button class="nav-item" onclick="showSection('content', this)">
         <span class="icon">✍️</span> Content Builder
       </button>
-      <button class="nav-item" onclick="showSection('events')">
+      <button class="nav-item" onclick="showSection('events', this)">
         <span class="icon">📅</span> Events
       </button>
-      <button class="nav-item" onclick="showSection('volunteers')">
+      <button class="nav-item" onclick="showSection('volunteers', this)">
         <span class="icon">🙋</span> Volunteers
       </button>
     </div>
 
     <div class="nav-section">
       <span class="nav-label">My Campaign</span>
-      <button class="nav-item" onclick="showSection('website')">
+      <button class="nav-item" onclick="showSection('website', this)">
         <span class="icon">🌐</span> My Website
       </button>
-      <button class="nav-item" onclick="showSection('community')">
+      <button class="nav-item" onclick="showSection('community', this)">
         <span class="icon">🤝</span> Community
       </button>
     </div>
@@ -341,7 +341,7 @@ body { font-family: var(--body); background: var(--gray); color: var(--text); -w
       <div class="topbar-actions">
         <span style="font-size:12px;color:var(--muted)" id="last-updated"></span>
         <a href="/apply.html" class="topbar-btn secondary">Edit Profile</a>
-        <button class="topbar-btn primary" onclick="showSection('outreach')">Contact Voters →</button>
+        <button class="topbar-btn primary" onclick="showSection('outreach', this)">Contact Voters →</button>
       </div>
     </div>
 
@@ -873,23 +873,64 @@ async function loadIntelligence() {
   if (!candidateData) return;
   const address = candidateData.address
     ? `${candidateData.address}, ${candidateData.city}, ${candidateData.state} ${candidateData.zip}`
-    : '1234 Main St, Milwaukee, WI 53221';
+    : `${candidateData.city || 'Milwaukee'}, ${candidateData.state || 'WI'}`;
 
+  // Try intelligence API — fail gracefully
   try {
     const res = await fetch(`/api/intelligence?address=${encodeURIComponent(address)}`);
     if (res.ok) {
       intelligenceData = await res.json();
       renderIntelligence();
+    } else {
+      renderPlaceholderIntelligence();
     }
-  } catch {}
+  } catch {
+    renderPlaceholderIntelligence();
+  }
 
+  // Try races API — fail gracefully
   try {
     const raceRes = await fetch(`/api/races?address=${encodeURIComponent(address)}`);
     if (raceRes.ok) {
       const raceData = await raceRes.json();
       renderVictoryBanner(raceData);
+    } else {
+      renderDefaultVictoryBanner();
     }
-  } catch {}
+  } catch {
+    renderDefaultVictoryBanner();
+  }
+}
+
+function renderPlaceholderIntelligence() {
+  // Show placeholder issue bars with note that live data requires API keys
+  renderIssues(null);
+
+  // Set lean meter to center
+  ['lean-needle', 'lean-needle-2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.left = '50%';
+  });
+  const leanBig = document.getElementById('lean-big');
+  if (leanBig) { leanBig.textContent = '—'; }
+  const leanDesc = document.getElementById('lean-desc');
+  if (leanDesc) leanDesc.textContent = 'District data loading...';
+
+  // Placeholder demo grid
+  const demoGrid = document.getElementById('district-demo-grid');
+  if (demoGrid) {
+    demoGrid.innerHTML = `
+      <div class="demo-item"><div class="demo-item-label">Status</div><div class="demo-item-val" style="font-size:16px;color:var(--muted)">Enter your address to load district data</div></div>`;
+  }
+}
+
+function renderDefaultVictoryBanner() {
+  document.getElementById('vic-race').textContent = candidateData?.office_sought || 'Your Race';
+  document.getElementById('vic-votes').textContent = '—';
+  document.getElementById('vic-sub').textContent = 'Add your address to calculate votes needed to win';
+  document.getElementById('vic-reg').textContent = '—';
+  document.getElementById('vic-turnout').textContent = '—';
+  document.getElementById('vic-lean').textContent = '—';
 }
 
 // ── DEMO DATA ─────────────────────────────────────────────────
@@ -1430,12 +1471,14 @@ const sectionTitles = {
   community: 'Community',
 };
 
-function showSection(name) {
+function showSection(name, btn) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('sec-' + name).classList.add('active');
-  if (event?.currentTarget) event.currentTarget.classList.add('active');
-  document.getElementById('topbar-title').textContent = sectionTitles[name] || name;
+  const sec = document.getElementById('sec-' + name);
+  if (sec) sec.classList.add('active');
+  if (btn) btn.classList.add('active');
+  const titleEl = document.getElementById('topbar-title');
+  if (titleEl) titleEl.textContent = sectionTitles[name] || name;
   window.scrollTo({ top: 0 });
 }
 
