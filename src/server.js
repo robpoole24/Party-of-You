@@ -227,8 +227,7 @@ app.use('/api/intelligence', featureGuard('FEATURE_POLLING_INTELLIGENCE'), requi
 // CANDIDATE DASHBOARD GUARD
 // Serves public/dashboard/index.html for authenticated candidates
 // ─────────────────────────────────────────────────
-app.use('/dashboard', (req, res, next) => {
-  const jwt = require('jsonwebtoken');
+app.use('/dashboard', (req, res) => {
   const token = req.cookies?.poy_token ||
     (req.headers.authorization?.startsWith('Bearer ')
       ? req.headers.authorization.slice(7) : null);
@@ -236,11 +235,21 @@ app.use('/dashboard', (req, res, next) => {
   if (!token) return res.redirect('/apply.html?redirect=/dashboard/');
 
   try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET);
-    if (payload.role !== 'candidate') return res.redirect('/apply.html');
-    // Serve the dashboard HTML directly — don't fall through to SPA catch-all
-    return res.sendFile(path.join(__dirname, '../public/dashboard/index.html'));
-  } catch {
+    const payload = verifyToken(token);
+    if (!payload || payload.role !== 'candidate') {
+      return res.redirect('/apply.html');
+    }
+
+    const dashboardPath = path.join(__dirname, '../public/dashboard/index.html');
+    res.sendFile(dashboardPath, (err) => {
+      if (err) {
+        console.error('Dashboard file not found:', err.message);
+        // File doesn't exist yet — redirect to apply with a message
+        res.redirect('/apply.html?message=dashboard-coming-soon');
+      }
+    });
+  } catch (err) {
+    console.error('Dashboard guard error:', err.message);
     return res.redirect('/apply.html?redirect=/dashboard/');
   }
 });
