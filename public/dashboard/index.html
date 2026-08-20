@@ -350,6 +350,17 @@ body { font-family: var(--body); background: var(--gray); color: var(--text); -w
       <!-- ── OVERVIEW ── -->
       <div class="section active" id="sec-overview">
 
+        <!-- Address entry for district data -->
+        <div id="address-entry-bar" style="background:var(--white);border:1px solid var(--border);border-radius:8px;padding:14px 20px;margin-bottom:20px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+          <span style="font-size:13px;color:var(--muted);flex-shrink:0">📍 Load district data:</span>
+          <input type="text" id="address-input" placeholder="Enter your campaign address (e.g. 123 Main St, Milwaukee, WI 53221)"
+            style="flex:1;min-width:260px;height:38px;padding:0 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--body);outline:none"
+            onkeydown="if(event.key==='Enter') lookupAddress()">
+          <button onclick="lookupAddress()" style="height:38px;padding:0 18px;background:var(--navy);color:white;border:none;border-radius:6px;font-family:var(--cond);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;cursor:pointer;flex-shrink:0">
+            Load Data
+          </button>
+        </div>
+
         <!-- Path to Victory Banner -->
         <div class="victory-banner">
           <div>
@@ -599,40 +610,40 @@ body { font-family: var(--body); background: var(--gray); color: var(--text); -w
           <div style="font-size:14px;color:var(--muted)">Choose a method to start contacting voters in your district.</div>
         </div>
         <div class="action-grid" style="margin-bottom:28px">
-          <div class="action-card">
+          <div class="action-card" onclick="startOutreach('door')">
             <div class="action-icon">🚶</div>
             <div class="action-title">Door Knocking</div>
             <div class="action-desc">Generate optimized walk lists from your voter file. Highest persuasion rate of any contact method.</div>
             <div class="action-badge action-free">Free</div>
           </div>
-          <div class="action-card">
+          <div class="action-card" onclick="startOutreach('phone')">
             <div class="action-icon">📞</div>
             <div class="action-title">Phone Banking</div>
             <div class="action-desc">Create call lists filtered by party, turnout history, and geography. Pre-built call scripts included.</div>
             <div class="action-badge action-free">Free</div>
           </div>
-          <div class="action-card">
+          <div class="action-card" onclick="startOutreach('text')">
             <div class="action-icon">📱</div>
             <div class="action-title">Text Outreach</div>
             <div class="action-desc">Send targeted texts via Twilio. Bring your own account — we handle the integration and targeting.</div>
             <div class="action-badge action-paid">Your Twilio acct</div>
           </div>
-          <div class="action-card">
+          <div class="action-card" onclick="startOutreach('email')">
             <div class="action-icon">✉️</div>
             <div class="action-title">Email Blast</div>
             <div class="action-desc">Send to your supporter list via Listmonk. No per-email cost. Unlimited sends, unlimited subscribers.</div>
             <div class="action-badge action-free">Free</div>
           </div>
-          <div class="action-card">
+          <div class="action-card" onclick="startOutreach('mailer')">
             <div class="action-icon">📬</div>
             <div class="action-title">Mailer / Print</div>
             <div class="action-desc">Download print-ready mailer PDFs formatted to USPS specs. Find union print shops near you.</div>
             <div class="action-badge action-free">Free templates</div>
           </div>
-          <div class="action-card">
+          <div class="action-card" onclick="startOutreach('social')">
             <div class="action-icon">📊</div>
             <div class="action-title">Social Media</div>
-            <div class="action-desc">Connect your accounts and schedule posts across Facebook, Instagram, and X simultaneously.</div>
+            <div class="action-desc">Generate platform-specific posts using Content Builder. Schedule across Facebook, Instagram, and X.</div>
             <div class="action-badge action-free">Free</div>
           </div>
         </div>
@@ -1414,45 +1425,81 @@ async function generateContent(type) {
   panel.style.display = 'block';
   loading.style.display = 'block';
   output.textContent = '';
-  panel.scrollIntoView({ behavior: 'smooth' });
-
-  const prompts = {
-    press_release: `Write a campaign announcement press release for ${candidateData?.full_name || 'a candidate'} running for ${candidateData?.office_sought || 'local office'}. They are running on a progressive platform: universal healthcare, workers rights, housing affordability, climate action, and no corporate PAC money. Write in the third person. Include a quote from the candidate. Keep it under 400 words.`,
-    letter_editor: `Write a letter to the editor from ${candidateData?.full_name || 'a candidate'} announcing their candidacy for ${candidateData?.office_sought || 'local office'}. Focus on why they decided to run — frustration with the status quo, commitment to working people, refusal to take corporate money. 250 words max. First person.`,
-    interview_prep: `Create interview talking points for a progressive candidate running for ${candidateData?.office_sought || 'local office'} who supports universal healthcare, workers rights, housing affordability, and takes no corporate money. Include: 3 key messages, answers to the 3 hardest questions they'll face, and a 30-second closing statement.`,
-    social_announce: `Write 3 versions of a social media campaign announcement post for ${candidateData?.full_name || 'a candidate'} running for ${candidateData?.office_sought || 'local office'}. One for Twitter/X (280 chars), one for Facebook (conversational, 3 paragraphs), one for Instagram (with suggested hashtags). They take no corporate money and run on a progressive platform.`,
-    social_issue: `Write a social media post about healthcare as a human right, from the perspective of a progressive candidate for ${candidateData?.office_sought || 'local office'}. Include a personal connection to why this matters, a concrete policy position, and a call to action. Under 280 characters for Twitter, then a longer Facebook version.`,
-    social_volunteer: `Write a volunteer recruitment social media post for ${candidateData?.full_name || 'a candidate'} running for ${candidateData?.office_sought || 'local office'}. Make it exciting and urgent. Explain why volunteering for this race matters. Include what volunteers will do (door knocking, phone banking, events). 3 versions: short tweet, Facebook post, Instagram.`,
-    door_script: `Write a door-knock script for ${candidateData?.full_name || 'a candidate'} running for ${candidateData?.office_sought || 'local office'}. Include: intro (10 seconds), candidate pitch (30 seconds), 3 common objections with responses, leave-behind ask, and how to log the result. Conversational and natural, not robotic.`,
-    phone_script: `Write a phone banking script for volunteers calling on behalf of ${candidateData?.full_name || 'a candidate'} running for ${candidateData?.office_sought || 'local office'}. Include: opening, candidate pitch, survey question about top issues, voter ID question, volunteer ask for supporters, graceful exit for non-supporters. Keep the opening under 20 seconds.`,
-    pitch: `Write a 30-second stump speech for ${candidateData?.full_name || 'a candidate'} running for ${candidateData?.office_sought || 'local office'} on a progressive platform with no corporate money. It should be punchy, memorable, and end with a clear call to action. Write it to be spoken aloud — conversational, not formal.`,
-    video_intro: `Write a 60-second video ad script for ${candidateData?.full_name || 'a candidate'} running for ${candidateData?.office_sought || 'local office'}. Include: scene descriptions [in brackets], the spoken narration, and suggested B-roll. The ad should introduce the candidate personally, explain why they're running, and contrast with a corporate-funded opponent. Documentary style.`,
-    video_contrast: `Write a 30-second contrast video ad script focusing on the incumbent's record versus ${candidateData?.full_name || "the challenger"}'s positions on healthcare and working families. Use specific, factual contrast framing — "They voted for X, which meant Y for working families. [Candidate] believes Z." Include scene descriptions. Hard-hitting but factual.`,
-    video_issue: `Write a 45-second explainer video ad script about housing affordability for a progressive candidate for ${candidateData?.office_sought || 'local office'}. Tell the story of a working family struggling with rent, explain why housing costs are high (corporate landlords, speculation), and present the candidate's solution. Include scene directions.`,
-  };
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch('/api/content/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 1000,
-        messages: [{ role: 'user', content: prompts[type] || 'Write a campaign message for a progressive independent candidate.' }],
+        type,
+        candidateContext: {
+          full_name: candidateData?.full_name,
+          office_sought: candidateData?.office_sought,
+          state: candidateData?.state,
+          city: candidateData?.city,
+        },
       }),
     });
 
     const data = await res.json();
-    const text = data.content?.find(b => b.type === 'text')?.text || 'Could not generate content.';
     loading.style.display = 'none';
-    output.textContent = text;
+
+    if (data.success) {
+      output.textContent = data.content;
+    } else if (res.status === 503) {
+      output.textContent = '⚠️ Content generation requires ANTHROPIC_API_KEY to be set in Railway environment variables.\n\nGo to Railway → Party of You service → Variables → add ANTHROPIC_API_KEY.';
+    } else {
+      output.textContent = `Error: ${data.error || 'Content generation failed. Please try again.'}`;
+    }
   } catch (e) {
     loading.style.display = 'none';
-    output.textContent = 'Content generation requires an active API connection. Please check your network and try again.';
+    output.textContent = 'Network error. Please check your connection and try again.';
   }
 }
 
-function copyContent() {
+// ── ADDRESS LOOKUP ────────────────────────────────────────────
+async function lookupAddress() {
+  const input = document.getElementById('address-input');
+  const address = input?.value?.trim();
+  if (!address) { alert('Please enter your campaign address.'); return; }
+
+  const btn = input.nextElementSibling;
+  const orig = btn.textContent;
+  btn.textContent = 'Loading...';
+  btn.disabled = true;
+
+  // Override candidateData address for this session
+  if (candidateData) {
+    const parts = address.split(',');
+    candidateData.address = parts[0]?.trim() || address;
+  }
+
+  await loadIntelligence();
+  renderCharts();
+
+  btn.textContent = orig;
+  btn.disabled = false;
+
+  // Hide the bar after successful load
+  const bar = document.getElementById('address-entry-bar');
+  if (bar) bar.style.display = 'none';
+}
+
+// ── OUTREACH ACTIONS ──────────────────────────────────────────
+function startOutreach(method) {
+  const messages = {
+    door: `Door Knocking Guide:\n\n1. Download your voter walk list from the Voter Outreach tab\n2. Print or load on your phone\n3. Use our door knock script (Content Builder → Door Knock Script)\n4. Log results after each door\n\nTip: Knock doors Tuesday-Saturday 4-8pm for best contact rates.`,
+    phone: `Phone Banking Guide:\n\n1. Get your call list from the Voter Outreach tab\n2. Use our phone script (Content Builder → Phone Bank Script)\n3. Log each call result (support/lean/against/not home)\n4. Schedule phone bank events through the Events tab\n\nTip: Best calling times are weekdays 5-8pm and weekends 12-5pm.`,
+    text: `Text Outreach:\n\nTo send texts you need a Twilio account (twilio.com — free trial available).\n\n1. Create a Twilio account\n2. Add your Twilio credentials to My Website → Add-On Services\n3. Upload your voter contact list\n4. Use our text templates from Content Builder\n\nTwilio costs approximately $0.0075/text.`,
+    email: `Email Outreach via Listmonk:\n\nYour Listmonk email system is connected. To send a blast:\n\n1. Go to your Listmonk dashboard\n2. Create a campaign\n3. Use content from Content Builder\n4. Send to your supporter list\n\nListmonk sends are unlimited and free.`,
+    mailer: `Print Mail Guide:\n\n1. Use Content Builder to generate your message\n2. Download print-ready templates (coming soon)\n3. Find union print shops: unionprinting.com or local union shops\n4. USPS EDDM (Every Door Direct Mail) costs ~$0.21/piece — no mailing list needed\n\nEDDM lets you mail to every address on a mail route — great for local races.`,
+    social: `Social Media:\n\n1. Use Content Builder to generate posts\n2. Post to your personal and campaign accounts\n3. Boost key posts with small ad budgets ($5-20)\n4. Consistent posting schedule beats viral posts\n\nFacebook and Instagram are most effective for local races. Nextdoor is excellent for hyper-local.`,
+  };
+
+  alert(messages[method] || 'Feature coming soon.');
+}
+
   const text = document.getElementById('content-output-text').textContent;
   navigator.clipboard.writeText(text).then(() => alert('Copied to clipboard!'));
 }

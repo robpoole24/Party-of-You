@@ -258,6 +258,7 @@ app.use('/dashboard', (req, res) => {
 // PROTECTED CANDIDATE API ROUTES
 // ─────────────────────────────────────────────────
 app.use('/api/dashboard', requireCandidate, require('./routes/dashboard'));
+app.use('/api/content', requireCandidate, require('./routes/content'));
 
 // ─────────────────────────────────────────────────
 // SPA FALLBACK — serve index.html for unknown routes
