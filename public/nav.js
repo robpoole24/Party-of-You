@@ -212,8 +212,31 @@
   }
 
   function swapToDashboard() {
-    const desktopCta = document.querySelector('#poy-nav .poy-nav-cta');
-    const drawerCta = document.querySelector('#poy-nav-drawer .poy-nav-cta');
+    // Try multiple selectors to find the CTA
+    const selectors = [
+      '#poy-nav .poy-nav-cta',
+      '#poy-nav a[href="/apply.html"]',
+      '#poy-nav a[class*="cta"]',
+    ];
+
+    let desktopCta = null;
+    for (const sel of selectors) {
+      desktopCta = document.querySelector(sel);
+      if (desktopCta) break;
+    }
+
+    const drawerSelectors = [
+      '#poy-nav-drawer .poy-nav-cta',
+      '#poy-nav-drawer a[href="/apply.html"]',
+      '#poy-nav-drawer a[class*="cta"]',
+    ];
+
+    let drawerCta = null;
+    for (const sel of drawerSelectors) {
+      drawerCta = document.querySelector(sel);
+      if (drawerCta) break;
+    }
+
     if (desktopCta) {
       desktopCta.href = '/dashboard/';
       desktopCta.innerHTML = '⚡ My Dashboard';
