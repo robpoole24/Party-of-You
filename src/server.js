@@ -154,6 +154,21 @@ app.post('/api/admin/logout', (req, res) => {
 app.post('/api/auth/login', (req, res) => candidateLogin(req, res, db));
 app.post('/api/auth/logout', logout);
 
+// Lightweight auth check — used by nav.js to show/hide dashboard link
+app.get('/api/auth/me', (req, res) => {
+  const { verifyToken } = require('./middleware/auth');
+  const token = req.cookies?.poy_token;
+  if (!token) return res.status(401).json({ authenticated: false });
+  const payload = verifyToken(token);
+  if (!payload || payload.role !== 'candidate') return res.status(401).json({ authenticated: false });
+  res.json({
+    authenticated: true,
+    candidateId: payload.candidateId,
+    email: payload.email,
+    status: payload.status,
+  });
+});
+
 // Candidate signup + onboarding
 const signupRouter = require('./auth/signup');
 app.use('/api/auth', signupRouter);

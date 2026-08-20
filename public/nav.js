@@ -161,7 +161,7 @@
   `;
 
   // ── BUILD NAV HTML ───────────────────────────────────────────────
-  function buildNav() {
+  function buildNav(isLoggedIn, candidateName) {
     const desktopLinks = NAV_LINKS.map(link =>
       `<a href="${link.href}"${isActive(link.href) ? ' class="poy-active"' : ''}>${link.label}</a>`
     ).join('');
@@ -170,6 +170,17 @@
       `<a href="${link.href}"${isActive(link.href) ? ' class="poy-active"' : ''}>${link.label}</a>`
     ).join('');
 
+    // Show dashboard link instead of CTA if logged in
+    const ctaHtml = isLoggedIn
+      ? `<a href="/dashboard/" class="poy-nav-cta" style="display:flex;align-items:center;gap:6px">
+           <span style="font-size:16px">⚡</span> My Dashboard
+         </a>`
+      : `<a href="${CTA.href}" class="poy-nav-cta">${CTA.label}</a>`;
+
+    const drawerCtaHtml = isLoggedIn
+      ? `<a href="/dashboard/" class="poy-nav-cta">⚡ My Dashboard</a>`
+      : `<a href="${CTA.href}" class="poy-nav-cta">${CTA.label}</a>`;
+
     return `
       <nav id="poy-nav">
         <a href="/" class="poy-nav-logo">
@@ -177,30 +188,58 @@
         </a>
         <div class="poy-nav-links">
           ${desktopLinks}
-          <a href="${CTA.href}" class="poy-nav-cta">${CTA.label}</a>
+          ${ctaHtml}
         </div>
         <button class="poy-hamburger" onclick="document.getElementById('poy-nav-drawer').classList.toggle('open')" aria-label="Toggle menu">☰</button>
       </nav>
       <div id="poy-nav-drawer">
         ${drawerLinks}
-        <a href="${CTA.href}" class="poy-nav-cta">${CTA.label}</a>
+        ${drawerCtaHtml}
       </div>
     `;
   }
 
+  // ── CHECK AUTH STATUS ────────────────────────────────────────────
+  // Hits a lightweight endpoint to check if cookie is valid.
+  // Builds nav immediately (unauthenticated), then swaps CTA if logged in.
+  function checkAuthAndUpdate() {
+    fetch('/api/auth/me', { credentials: 'same-origin' })
+      .then(res => {
+        if (res.ok) return res.json();
+        return null;
+      })
+      .then(data => {
+        if (data?.candidateId) {
+          // Swap the CTA links to dashboard
+          const desktopCta = document.querySelector('#poy-nav .poy-nav-cta');
+          const drawerCta = document.querySelector('#poy-nav-drawer .poy-nav-cta');
+          if (desktopCta) {
+            desktopCta.href = '/dashboard/';
+            desktopCta.innerHTML = '<span style="font-size:15px">⚡</span> My Dashboard';
+          }
+          if (drawerCta) {
+            drawerCta.href = '/dashboard/';
+            drawerCta.textContent = '⚡ My Dashboard';
+          }
+        }
+      })
+      .catch(() => {}); // Fail silently — nav works either way
+  }
+
   // ── INJECT ───────────────────────────────────────────────────────
   function inject() {
-    // Fonts
     ensureFonts();
 
-    // Styles
     const style = document.createElement('style');
     style.id = 'poy-nav-styles';
     style.textContent = CSS;
     document.head.appendChild(style);
 
-    // Nav HTML
-    document.body.insertAdjacentHTML('afterbegin', buildNav());
+    // Build nav (unauthenticated by default — swapped async if logged in)
+    document.body.insertAdjacentHTML('afterbegin', buildNav(false));
+
+    // Check auth and update nav if candidate is logged in
+    checkAuthAndUpdate();
 
     // Close drawer when clicking outside
     document.addEventListener('click', function (e) {
