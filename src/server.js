@@ -85,6 +85,12 @@ app.use('/admin', (req, res, next) => {
   }
 });
 
+// nav.js — never cache so auth state updates immediately
+app.get('/nav.js', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+  res.sendFile(path.join(__dirname, '../public/nav.js'));
+});
+
 // Admin files — never cache (always need fresh JS/HTML)
 app.use('/admin', express.static(path.join(__dirname, '../public/admin'), {
   maxAge: 0,
