@@ -29,10 +29,7 @@ router.get('/profile', async (req, res) => {
         c.race_id, c.office_sought, c.district, c.state, c.status,
         c.onboarding_step, c.platform_agreed, c.platform_agreed_at,
         c.created_at, c.updated_at,
-        u.email, u.phone, u.address, u.city, u.state as user_state, u.zip, u.last_login,
-        (SELECT COUNT(*) FROM volunteers WHERE candidate_id = c.id AND status = 'active') as volunteer_count,
-        (SELECT COUNT(*) FROM events WHERE candidate_id = c.id AND start_time > NOW()) as upcoming_events,
-        (SELECT COUNT(*) FROM contact_log WHERE candidate_id = c.id) as doors_knocked,
+        u.email, u.last_login,
         cp.pledged_at
       FROM candidates c
       JOIN users u ON u.id = c.user_id
@@ -46,17 +43,23 @@ router.get('/profile', async (req, res) => {
 
     const c = result.rows[0];
 
-    res.json({
-      ...c,
-      stats: {
-        volunteers: parseInt(c.volunteer_count) || 0,
-        upcomingEvents: parseInt(c.upcoming_events) || 0,
-        doorsKnocked: parseInt(c.doors_knocked) || 0,
-      },
-    });
+    // Get stats separately so a missing table doesn't crash everything
+    let stats = { volunteers: 0, upcomingEvents: 0, doorsKnocked: 0 };
+    try {
+      const [vol, events, doors] = await Promise.allSettled([
+        db.query('SELECT COUNT(*) FROM volunteers WHERE candidate_id = $1 AND status = \'active\'', [candidateId]),
+        db.query('SELECT COUNT(*) FROM events WHERE candidate_id = $1 AND start_time > NOW()', [candidateId]),
+        db.query('SELECT COUNT(*) FROM contact_log WHERE candidate_id = $1', [candidateId]),
+      ]);
+      stats.volunteers = parseInt(vol.value?.rows[0]?.count) || 0;
+      stats.upcomingEvents = parseInt(events.value?.rows[0]?.count) || 0;
+      stats.doorsKnocked = parseInt(doors.value?.rows[0]?.count) || 0;
+    } catch {}
+
+    res.json({ ...c, stats });
   } catch (err) {
-    console.error('Dashboard profile error:', err);
-    res.status(500).json({ error: err.message });
+    console.error('Dashboard profile error:', err.message);
+    res.status(500).json({ error: 'Could not load profile', detail: err.message });
   }
 });
 
@@ -88,8 +91,7 @@ router.get('/checklist', async (req, res) => {
       const candidate = await req.db.query(
         `SELECT c.*, cp.pledged_at,
           (SELECT COUNT(*) FROM volunteers WHERE candidate_id = c.id) as vol_count,
-          (SELECT COUNT(*) FROM events WHERE candidate_id = c.id) as event_count,
-          (SELECT id FROM candidate_site_pages WHERE candidate_id = c.id LIMIT 1) as has_site
+          (SELECT COUNT(*) FROM events WHERE candidate_id = c.id) as event_count
          FROM candidates c
          LEFT JOIN candidate_pledges cp ON cp.candidate_id = c.id
          WHERE c.id = $1`,
@@ -102,7 +104,6 @@ router.get('/checklist', async (req, res) => {
         ...(c?.pledged_at ? ['pledge_signed'] : []),
         ...(parseInt(c?.vol_count) > 0 ? ['first_volunteer'] : []),
         ...(parseInt(c?.event_count) > 0 ? ['first_event'] : []),
-        ...(c?.has_site ? ['campaign_website'] : []),
       ]);
 
       const checklist = defaultChecklist.map(task => ({
