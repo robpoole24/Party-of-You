@@ -205,7 +205,7 @@ app.use('/api/intelligence', featureGuard('FEATURE_POLLING_INTELLIGENCE'), requi
 
 // ─────────────────────────────────────────────────
 // CANDIDATE DASHBOARD GUARD
-// /dashboard/ requires valid candidate JWT
+// Serves public/dashboard/index.html for authenticated candidates
 // ─────────────────────────────────────────────────
 app.use('/dashboard', (req, res, next) => {
   const jwt = require('jsonwebtoken');
@@ -218,7 +218,8 @@ app.use('/dashboard', (req, res, next) => {
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET);
     if (payload.role !== 'candidate') return res.redirect('/apply.html');
-    next();
+    // Serve the dashboard HTML directly — don't fall through to SPA catch-all
+    return res.sendFile(path.join(__dirname, '../public/dashboard/index.html'));
   } catch {
     return res.redirect('/apply.html?redirect=/dashboard/');
   }
@@ -235,8 +236,9 @@ app.use('/api/dashboard', requireCandidate, require('./routes/dashboard'));
 // ─────────────────────────────────────────────────
 
 app.get('*', (req, res, next) => {
-  // Don't intercept /api/ routes
+  // Don't intercept API routes or dashboard (handled above)
   if (req.path.startsWith('/api/')) return next();
+  if (req.path.startsWith('/dashboard')) return next();
   // Serve index.html for everything else that isn't a static file
   res.sendFile(path.join(__dirname, '../public/index.html'));
 });
