@@ -21,21 +21,30 @@ const express = require('express');
 const router = express.Router();
 
 // ── LISTMONK CLIENT ───────────────────────────────────────────────
-function listmonkFetch(path, options = {}) {
-  const base = process.env.LISTMONK_URL || 'http://listmonk.railway.internal:9000';
+async function listmonkFetch(path, options = {}) {
+  const base = (process.env.LISTMONK_URL || 'http://listmonk.railway.internal:9000').replace(/\/$/, '');
   const username = process.env.LISTMONK_USERNAME || 'admin';
   const password = process.env.LISTMONK_PASSWORD || '';
 
   const credentials = Buffer.from(`${username}:${password}`).toString('base64');
+  const url = `${base}/api${path}`;
 
-  return fetch(`${base}/api${path}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Basic ${credentials}`,
-      ...options.headers,
-    },
-  });
+  console.log(`[Listmonk] ${options.method || 'GET'} ${url}`);
+
+  try {
+    const res = await fetch(url, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Basic ${credentials}`,
+        ...options.headers,
+      },
+    });
+    return res;
+  } catch (err) {
+    console.error(`[Listmonk] Fetch failed for ${url}:`, err.message);
+    throw new Error(`Cannot reach Listmonk at ${base}. Error: ${err.message}`);
+  }
 }
 
 // Check if Listmonk is configured
@@ -89,13 +98,22 @@ router.get('/status', async (req, res) => {
     return res.json({
       connected: false,
       reason: 'Listmonk is not configured. Set LISTMONK_URL, LISTMONK_USERNAME, LISTMONK_PASSWORD in Railway.',
+      debug: {
+        LISTMONK_URL: process.env.LISTMONK_URL ? '✓ set' : '✗ missing',
+        LISTMONK_USERNAME: process.env.LISTMONK_USERNAME ? '✓ set' : '✗ missing',
+        LISTMONK_PASSWORD: process.env.LISTMONK_PASSWORD ? '✓ set' : '✗ missing',
+      },
     });
   }
 
   try {
     // Test Listmonk connection
+    const listmonkBase = (process.env.LISTMONK_URL || '').replace(/\/$/, '');
     const healthRes = await listmonkFetch('/health');
-    if (!healthRes.ok) throw new Error('Listmonk health check failed');
+    if (!healthRes.ok) {
+      const body = await healthRes.text();
+      throw new Error(`Listmonk returned ${healthRes.status}: ${body.slice(0, 200)}`);
+    }
 
     // Get candidate info
     const candResult = await db.query(
@@ -119,9 +137,11 @@ router.get('/status', async (req, res) => {
       subscriberCount: listData.data?.subscriber_count || 0,
     });
   } catch (err) {
+    console.error('[Email status] Error:', err.message);
     res.json({
       connected: false,
       reason: err.message,
+      listmonkUrl: (process.env.LISTMONK_URL || 'not set').replace(/\/.*@/, '/***@'), // mask password in URL if present
     });
   }
 });
