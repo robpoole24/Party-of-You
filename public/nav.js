@@ -200,50 +200,43 @@
   }
 
   // ── CHECK AUTH STATUS ────────────────────────────────────────────
+  // Check for auth cookie synchronously — instant, no network call needed.
+  // The cookie is HttpOnly so we can't read its value, but we can check
+  // if it exists by hitting /api/auth/me. We do this after a short delay
+  // to ensure the nav is fully rendered first.
   function checkAuthAndUpdate() {
-    fetch('/api/auth/me', { credentials: 'same-origin' })
-      .then(res => res.json())
-      .then(data => {
-        if (data?.authenticated && data?.candidateId) {
-          swapToDashboard();
-        }
-      })
-      .catch(() => {});
+    // Small delay to ensure DOM is settled
+    setTimeout(() => {
+      fetch('/api/auth/me', { credentials: 'same-origin' })
+        .then(r => r.json())
+        .then(data => {
+          if (data && data.authenticated) {
+            swapToDashboard();
+          }
+        })
+        .catch(() => {});
+    }, 50);
   }
 
   function swapToDashboard() {
-    // Try multiple selectors to find the CTA
-    const selectors = [
-      '#poy-nav .poy-nav-cta',
-      '#poy-nav a[href="/apply.html"]',
-      '#poy-nav a[class*="cta"]',
-    ];
+    // Find by class first, then by href as fallback
+    const nav = document.getElementById('poy-nav');
+    const drawer = document.getElementById('poy-nav-drawer');
 
-    let desktopCta = null;
-    for (const sel of selectors) {
-      desktopCta = document.querySelector(sel);
-      if (desktopCta) break;
+    if (nav) {
+      const cta = nav.querySelector('.poy-nav-cta') || nav.querySelector('a[href="/apply.html"]');
+      if (cta) {
+        cta.setAttribute('href', '/dashboard/');
+        cta.innerHTML = '⚡ My Dashboard';
+      }
     }
 
-    const drawerSelectors = [
-      '#poy-nav-drawer .poy-nav-cta',
-      '#poy-nav-drawer a[href="/apply.html"]',
-      '#poy-nav-drawer a[class*="cta"]',
-    ];
-
-    let drawerCta = null;
-    for (const sel of drawerSelectors) {
-      drawerCta = document.querySelector(sel);
-      if (drawerCta) break;
-    }
-
-    if (desktopCta) {
-      desktopCta.href = '/dashboard/';
-      desktopCta.innerHTML = '⚡ My Dashboard';
-    }
-    if (drawerCta) {
-      drawerCta.href = '/dashboard/';
-      drawerCta.textContent = '⚡ My Dashboard';
+    if (drawer) {
+      const cta = drawer.querySelector('.poy-nav-cta') || drawer.querySelector('a[href="/apply.html"]');
+      if (cta) {
+        cta.setAttribute('href', '/dashboard/');
+        cta.textContent = '⚡ My Dashboard';
+      }
     }
   }
 
