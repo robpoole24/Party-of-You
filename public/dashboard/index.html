@@ -302,6 +302,9 @@ body { font-family: var(--body); background: var(--gray); color: var(--text); -w
 
     <div class="nav-section">
       <span class="nav-label">Tools</span>
+      <button class="nav-item" onclick="showSection('email', this)">
+        <span class="icon">📧</span> Email Marketing
+      </button>
       <button class="nav-item" onclick="showSection('outreach', this)">
         <span class="icon">📞</span> Voter Outreach
       </button>
@@ -971,6 +974,147 @@ body { font-family: var(--body); background: var(--gray); color: var(--text); -w
                 <a href="https://www.unionlabel.org/affiliate_search.php" target="_blank" style="display:flex;justify-content:space-between;padding:10px 12px;background:var(--gray);border-radius:6px;text-decoration:none;color:var(--text);font-size:13px">
                   <span>🔍 Find Local Union Printers</span><span style="color:var(--sky)">UFCW Directory →</span>
                 </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── EMAIL MARKETING ── -->
+      <div class="section" id="sec-email">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px">
+          <div>
+            <div style="font-family:var(--cond);font-size:28px;font-weight:900;text-transform:uppercase;color:var(--navy);margin-bottom:6px">Email Marketing</div>
+            <div style="font-size:14px;color:var(--muted)">Manage your subscriber list and send campaigns — free, unlimited, powered by Listmonk.</div>
+          </div>
+          <button class="topbar-btn primary" onclick="showComposeForm()">+ New Campaign</button>
+        </div>
+
+        <!-- Status bar -->
+        <div id="email-status-bar" style="background:var(--white);border:1px solid var(--border);border-radius:8px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div id="email-status-dot" style="width:10px;height:10px;border-radius:50%;background:var(--border);flex-shrink:0"></div>
+            <span id="email-status-text" style="font-size:13px;color:var(--muted)">Checking connection...</span>
+          </div>
+          <div style="margin-left:auto;display:flex;gap:16px">
+            <div style="text-align:center">
+              <div style="font-family:var(--cond);font-size:24px;font-weight:900;color:var(--navy)" id="email-sub-count">—</div>
+              <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em">Subscribers</div>
+            </div>
+            <div style="text-align:center">
+              <div style="font-family:var(--cond);font-size:24px;font-weight:900;color:var(--navy)" id="email-camp-count">—</div>
+              <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em">Campaigns Sent</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Compose Form -->
+        <div class="panel" id="compose-panel" style="display:none;margin-bottom:20px">
+          <div class="panel-hdr">
+            <h2><span class="ph-icon">✍️</span> New Email Campaign</h2>
+            <button onclick="hideComposeForm()" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:18px">✕</button>
+          </div>
+          <div class="panel-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+              <div>
+                <label style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);display:block;margin-bottom:6px">Subject Line *</label>
+                <input id="camp-subject" type="text" placeholder="Important update from your campaign" style="width:100%;height:40px;padding:0 12px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:var(--body)">
+              </div>
+              <div>
+                <label style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);display:block;margin-bottom:6px">From Name</label>
+                <input id="camp-from" type="text" placeholder="Your name" style="width:100%;height:40px;padding:0 12px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:var(--body)">
+              </div>
+            </div>
+            <div style="margin-bottom:16px">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                <label style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted)">Email Body *</label>
+                <button onclick="generateEmailWithAI()" style="font-size:11px;color:var(--sky);background:none;border:none;cursor:pointer;font-family:var(--body)">✨ Generate with AI</button>
+              </div>
+              <textarea id="camp-body" rows="12" placeholder="Write your email here. HTML is supported for formatting." style="width:100%;padding:12px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:var(--body);resize:vertical"></textarea>
+              <div style="font-size:11px;color:var(--muted);margin-top:4px">Basic HTML supported: &lt;b&gt;bold&lt;/b&gt;, &lt;a href=""&gt;links&lt;/a&gt;, &lt;p&gt;paragraphs&lt;/p&gt;</div>
+            </div>
+            <div style="background:rgba(43,127,193,0.06);border:1px solid rgba(43,127,193,0.2);border-radius:6px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:var(--sky)">
+              📋 This will be sent to all <strong id="compose-sub-count">—</strong> subscribers on your list.
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <button onclick="sendCampaign(true)" class="topbar-btn primary">Send Now →</button>
+              <button onclick="sendCampaign(false)" class="topbar-btn secondary">Save as Draft</button>
+              <button onclick="hideComposeForm()" class="topbar-btn secondary">Cancel</button>
+            </div>
+            <div id="campaign-result" style="margin-top:12px;font-size:13px;display:none"></div>
+          </div>
+        </div>
+
+        <div class="panel-grid">
+          <!-- Subscribers -->
+          <div class="panel">
+            <div class="panel-hdr">
+              <h2><span class="ph-icon">👥</span> Subscribers</h2>
+              <button onclick="showAddSubscriber()" class="topbar-btn secondary" style="font-size:11px;padding:5px 12px">+ Add</button>
+            </div>
+            <div id="add-subscriber-form" style="display:none;padding:16px;border-bottom:1px solid var(--border);background:var(--gray)">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+                <input id="sub-name" type="text" placeholder="Full name" style="height:36px;padding:0 10px;border:1px solid var(--border);border-radius:5px;font-size:13px;font-family:var(--body)">
+                <input id="sub-email" type="email" placeholder="email@example.com" style="height:36px;padding:0 10px;border:1px solid var(--border);border-radius:5px;font-size:13px;font-family:var(--body)">
+              </div>
+              <div style="display:flex;gap:8px">
+                <button onclick="addSubscriber()" class="topbar-btn primary" style="font-size:11px;padding:6px 14px">Add Subscriber</button>
+                <button onclick="document.getElementById('add-subscriber-form').style.display='none'" class="topbar-btn secondary" style="font-size:11px;padding:6px 14px">Cancel</button>
+              </div>
+            </div>
+            <div style="padding:12px 16px;border-bottom:1px solid var(--border)">
+              <input type="text" id="sub-search" placeholder="Search subscribers..." oninput="searchSubscribers()"
+                style="width:100%;height:36px;padding:0 12px;border:1px solid var(--border);border-radius:5px;font-size:13px;font-family:var(--body)">
+            </div>
+            <div style="max-height:380px;overflow-y:auto">
+              <table class="data-table" id="sub-table">
+                <thead><tr><th>Name</th><th>Email</th><th>Status</th><th>Added</th><th></th></tr></thead>
+                <tbody id="sub-tbody">
+                  <tr><td colspan="5" style="text-align:center;padding:24px;color:var(--muted)">Loading subscribers...</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div id="sub-pagination" style="padding:12px 16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted)"></div>
+          </div>
+
+          <!-- Campaigns -->
+          <div class="panel">
+            <div class="panel-hdr">
+              <h2><span class="ph-icon">📨</span> Campaigns</h2>
+            </div>
+            <div id="campaigns-list" style="max-height:460px;overflow-y:auto">
+              <div style="text-align:center;padding:40px;color:var(--muted)">
+                <div style="font-size:36px;margin-bottom:10px">📨</div>
+                <div style="font-size:13px">No campaigns yet. Create your first email blast.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tips -->
+        <div class="panel" style="margin-top:0">
+          <div class="panel-hdr"><h2><span class="ph-icon">💡</span> Email Best Practices</h2></div>
+          <div class="panel-body">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px">
+              <div style="background:var(--gray);border-radius:8px;padding:14px">
+                <div style="font-size:20px;margin-bottom:6px">📬</div>
+                <div style="font-weight:700;font-size:13px;color:var(--navy);margin-bottom:4px">Subject Lines</div>
+                <div style="font-size:12px;color:var(--muted);line-height:1.6">Keep it under 50 characters. Use your community's name. Avoid spam words like "free" or "urgent."</div>
+              </div>
+              <div style="background:var(--gray);border-radius:8px;padding:14px">
+                <div style="font-size:20px;margin-bottom:6px">⏰</div>
+                <div style="font-weight:700;font-size:13px;color:var(--navy);margin-bottom:4px">Best Times to Send</div>
+                <div style="font-size:12px;color:var(--muted);line-height:1.6">Tuesday–Thursday, 10am–2pm local time. Avoid Mondays and Fridays. Never send Friday evening.</div>
+              </div>
+              <div style="background:var(--gray);border-radius:8px;padding:14px">
+                <div style="font-size:20px;margin-bottom:6px">📝</div>
+                <div style="font-weight:700;font-size:13px;color:var(--navy);margin-bottom:4px">Email Length</div>
+                <div style="font-size:12px;color:var(--muted);line-height:1.6">Under 300 words for updates. Under 500 for newsletters. Always one clear call to action.</div>
+              </div>
+              <div style="background:var(--gray);border-radius:8px;padding:14px">
+                <div style="font-size:20px;margin-bottom:6px">📊</div>
+                <div style="font-weight:700;font-size:13px;color:var(--navy);margin-bottom:4px">What Good Looks Like</div>
+                <div style="font-size:12px;color:var(--muted);line-height:1.6">Political emails average 20–25% open rate. Above 30% is excellent. Click rates of 3–5% are healthy.</div>
               </div>
             </div>
           </div>
@@ -1979,6 +2123,7 @@ const sectionTitles = {
   district: 'District Intelligence',
   voters: 'Voter Demographics',
   tracker: 'Campaign Tracker',
+  email: 'Email Marketing',
   outreach: 'Voter Outreach',
   content: 'Content Builder',
   events: 'Events',
@@ -1986,6 +2131,254 @@ const sectionTitles = {
   website: 'My Website',
   community: 'Community',
 };
+
+// ── EMAIL MARKETING ───────────────────────────────────────────
+let emailState = { listId: null, subCount: 0, page: 1 };
+
+async function loadEmail() {
+  // Load status
+  try {
+    const res = await fetch('/api/email/status');
+    const data = await res.json();
+
+    const dot = document.getElementById('email-status-dot');
+    const txt = document.getElementById('email-status-text');
+    const subCount = document.getElementById('email-sub-count');
+
+    if (data.connected) {
+      dot.style.background = 'var(--green-l)';
+      txt.textContent = `Connected — list: "${data.listName}"`;
+      subCount.textContent = data.subscriberCount?.toLocaleString() || '0';
+      document.getElementById('compose-sub-count').textContent = data.subscriberCount || '0';
+      emailState.listId = data.listId;
+      emailState.subCount = data.subscriberCount || 0;
+    } else {
+      dot.style.background = 'var(--red)';
+      txt.innerHTML = `Not connected — <span style="color:var(--muted)">${data.reason || 'Check Railway env vars'}</span>`;
+    }
+  } catch {}
+
+  loadSubscribers();
+  loadCampaigns();
+}
+
+let subSearchTimer;
+function searchSubscribers() {
+  clearTimeout(subSearchTimer);
+  subSearchTimer = setTimeout(() => { emailState.page = 1; loadSubscribers(); }, 350);
+}
+
+async function loadSubscribers() {
+  const tbody = document.getElementById('sub-tbody');
+  if (!tbody) return;
+  const search = document.getElementById('sub-search')?.value || '';
+
+  tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted)">Loading...</td></tr>';
+
+  try {
+    const params = new URLSearchParams({ page: emailState.page, per_page: 20, search });
+    const res = await fetch(`/api/email/subscribers?${params}`);
+    const data = await res.json();
+
+    if (!data.subscribers?.length) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--muted)">No subscribers yet. Add your first supporter.</td></tr>';
+      document.getElementById('sub-pagination').textContent = '';
+      return;
+    }
+
+    tbody.innerHTML = data.subscribers.map(s => `
+      <tr>
+        <td style="font-weight:600">${s.name}</td>
+        <td style="color:var(--muted);font-size:12px">${s.email}</td>
+        <td><span class="badge ${s.status === 'enabled' ? 'badge-green' : 'badge-gray'}">${s.status}</span></td>
+        <td style="color:var(--muted);font-size:12px">${new Date(s.createdAt).toLocaleDateString()}</td>
+        <td><button onclick="removeSubscriber(${s.id}, '${s.email}')" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:16px" title="Remove">✕</button></td>
+      </tr>`).join('');
+
+    const total = data.total || 0;
+    const pages = Math.ceil(total / 20);
+    document.getElementById('sub-pagination').innerHTML = `
+      <span>${total.toLocaleString()} subscribers</span>
+      <div style="display:flex;gap:8px">
+        ${emailState.page > 1 ? `<button onclick="subPage(${emailState.page-1})" class="topbar-btn secondary" style="font-size:10px;padding:3px 10px">← Prev</button>` : ''}
+        <span>Page ${emailState.page} of ${pages}</span>
+        ${emailState.page < pages ? `<button onclick="subPage(${emailState.page+1})" class="topbar-btn secondary" style="font-size:10px;padding:3px 10px">Next →</button>` : ''}
+      </div>`;
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted)">Could not load subscribers. Is Listmonk connected?</td></tr>`;
+  }
+}
+
+function subPage(p) { emailState.page = p; loadSubscribers(); }
+
+function showAddSubscriber() {
+  const form = document.getElementById('add-subscriber-form');
+  form.style.display = form.style.display === 'none' ? 'block' : 'none';
+}
+
+async function addSubscriber() {
+  const name = document.getElementById('sub-name').value.trim();
+  const email = document.getElementById('sub-email').value.trim();
+  if (!name || !email) { alert('Name and email required.'); return; }
+
+  try {
+    const res = await fetch('/api/email/subscribers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      document.getElementById('sub-name').value = '';
+      document.getElementById('sub-email').value = '';
+      document.getElementById('add-subscriber-form').style.display = 'none';
+      loadSubscribers();
+      loadEmail(); // refresh count
+    } else {
+      alert(data.error || 'Could not add subscriber.');
+    }
+  } catch { alert('Network error.'); }
+}
+
+async function removeSubscriber(id, email) {
+  if (!confirm(`Remove ${email} from your list?`)) return;
+  try {
+    const res = await fetch(`/api/email/subscribers/${id}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (data.success) loadSubscribers();
+  } catch {}
+}
+
+async function loadCampaigns() {
+  const el = document.getElementById('campaigns-list');
+  if (!el) return;
+
+  try {
+    const res = await fetch('/api/email/campaigns');
+    const data = await res.json();
+    const campaigns = data.campaigns || [];
+
+    document.getElementById('email-camp-count').textContent = campaigns.filter(c => c.status === 'finished').length;
+
+    if (!campaigns.length) {
+      el.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted)"><div style="font-size:36px;margin-bottom:10px">📨</div><div style="font-size:13px">No campaigns yet.</div></div>`;
+      return;
+    }
+
+    el.innerHTML = campaigns.map(c => `
+      <div style="padding:14px 18px;border-bottom:1px solid var(--border)">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:600;font-size:14px;color:var(--text);margin-bottom:3px">${c.subject}</div>
+            <div style="font-size:12px;color:var(--muted)">
+              ${c.status === 'finished' ? `Sent ${new Date(c.sentAt || c.startedAt).toLocaleDateString()}` : c.status}
+              ${c.sent ? ` · ${c.sent.toLocaleString()} sent` : ''}
+              ${c.openRate ? ` · ${c.openRate}% opened` : ''}
+              ${c.clickRate ? ` · ${c.clickRate}% clicked` : ''}
+            </div>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;flex-shrink:0">
+            <span class="badge ${c.status === 'finished' ? 'badge-green' : c.status === 'draft' ? 'badge-gray' : 'badge-blue'}">${c.status}</span>
+            ${c.status === 'draft' ? `<button onclick="sendExistingCampaign(${c.id})" class="topbar-btn primary" style="font-size:10px;padding:4px 10px">Send</button>` : ''}
+          </div>
+        </div>
+      </div>`).join('');
+  } catch {}
+}
+
+function showComposeForm() {
+  document.getElementById('compose-panel').style.display = 'block';
+  document.getElementById('compose-panel').scrollIntoView({ behavior: 'smooth' });
+  // Pre-fill from name
+  if (candidateData?.full_name && !document.getElementById('camp-from').value) {
+    document.getElementById('camp-from').value = candidateData.full_name;
+  }
+}
+
+function hideComposeForm() {
+  document.getElementById('compose-panel').style.display = 'none';
+  document.getElementById('campaign-result').style.display = 'none';
+}
+
+async function generateEmailWithAI() {
+  const body = document.getElementById('camp-body');
+  body.value = 'Generating email with AI...';
+  body.disabled = true;
+
+  try {
+    const res = await fetch('/api/content/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'letter_editor',
+        candidateContext: {
+          full_name: candidateData?.full_name,
+          office_sought: candidateData?.office_sought,
+          state: candidateData?.state,
+        },
+      }),
+    });
+    const data = await res.json();
+    body.value = data.content || 'Could not generate content.';
+  } catch {
+    body.value = '';
+    alert('AI generation failed. Please write your email manually.');
+  }
+  body.disabled = false;
+}
+
+async function sendCampaign(sendNow) {
+  const subject = document.getElementById('camp-subject').value.trim();
+  const body = document.getElementById('camp-body').value.trim();
+  const fromName = document.getElementById('camp-from').value.trim();
+  const resultEl = document.getElementById('campaign-result');
+
+  if (!subject) { alert('Subject line required.'); return; }
+  if (!body) { alert('Email body required.'); return; }
+
+  if (sendNow && !confirm(`Send this email to ${emailState.subCount} subscribers now?`)) return;
+
+  resultEl.style.display = 'none';
+
+  try {
+    const res = await fetch('/api/email/campaigns', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ subject, body, fromName, sendNow }),
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      resultEl.style.display = 'block';
+      resultEl.style.color = 'var(--green)';
+      resultEl.textContent = '✓ ' + data.message;
+      setTimeout(() => {
+        hideComposeForm();
+        document.getElementById('camp-subject').value = '';
+        document.getElementById('camp-body').value = '';
+        loadCampaigns();
+      }, 2000);
+    } else {
+      resultEl.style.display = 'block';
+      resultEl.style.color = 'var(--red)';
+      resultEl.textContent = '✕ ' + (data.error || 'Failed. Please try again.');
+    }
+  } catch {
+    resultEl.style.display = 'block';
+    resultEl.style.color = 'var(--red)';
+    resultEl.textContent = 'Network error. Please try again.';
+  }
+}
+
+async function sendExistingCampaign(id) {
+  if (!confirm('Send this draft campaign now?')) return;
+  try {
+    const res = await fetch(`/api/email/campaigns/${id}/send`, { method: 'PUT' });
+    const data = await res.json();
+    if (data.success) { alert('Campaign is sending!'); loadCampaigns(); }
+    else alert(data.error || 'Could not send campaign.');
+  } catch { alert('Network error.'); }
+}
 
 function showSection(name, btn) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -1995,6 +2388,20 @@ function showSection(name, btn) {
   if (btn) btn.classList.add('active');
   const titleEl = document.getElementById('topbar-title');
   if (titleEl) titleEl.textContent = sectionTitles[name] || name;
+  const loaders = {
+    overview: () => {},
+    district: () => {},
+    voters: () => {},
+    tracker: renderChecklist,
+    email: loadEmail,
+    outreach: () => {},
+    content: () => {},
+    events: loadEvents,
+    volunteers: loadVolunteers,
+    website: () => {},
+    community: () => {},
+  };
+  loaders[name]?.();
   window.scrollTo({ top: 0 });
 }
 

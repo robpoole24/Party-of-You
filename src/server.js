@@ -296,6 +296,7 @@ app.use('/dashboard', (req, res) => {
 // ─────────────────────────────────────────────────
 app.use('/api/dashboard', requireCandidate, require('./routes/dashboard'));
 app.use('/api/content', requireCandidate, require('./routes/content'));
+app.use('/api/email', requireCandidate, require('./routes/email'));
 
 // Events API
 app.get('/api/events', requireCandidate, async (req, res) => {
