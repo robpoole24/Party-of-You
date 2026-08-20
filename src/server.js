@@ -204,10 +204,30 @@ app.use('/api/races', featureGuard('FEATURE_OPEN_SEAT_TRACKER'), require('./rout
 app.use('/api/intelligence', featureGuard('FEATURE_POLLING_INTELLIGENCE'), require('./routes/intelligence'));
 
 // ─────────────────────────────────────────────────
-// PROTECTED CANDIDATE ROUTES (future modules)
+// CANDIDATE DASHBOARD GUARD
+// /dashboard/ requires valid candidate JWT
 // ─────────────────────────────────────────────────
+app.use('/dashboard', (req, res, next) => {
+  const jwt = require('jsonwebtoken');
+  const token = req.cookies?.poy_token ||
+    (req.headers.authorization?.startsWith('Bearer ')
+      ? req.headers.authorization.slice(7) : null);
 
-// app.use('/api/dashboard', requireCandidate, require('./routes/dashboard'));
+  if (!token) return res.redirect('/apply.html?redirect=/dashboard/');
+
+  try {
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    if (payload.role !== 'candidate') return res.redirect('/apply.html');
+    next();
+  } catch {
+    return res.redirect('/apply.html?redirect=/dashboard/');
+  }
+});
+
+// ─────────────────────────────────────────────────
+// PROTECTED CANDIDATE API ROUTES
+// ─────────────────────────────────────────────────
+app.use('/api/dashboard', requireCandidate, require('./routes/dashboard'));
 
 // ─────────────────────────────────────────────────
 // SPA FALLBACK — serve index.html for unknown routes

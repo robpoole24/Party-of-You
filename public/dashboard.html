@@ -1,0 +1,1449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Campaign Dashboard — Party of You</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --navy:   #1a2d5a; --navy-d: #0d1b35; --navy-m: #1e3366;
+  --red:    #c8102e; --red-d:  #a00c24;
+  --sky:    #2b7fc1; --sky-l:  #4a9fd4;
+  --white:  #f8fafc; --gray:   #f4f6fb; --border: #dde3ef;
+  --text:   #0d1b35; --muted:  #5a6a8a;
+  --green:  #15803d; --green-l: #22c55e;
+  --amber:  #b45309; --amber-l: #f59e0b;
+  --cond:   'Barlow Condensed', sans-serif;
+  --body:   'Barlow', sans-serif;
+}
+html { scroll-behavior: smooth; }
+body { font-family: var(--body); background: var(--gray); color: var(--text); -webkit-font-smoothing: antialiased; }
+
+/* ── LAYOUT ── */
+.shell { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  background: var(--navy-d);
+  border-right: 1px solid rgba(255,255,255,0.06);
+  position: fixed; top: 0; left: 0; bottom: 0; width: 240px;
+  display: flex; flex-direction: column; overflow-y: auto; z-index: 50;
+}
+.sidebar-top { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+.sidebar-logo { width: 100%; border-radius: 4px; display: block; margin-bottom: 14px; }
+.candidate-name {
+  font-family: var(--cond); font-size: 16px; font-weight: 800;
+  text-transform: uppercase; color: var(--white); letter-spacing: 0.02em;
+}
+.candidate-race { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 3px; }
+
+.nav-section { padding: 16px 0 8px; }
+.nav-label {
+  font-size: 9px; font-weight: 700; letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--red);
+  padding: 0 16px 8px; display: block;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 16px; font-size: 13px; font-weight: 500;
+  color: rgba(255,255,255,0.55); text-decoration: none;
+  cursor: pointer; border: none; background: none;
+  width: 100%; text-align: left; font-family: var(--body);
+  transition: all 0.12s; border-left: 2px solid transparent;
+}
+.nav-item:hover { color: var(--white); background: rgba(255,255,255,0.04); }
+.nav-item.active { color: var(--white); background: rgba(200,16,46,0.12); border-left-color: var(--red); }
+.nav-item .icon { font-size: 15px; width: 20px; flex-shrink: 0; }
+
+.sidebar-footer {
+  margin-top: auto; padding: 16px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  display: flex; gap: 10px; align-items: center;
+}
+.sidebar-footer button {
+  flex: 1; padding: 8px; background: transparent;
+  border: 1px solid rgba(255,255,255,0.15); border-radius: 5px;
+  color: rgba(255,255,255,0.4); font-size: 11px; font-family: var(--body);
+  cursor: pointer; transition: all 0.12s;
+}
+.sidebar-footer button:hover { color: var(--white); border-color: rgba(255,255,255,0.3); }
+
+/* ── MAIN ── */
+.main { margin-left: 240px; }
+
+/* ── TOPBAR ── */
+.topbar {
+  background: var(--white); border-bottom: 1px solid var(--border);
+  padding: 0 32px; height: 56px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 40;
+}
+.topbar-title { font-family: var(--cond); font-size: 18px; font-weight: 800; text-transform: uppercase; color: var(--navy); }
+.topbar-actions { display: flex; gap: 10px; align-items: center; }
+.topbar-btn {
+  font-family: var(--cond); font-size: 12px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  padding: 7px 16px; border-radius: 5px; border: none; cursor: pointer;
+  transition: all 0.12s; text-decoration: none; display: inline-block;
+}
+.topbar-btn.primary { background: var(--red); color: white; }
+.topbar-btn.primary:hover { background: var(--red-d); }
+.topbar-btn.secondary { background: var(--gray); color: var(--muted); border: 1px solid var(--border); }
+.topbar-btn.secondary:hover { color: var(--text); }
+
+/* ── CONTENT AREA ── */
+.content { padding: 28px 32px 60px; }
+.section { display: none; }
+.section.active { display: block; }
+
+/* ── PATH TO VICTORY BANNER ── */
+.victory-banner {
+  background: linear-gradient(135deg, var(--navy-d) 0%, var(--navy-m) 100%);
+  border-radius: 12px; padding: 28px 32px;
+  display: grid; grid-template-columns: auto 1fr auto;
+  gap: 32px; align-items: center;
+  margin-bottom: 24px;
+  border: 1px solid rgba(255,255,255,0.08);
+  position: relative; overflow: hidden;
+}
+.victory-banner::before {
+  content: ''; position: absolute; right: -40px; top: -40px;
+  width: 200px; height: 200px; border-radius: 50%;
+  background: rgba(200,16,46,0.08);
+}
+.victory-num {
+  font-family: var(--cond); font-size: 72px; font-weight: 900;
+  color: var(--red); line-height: 1; letter-spacing: -0.02em;
+}
+.victory-label { font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 6px; }
+.victory-desc { font-family: var(--cond); font-size: 22px; font-weight: 700; text-transform: uppercase; color: var(--white); line-height: 1.2; }
+.victory-sub { font-size: 13px; color: rgba(255,255,255,0.45); margin-top: 6px; }
+.victory-stats { display: grid; gap: 12px; }
+.victory-stat { text-align: center; }
+.victory-stat-num { font-family: var(--cond); font-size: 24px; font-weight: 900; color: var(--sky-l); }
+.victory-stat-label { font-size: 10px; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 0.08em; }
+
+/* ── STAT CARDS ── */
+.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+.stat-card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 10px; padding: 18px 20px;
+  border-top: 3px solid var(--border);
+  transition: border-top-color 0.2s;
+}
+.stat-card.green { border-top-color: var(--green-l); }
+.stat-card.red { border-top-color: var(--red); }
+.stat-card.sky { border-top-color: var(--sky); }
+.stat-card.amber { border-top-color: var(--amber-l); }
+.stat-num { font-family: var(--cond); font-size: 36px; font-weight: 900; color: var(--navy); line-height: 1; }
+.stat-label { font-size: 11px; color: var(--muted); margin-top: 5px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.stat-trend { font-size: 11px; margin-top: 6px; }
+.stat-trend.up { color: var(--green); }
+.stat-trend.down { color: var(--red); }
+
+/* ── PANELS ── */
+.panel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+.panel-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+.panel-grid.full { grid-template-columns: 1fr; }
+.panel-grid.wide { grid-template-columns: 2fr 1fr; }
+
+.panel {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 10px; overflow: hidden;
+}
+.panel-hdr {
+  padding: 14px 20px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.panel-hdr h2 {
+  font-family: var(--cond); font-size: 15px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.06em; color: var(--navy);
+  display: flex; align-items: center; gap: 8px;
+}
+.panel-hdr h2 .ph-icon { font-size: 16px; }
+.panel-body { padding: 20px; }
+
+/* ── CHART CONTAINERS ── */
+.chart-wrap { position: relative; height: 200px; }
+.chart-wrap.tall { height: 260px; }
+.chart-wrap.short { height: 140px; }
+
+/* ── LEAN METER ── */
+.lean-meter { margin: 16px 0; }
+.lean-track {
+  height: 28px; border-radius: 14px; overflow: hidden;
+  background: linear-gradient(90deg, #c8102e 0%, #e8e8e8 50%, #1a2d5a 100%);
+  position: relative; margin-bottom: 8px;
+}
+.lean-needle {
+  position: absolute; top: -4px; width: 4px; height: 36px;
+  background: var(--navy-d); border-radius: 2px;
+  transform: translateX(-50%); transition: left 1s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+.lean-labels { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+.lean-label-r { color: var(--red); }
+.lean-label-d { color: var(--navy); }
+.lean-center { color: var(--muted); }
+
+/* ── ISSUE BARS ── */
+.issue-bar-item { margin-bottom: 14px; }
+.issue-bar-label { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 13px; }
+.issue-bar-name { font-weight: 600; color: var(--text); }
+.issue-bar-pct { color: var(--muted); }
+.issue-bar-track { height: 8px; background: var(--gray); border-radius: 4px; overflow: hidden; }
+.issue-bar-fill { height: 100%; border-radius: 4px; background: var(--sky); transition: width 1s ease; }
+
+/* ── TIMELINE ── */
+.timeline { display: flex; flex-direction: column; gap: 0; }
+.timeline-item { display: flex; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--border); position: relative; }
+.timeline-item:last-child { border-bottom: none; }
+.timeline-dot { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 13px; font-weight: 700; font-family: var(--cond); }
+.timeline-dot.done { background: rgba(21,128,61,0.1); color: var(--green); border: 2px solid var(--green-l); }
+.timeline-dot.urgent { background: rgba(200,16,46,0.1); color: var(--red); border: 2px solid var(--red); }
+.timeline-dot.upcoming { background: var(--gray); color: var(--muted); border: 2px solid var(--border); }
+.timeline-date { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
+.timeline-title { font-size: 13px; font-weight: 600; color: var(--text); }
+.timeline-desc { font-size: 11px; color: var(--muted); margin-top: 2px; line-height: 1.4; }
+
+/* ── CONTACTS TABLE ── */
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table th { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding: 8px 12px; border-bottom: 1px solid var(--border); text-align: left; }
+.data-table td { padding: 10px 12px; border-bottom: 1px solid rgba(221,227,239,0.5); font-size: 13px; }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: var(--gray); }
+
+/* ── BADGES ── */
+.badge { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; }
+.badge-green { background: rgba(21,128,61,0.1); color: var(--green); }
+.badge-red { background: rgba(200,16,46,0.1); color: var(--red); }
+.badge-blue { background: rgba(43,127,193,0.1); color: var(--sky); }
+.badge-gray { background: var(--gray); color: var(--muted); }
+
+/* ── PROGRESS RING ── */
+.progress-ring-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.ring-label { font-family: var(--cond); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+
+/* ── VOTER DEMOGRAPHICS ── */
+.demo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.demo-item { padding: 14px; background: var(--gray); border-radius: 8px; }
+.demo-item-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; margin-bottom: 6px; }
+.demo-item-val { font-family: var(--cond); font-size: 28px; font-weight: 900; color: var(--navy); }
+.demo-item-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+/* ── DISTRICT MAP PLACEHOLDER ── */
+.map-placeholder {
+  height: 200px; background: linear-gradient(135deg, #e8eef4 0%, #d4dde8 100%);
+  border-radius: 8px; display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 8px; color: var(--muted);
+}
+.map-placeholder .map-icon { font-size: 48px; opacity: 0.5; }
+.map-placeholder p { font-size: 12px; }
+
+/* ── ACTION CARDS ── */
+.action-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
+.action-card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 10px; padding: 20px; cursor: pointer;
+  transition: all 0.15s; text-align: center;
+}
+.action-card:hover { border-color: var(--sky); box-shadow: 0 4px 16px rgba(43,127,193,0.1); }
+.action-icon { font-size: 32px; margin-bottom: 12px; }
+.action-title { font-family: var(--cond); font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: var(--navy); margin-bottom: 6px; }
+.action-desc { font-size: 11px; color: var(--muted); line-height: 1.5; }
+.action-badge { display: inline-block; margin-top: 8px; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 3px; }
+.action-free { background: rgba(21,128,61,0.1); color: var(--green); }
+.action-paid { background: rgba(180,83,9,0.1); color: var(--amber); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 1024px) {
+  .stat-grid { grid-template-columns: repeat(2, 1fr); }
+  .panel-grid { grid-template-columns: 1fr; }
+  .panel-grid.wide { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .main { margin-left: 0; }
+  .content { padding: 16px; }
+  .victory-banner { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-top">
+      <img src="/images/partyofyoulogo.png" alt="Party of You" class="sidebar-logo">
+      <div class="candidate-name" id="sb-name">Loading...</div>
+      <div class="candidate-race" id="sb-race">—</div>
+    </div>
+
+    <div class="nav-section">
+      <span class="nav-label">Campaign</span>
+      <button class="nav-item active" onclick="showSection('overview')">
+        <span class="icon">📊</span> Overview
+      </button>
+      <button class="nav-item" onclick="showSection('district')">
+        <span class="icon">🗺️</span> District Intelligence
+      </button>
+      <button class="nav-item" onclick="showSection('voters')">
+        <span class="icon">👥</span> Voter Demographics
+      </button>
+      <button class="nav-item" onclick="showSection('tracker')">
+        <span class="icon">✅</span> Campaign Tracker
+      </button>
+    </div>
+
+    <div class="nav-section">
+      <span class="nav-label">Tools</span>
+      <button class="nav-item" onclick="showSection('outreach')">
+        <span class="icon">📞</span> Voter Outreach
+      </button>
+      <button class="nav-item" onclick="showSection('content')">
+        <span class="icon">✍️</span> Content Builder
+      </button>
+      <button class="nav-item" onclick="showSection('events')">
+        <span class="icon">📅</span> Events
+      </button>
+      <button class="nav-item" onclick="showSection('volunteers')">
+        <span class="icon">🙋</span> Volunteers
+      </button>
+    </div>
+
+    <div class="nav-section">
+      <span class="nav-label">My Campaign</span>
+      <button class="nav-item" onclick="showSection('website')">
+        <span class="icon">🌐</span> My Website
+      </button>
+      <button class="nav-item" onclick="showSection('community')">
+        <span class="icon">🤝</span> Community
+      </button>
+    </div>
+
+    <div class="sidebar-footer">
+      <button onclick="window.location.href='/'">← Public Site</button>
+      <button onclick="logout()">Sign Out</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="topbar-title" id="topbar-title">Campaign Overview</div>
+      <div class="topbar-actions">
+        <span style="font-size:12px;color:var(--muted)" id="last-updated"></span>
+        <a href="/apply.html" class="topbar-btn secondary">Edit Profile</a>
+        <button class="topbar-btn primary" onclick="showSection('outreach')">Contact Voters →</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ── OVERVIEW ── -->
+      <div class="section active" id="sec-overview">
+
+        <!-- Path to Victory Banner -->
+        <div class="victory-banner">
+          <div>
+            <div class="victory-label">Votes Needed to Win</div>
+            <div class="victory-num" id="vic-votes">—</div>
+          </div>
+          <div>
+            <div class="victory-label">Your Race</div>
+            <div class="victory-desc" id="vic-race">Loading your race data...</div>
+            <div class="victory-sub" id="vic-sub">Based on historical turnout and registration data</div>
+          </div>
+          <div class="victory-stats">
+            <div class="victory-stat">
+              <div class="victory-stat-num" id="vic-reg">—</div>
+              <div class="victory-stat-label">Registered Voters</div>
+            </div>
+            <div class="victory-stat">
+              <div class="victory-stat-num" id="vic-turnout">—</div>
+              <div class="victory-stat-label">Projected Turnout</div>
+            </div>
+            <div class="victory-stat">
+              <div class="victory-stat-num" id="vic-lean">—</div>
+              <div class="victory-stat-label">District Lean</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stat cards -->
+        <div class="stat-grid">
+          <div class="stat-card green">
+            <div class="stat-num" id="ov-volunteers">0</div>
+            <div class="stat-label">Volunteers</div>
+            <div class="stat-trend up" id="ov-vol-trend"></div>
+          </div>
+          <div class="stat-card sky">
+            <div class="stat-num" id="ov-doors">0</div>
+            <div class="stat-label">Doors Knocked</div>
+            <div class="stat-trend" id="ov-doors-trend"></div>
+          </div>
+          <div class="stat-card amber">
+            <div class="stat-num" id="ov-events">0</div>
+            <div class="stat-label">Events Scheduled</div>
+            <div class="stat-trend" id="ov-events-trend"></div>
+          </div>
+          <div class="stat-card red">
+            <div class="stat-num" id="ov-days">—</div>
+            <div class="stat-label">Days to Election</div>
+          </div>
+        </div>
+
+        <!-- Charts row -->
+        <div class="panel-grid wide">
+          <!-- District Partisan History -->
+          <div class="panel">
+            <div class="panel-hdr">
+              <h2><span class="ph-icon">📈</span> District Election History</h2>
+              <span class="badge badge-blue" id="hist-label"></span>
+            </div>
+            <div class="panel-body">
+              <div class="lean-meter">
+                <div class="lean-track">
+                  <div class="lean-needle" id="lean-needle"></div>
+                </div>
+                <div class="lean-labels">
+                  <span class="lean-label-r">← Solid R</span>
+                  <span class="lean-center" id="lean-center-label">Toss-up</span>
+                  <span class="lean-label-d">Solid D →</span>
+                </div>
+              </div>
+              <div class="chart-wrap">
+                <canvas id="historyChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Top Issues -->
+          <div class="panel">
+            <div class="panel-hdr">
+              <h2><span class="ph-icon">🔥</span> Top Issues — Your District</h2>
+            </div>
+            <div class="panel-body" id="issues-body">
+              <div style="color:var(--muted);font-size:13px;padding:20px 0;text-align:center">Loading polling data...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom row -->
+        <div class="panel-grid">
+          <!-- Campaign Timeline -->
+          <div class="panel">
+            <div class="panel-hdr">
+              <h2><span class="ph-icon">📅</span> Key Dates</h2>
+              <a href="#" class="topbar-btn secondary" style="padding:4px 12px;font-size:10px">Add Date</a>
+            </div>
+            <div class="panel-body">
+              <div class="timeline" id="timeline-body">
+                <div style="color:var(--muted);font-size:13px">Loading dates...</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Approval snapshot -->
+          <div class="panel">
+            <div class="panel-hdr">
+              <h2><span class="ph-icon">📊</span> Current Polling Snapshot</h2>
+            </div>
+            <div class="panel-body">
+              <div class="chart-wrap" id="polling-wrap">
+                <canvas id="pollingChart"></canvas>
+              </div>
+              <div id="polling-caption" style="font-size:11px;color:var(--muted);margin-top:10px;text-align:center"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── DISTRICT INTELLIGENCE ── -->
+      <div class="section" id="sec-district">
+        <div class="panel-grid">
+          <div class="panel">
+            <div class="panel-hdr"><h2><span class="ph-icon">🗺️</span> District Profile</h2></div>
+            <div class="panel-body">
+              <div class="demo-grid" id="district-demo-grid">
+                <div style="color:var(--muted);font-size:13px;grid-column:1/-1;padding:20px 0;text-align:center">Loading demographics...</div>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-hdr"><h2><span class="ph-icon">🗳️</span> Partisan Lean Index</h2></div>
+            <div class="panel-body">
+              <div style="text-align:center;padding:20px 0">
+                <div style="font-family:var(--cond);font-size:64px;font-weight:900;color:var(--navy)" id="lean-big">—</div>
+                <div style="font-size:14px;color:var(--muted)" id="lean-desc">Loading...</div>
+              </div>
+              <div class="lean-meter" style="margin-top:8px">
+                <div class="lean-track"><div class="lean-needle" id="lean-needle-2"></div></div>
+                <div class="lean-labels">
+                  <span class="lean-label-r">← R+50</span>
+                  <span class="lean-center">Even</span>
+                  <span class="lean-label-d">D+50 →</span>
+                </div>
+              </div>
+              <div class="chart-wrap short" style="margin-top:20px">
+                <canvas id="leanHistChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-grid three">
+          <div class="panel">
+            <div class="panel-hdr"><h2><span class="ph-icon">💰</span> Income & Poverty</h2></div>
+            <div class="panel-body">
+              <div class="chart-wrap"><canvas id="incomeChart"></canvas></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-hdr"><h2><span class="ph-icon">👶</span> Age Distribution</h2></div>
+            <div class="panel-body">
+              <div class="chart-wrap"><canvas id="ageChart"></canvas></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-hdr"><h2><span class="ph-icon">🏘️</span> Housing & Employment</h2></div>
+            <div class="panel-body">
+              <div class="chart-wrap"><canvas id="housingChart"></canvas></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-hdr">
+            <h2><span class="ph-icon">🏛️</span> Incumbent Profile</h2>
+          </div>
+          <div class="panel-body" id="incumbent-body">
+            <div style="color:var(--muted);font-size:13px">Loading incumbent data...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── VOTER DEMOGRAPHICS ── -->
+      <div class="section" id="sec-voters">
+        <div class="panel-grid wide">
+          <div class="panel">
+            <div class="panel-hdr"><h2><span class="ph-icon">👥</span> Who Lives & Votes Here</h2></div>
+            <div class="panel-body">
+              <div class="chart-wrap tall"><canvas id="raceChart"></canvas></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-hdr"><h2><span class="ph-icon">📋</span> Key Voter Stats</h2></div>
+            <div class="panel-body" id="voter-stats-body">
+              <div style="color:var(--muted);font-size:13px">Loading...</div>
+            </div>
+          </div>
+        </div>
+        <div class="panel-grid">
+          <div class="panel">
+            <div class="panel-hdr"><h2><span class="ph-icon">💼</span> Employment & Income</h2></div>
+            <div class="panel-body">
+              <div class="chart-wrap"><canvas id="empChart"></canvas></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-hdr"><h2><span class="ph-icon">📚</span> Education Levels</h2></div>
+            <div class="panel-body">
+              <div class="chart-wrap"><canvas id="eduChart"></canvas></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── TRACKER ── -->
+      <div class="section" id="sec-tracker">
+        <div class="panel-grid wide">
+          <div class="panel">
+            <div class="panel-hdr"><h2><span class="ph-icon">✅</span> Campaign Checklist</h2></div>
+            <div class="panel-body" id="checklist-body">
+              <div style="color:var(--muted);font-size:13px">Loading checklist...</div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-hdr"><h2><span class="ph-icon">📈</span> Progress</h2></div>
+            <div class="panel-body" style="display:flex;flex-direction:column;gap:20px;align-items:center">
+              <svg width="120" height="120" viewBox="0 0 120 120">
+                <circle cx="60" cy="60" r="50" fill="none" stroke="#f4f6fb" stroke-width="10"/>
+                <circle cx="60" cy="60" r="50" fill="none" stroke="#c8102e" stroke-width="10"
+                  stroke-dasharray="314" stroke-dashoffset="220" stroke-linecap="round"
+                  transform="rotate(-90 60 60)" id="progress-ring"/>
+                <text x="60" y="60" text-anchor="middle" dy="0.35em"
+                  font-family="'Barlow Condensed'" font-size="24" font-weight="900" fill="#0d1b35"
+                  id="progress-pct">30%</text>
+              </svg>
+              <div style="text-align:center">
+                <div style="font-family:var(--cond);font-size:14px;font-weight:700;text-transform:uppercase;color:var(--muted)">Campaign Readiness</div>
+                <div style="font-size:13px;color:var(--muted);margin-top:4px">3 of 10 tasks complete</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── OUTREACH ── -->
+      <div class="section" id="sec-outreach">
+        <div style="margin-bottom:24px">
+          <div style="font-family:var(--cond);font-size:28px;font-weight:900;text-transform:uppercase;color:var(--navy);margin-bottom:8px">Reach Your Voters</div>
+          <div style="font-size:14px;color:var(--muted)">Choose a method to start contacting voters in your district.</div>
+        </div>
+        <div class="action-grid" style="margin-bottom:28px">
+          <div class="action-card">
+            <div class="action-icon">🚶</div>
+            <div class="action-title">Door Knocking</div>
+            <div class="action-desc">Generate optimized walk lists from your voter file. Highest persuasion rate of any contact method.</div>
+            <div class="action-badge action-free">Free</div>
+          </div>
+          <div class="action-card">
+            <div class="action-icon">📞</div>
+            <div class="action-title">Phone Banking</div>
+            <div class="action-desc">Create call lists filtered by party, turnout history, and geography. Pre-built call scripts included.</div>
+            <div class="action-badge action-free">Free</div>
+          </div>
+          <div class="action-card">
+            <div class="action-icon">📱</div>
+            <div class="action-title">Text Outreach</div>
+            <div class="action-desc">Send targeted texts via Twilio. Bring your own account — we handle the integration and targeting.</div>
+            <div class="action-badge action-paid">Your Twilio acct</div>
+          </div>
+          <div class="action-card">
+            <div class="action-icon">✉️</div>
+            <div class="action-title">Email Blast</div>
+            <div class="action-desc">Send to your supporter list via Listmonk. No per-email cost. Unlimited sends, unlimited subscribers.</div>
+            <div class="action-badge action-free">Free</div>
+          </div>
+          <div class="action-card">
+            <div class="action-icon">📬</div>
+            <div class="action-title">Mailer / Print</div>
+            <div class="action-desc">Download print-ready mailer PDFs formatted to USPS specs. Find union print shops near you.</div>
+            <div class="action-badge action-free">Free templates</div>
+          </div>
+          <div class="action-card">
+            <div class="action-icon">📊</div>
+            <div class="action-title">Social Media</div>
+            <div class="action-desc">Connect your accounts and schedule posts across Facebook, Instagram, and X simultaneously.</div>
+            <div class="action-badge action-free">Free</div>
+          </div>
+        </div>
+
+        <!-- Voter file guidance -->
+        <div class="panel">
+          <div class="panel-hdr"><h2><span class="ph-icon">🗃️</span> Get Your Voter File</h2></div>
+          <div class="panel-body">
+            <p style="font-size:14px;color:var(--muted);margin-bottom:16px;line-height:1.6">State voter files are public record. Most states provide them free or for a small processing fee. You generally need to be a registered candidate to request one.</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px" id="voter-file-state">
+              <div style="background:var(--gray);border-radius:8px;padding:14px;font-size:13px">
+                <div style="font-weight:700;color:var(--navy);margin-bottom:4px">How to Request</div>
+                <ol style="margin-left:16px;color:var(--muted);line-height:1.8;font-size:12px">
+                  <li>Register your campaign committee with your state</li>
+                  <li>Contact your Secretary of State's elections division</li>
+                  <li>Submit a voter data request form with your committee ID</li>
+                  <li>Pay any processing fee (usually $0-25)</li>
+                  <li>Upload the file here — we parse any format</li>
+                </ol>
+              </div>
+              <div style="background:var(--gray);border-radius:8px;padding:14px;font-size:13px">
+                <div style="font-weight:700;color:var(--navy);margin-bottom:8px">What You'll Get</div>
+                <div style="color:var(--muted);line-height:1.8;font-size:12px">
+                  ✓ Name, address, age for every registered voter<br>
+                  ✓ Party registration (where available)<br>
+                  ✓ Voting history (which elections, not who they voted for)<br>
+                  ✓ Phone numbers (in some states)<br>
+                  ✗ Email addresses (not in voter files)
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CONTENT BUILDER ── -->
+      <div class="section" id="sec-content">
+        <div style="margin-bottom:24px">
+          <div style="font-family:var(--cond);font-size:28px;font-weight:900;text-transform:uppercase;color:var(--navy);margin-bottom:8px">Content Builder</div>
+          <div style="font-size:14px;color:var(--muted)">Generate campaign content using your district data and platform.</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+          <div style="background:var(--white);border:1px solid var(--border);border-radius:10px;overflow:hidden">
+            <div style="padding:12px 16px;background:var(--navy);font-family:var(--cond);font-size:13px;font-weight:800;text-transform:uppercase;color:var(--white)">📣 Press & Media</div>
+            <div style="padding:16px;display:flex;flex-direction:column;gap:8px">
+              <button onclick="generateContent('press_release')" style="text-align:left;padding:10px 12px;background:var(--gray);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-family:var(--body);font-size:13px;color:var(--text);transition:all 0.12s" onmouseover="this.style.borderColor='var(--sky)'" onmouseout="this.style.borderColor='var(--border)'">📄 Press Release — Campaign Announcement</button>
+              <button onclick="generateContent('letter_editor')" style="text-align:left;padding:10px 12px;background:var(--gray);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-family:var(--body);font-size:13px;color:var(--text);transition:all 0.12s" onmouseover="this.style.borderColor='var(--sky)'" onmouseout="this.style.borderColor='var(--border)'">✉️ Letter to the Editor</button>
+              <button onclick="generateContent('interview_prep')" style="text-align:left;padding:10px 12px;background:var(--gray);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-family:var(--body);font-size:13px;color:var(--text);transition:all 0.12s" onmouseover="this.style.borderColor='var(--sky)'" onmouseout="this.style.borderColor='var(--border)'">🎙️ Interview Prep & Talking Points</button>
+            </div>
+          </div>
+          <div style="background:var(--white);border:1px solid var(--border);border-radius:10px;overflow:hidden">
+            <div style="padding:12px 16px;background:var(--sky);font-family:var(--cond);font-size:13px;font-weight:800;text-transform:uppercase;color:var(--white)">📱 Social Media</div>
+            <div style="padding:16px;display:flex;flex-direction:column;gap:8px">
+              <button onclick="generateContent('social_announce')" style="text-align:left;padding:10px 12px;background:var(--gray);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-family:var(--body);font-size:13px;color:var(--text)" onmouseover="this.style.borderColor='var(--sky)'" onmouseout="this.style.borderColor='var(--border)'">📢 Announcement Post</button>
+              <button onclick="generateContent('social_issue')" style="text-align:left;padding:10px 12px;background:var(--gray);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-family:var(--body);font-size:13px;color:var(--text)" onmouseover="this.style.borderColor='var(--sky)'" onmouseout="this.style.borderColor='var(--border)'">💬 Issue Position Post</button>
+              <button onclick="generateContent('social_volunteer')" style="text-align:left;padding:10px 12px;background:var(--gray);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-family:var(--body);font-size:13px;color:var(--text)" onmouseover="this.style.borderColor='var(--sky)'" onmouseout="this.style.borderColor='var(--border)'">🙋 Volunteer Recruitment Post</button>
+            </div>
+          </div>
+          <div style="background:var(--white);border:1px solid var(--border);border-radius:10px;overflow:hidden">
+            <div style="padding:12px 16px;background:var(--green);font-family:var(--cond);font-size:13px;font-weight:800;text-transform:uppercase;color:var(--white)">🚪 Field</div>
+            <div style="padding:16px;display:flex;flex-direction:column;gap:8px">
+              <button onclick="generateContent('door_script')" style="text-align:left;padding:10px 12px;background:var(--gray);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-family:var(--body);font-size:13px;color:var(--text)" onmouseover="this.style.borderColor='var(--sky)'" onmouseout="this.style.borderColor='var(--border)'">🚪 Door Knock Script</button>
+              <button onclick="generateContent('phone_script')" style="text-align:left;padding:10px 12px;background:var(--gray);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-family:var(--body);font-size:13px;color:var(--text)" onmouseover="this.style.borderColor='var(--sky)'" onmouseout="this.style.borderColor='var(--border)'">📞 Phone Bank Script</button>
+              <button onclick="generateContent('pitch')" style="text-align:left;padding:10px 12px;background:var(--gray);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-family:var(--body);font-size:13px;color:var(--text)" onmouseover="this.style.borderColor='var(--sky)'" onmouseout="this.style.borderColor='var(--border)'">⏱️ 30-Second Stump Speech</button>
+            </div>
+          </div>
+          <div style="background:var(--white);border:1px solid var(--border);border-radius:10px;overflow:hidden">
+            <div style="padding:12px 16px;background:var(--red);font-family:var(--cond);font-size:13px;font-weight:800;text-transform:uppercase;color:var(--white)">🎬 Video Ads</div>
+            <div style="padding:16px;display:flex;flex-direction:column;gap:8px">
+              <button onclick="generateContent('video_intro')" style="text-align:left;padding:10px 12px;background:var(--gray);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-family:var(--body);font-size:13px;color:var(--text)" onmouseover="this.style.borderColor='var(--sky)'" onmouseout="this.style.borderColor='var(--border)'">🎥 Introduction Ad (AI-generated)</button>
+              <button onclick="generateContent('video_contrast')" style="text-align:left;padding:10px 12px;background:var(--gray);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-family:var(--body);font-size:13px;color:var(--text)" onmouseover="this.style.borderColor='var(--sky)'" onmouseout="this.style.borderColor='var(--border)'">⚡ Contrast Ad — Incumbent Record</button>
+              <button onclick="generateContent('video_issue')" style="text-align:left;padding:10px 12px;background:var(--gray);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-family:var(--body);font-size:13px;color:var(--text)" onmouseover="this.style.borderColor='var(--sky)'" onmouseout="this.style.borderColor='var(--border)'">💡 Issue Explainer Video</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Content output -->
+        <div class="panel" id="content-output-panel" style="display:none">
+          <div class="panel-hdr">
+            <h2><span class="ph-icon">✍️</span> Generated Content</h2>
+            <div style="display:flex;gap:8px">
+              <button onclick="copyContent()" class="topbar-btn secondary">Copy</button>
+              <button onclick="document.getElementById('content-output-panel').style.display='none'" class="topbar-btn secondary">✕ Close</button>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div id="content-output-loading" style="text-align:center;padding:40px;color:var(--muted);display:none">
+              <div style="font-size:32px;margin-bottom:12px">⏳</div>
+              Generating with AI...
+            </div>
+            <div id="content-output-text" style="font-size:14px;line-height:1.8;color:var(--text);white-space:pre-wrap"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── EVENTS ── -->
+      <div class="section" id="sec-events">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px">
+          <div>
+            <div style="font-family:var(--cond);font-size:28px;font-weight:900;text-transform:uppercase;color:var(--navy);margin-bottom:6px">Events</div>
+            <div style="font-size:14px;color:var(--muted)">Schedule public events, canvasses, and community service days.</div>
+          </div>
+          <button class="topbar-btn primary">+ Create Event</button>
+        </div>
+        <div class="panel">
+          <div class="panel-hdr"><h2><span class="ph-icon">📅</span> Upcoming Events</h2></div>
+          <div class="panel-body">
+            <div style="text-align:center;padding:40px;color:var(--muted)">
+              <div style="font-size:48px;margin-bottom:12px">📅</div>
+              <div style="font-size:14px">No events scheduled yet.</div>
+              <div style="font-size:12px;margin-top:6px">Create your first event — a town hall, canvass, or community service day.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── VOLUNTEERS ── -->
+      <div class="section" id="sec-volunteers">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px">
+          <div>
+            <div style="font-family:var(--cond);font-size:28px;font-weight:900;text-transform:uppercase;color:var(--navy);margin-bottom:6px">Volunteers</div>
+            <div style="font-size:14px;color:var(--muted)">Your team. Recruit, organize, and deploy them.</div>
+          </div>
+          <button class="topbar-btn primary">+ Add Volunteer</button>
+        </div>
+        <div class="stat-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
+          <div class="stat-card green"><div class="stat-num" id="vol-total">0</div><div class="stat-label">Total Volunteers</div></div>
+          <div class="stat-card sky"><div class="stat-num" id="vol-active">0</div><div class="stat-label">Active This Week</div></div>
+          <div class="stat-card amber"><div class="stat-num" id="vol-hours">0</div><div class="stat-label">Hours Logged</div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-hdr"><h2><span class="ph-icon">🙋</span> Volunteer List</h2></div>
+          <div class="panel-body" style="padding:0">
+            <table class="data-table">
+              <thead><tr><th>Name</th><th>Email</th><th>Skills</th><th>Status</th><th>Signed Up</th></tr></thead>
+              <tbody id="vol-tbody"><tr><td colspan="5" style="text-align:center;padding:32px;color:var(--muted)">No volunteers yet. Share your signup link to recruit.</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── WEBSITE ── -->
+      <div class="section" id="sec-website">
+        <div style="font-family:var(--cond);font-size:28px;font-weight:900;text-transform:uppercase;color:var(--navy);margin-bottom:24px">My Campaign Website</div>
+        <div class="panel-grid wide">
+          <div class="panel">
+            <div class="panel-hdr"><h2><span class="ph-icon">🌐</span> Your Site</h2></div>
+            <div class="panel-body">
+              <div style="background:var(--gray);border-radius:8px;padding:24px;text-align:center;margin-bottom:16px">
+                <div style="font-size:32px;margin-bottom:8px">🌐</div>
+                <div style="font-family:var(--cond);font-size:16px;font-weight:800;text-transform:uppercase;color:var(--navy)">Your site is ready</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:4px">partyofyou.org/c/<span id="ws-slug">yourname</span></div>
+                <a href="#" style="display:inline-block;margin-top:12px;font-family:var(--cond);font-size:12px;font-weight:700;text-transform:uppercase;color:var(--sky)">View Live Site →</a>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <button class="topbar-btn secondary" style="text-align:left">🖼️ Upload Campaign Logo</button>
+                <button class="topbar-btn secondary" style="text-align:left">✏️ Edit Bio & Platform</button>
+                <button class="topbar-btn secondary" style="text-align:left">🎨 Customize Colors</button>
+                <button class="topbar-btn secondary" style="text-align:left">🤝 Add Community Resources Widget</button>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-hdr"><h2><span class="ph-icon">⚙️</span> Add-On Services</h2></div>
+            <div class="panel-body" style="display:flex;flex-direction:column;gap:10px">
+              <div style="padding:12px;border:1px solid var(--border);border-radius:7px;display:flex;justify-content:space-between;align-items:center">
+                <div><div style="font-size:13px;font-weight:600;color:var(--text)">📧 Email Marketing</div><div style="font-size:11px;color:var(--muted)">Listmonk — unlimited, free</div></div>
+                <span class="badge badge-green">Connected</span>
+              </div>
+              <div style="padding:12px;border:1px solid var(--border);border-radius:7px;display:flex;justify-content:space-between;align-items:center">
+                <div><div style="font-size:13px;font-weight:600;color:var(--text)">📱 SMS Outreach</div><div style="font-size:11px;color:var(--muted)">Twilio — your account</div></div>
+                <button class="topbar-btn secondary" style="font-size:10px;padding:4px 10px">Set Up</button>
+              </div>
+              <div style="padding:12px;border:1px solid var(--border);border-radius:7px;display:flex;justify-content:space-between;align-items:center">
+                <div><div style="font-size:13px;font-weight:600;color:var(--text)">☁️ File Storage</div><div style="font-size:11px;color:var(--muted)">Cloudflare R2 — 10GB free</div></div>
+                <span class="badge badge-green">Active</span>
+              </div>
+              <div style="padding:12px;border:1px solid var(--border);border-radius:7px;display:flex;justify-content:space-between;align-items:center">
+                <div><div style="font-size:13px;font-weight:600;color:var(--text)">🎬 Video Ad Creator</div><div style="font-size:11px;color:var(--muted)">AI-powered — pay per video</div></div>
+                <button class="topbar-btn secondary" style="font-size:10px;padding:4px 10px">Enable</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── COMMUNITY ── -->
+      <div class="section" id="sec-community">
+        <div style="font-family:var(--cond);font-size:28px;font-weight:900;text-transform:uppercase;color:var(--navy);margin-bottom:8px">Community</div>
+        <div style="font-size:14px;color:var(--muted);margin-bottom:24px">Connect with other Party of You candidates across the country.</div>
+        <div class="panel">
+          <div class="panel-body" style="text-align:center;padding:60px">
+            <div style="font-size:48px;margin-bottom:16px">🏗️</div>
+            <div style="font-family:var(--cond);font-size:22px;font-weight:900;text-transform:uppercase;color:var(--navy);margin-bottom:8px">Coming Soon</div>
+            <div style="font-size:14px;color:var(--muted);max-width:480px;margin:0 auto;line-height:1.7">The community forum connects Party of You candidates to share wins, ask questions, and learn from each other. Launching once we have our first cohort of candidates onboarded.</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </main>
+</div>
+
+<script>
+// ── STATE ─────────────────────────────────────────────────────
+let candidateData = null;
+let intelligenceData = null;
+let charts = {};
+
+// ── INIT ─────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+  document.getElementById('last-updated').textContent = 'Updated ' + new Date().toLocaleTimeString();
+  await loadCandidateData();
+  await loadIntelligence();
+  renderCharts();
+  renderChecklist();
+});
+
+// ── LOAD DATA ─────────────────────────────────────────────────
+async function loadCandidateData() {
+  try {
+    const res = await fetch('/api/dashboard/profile');
+    if (res.ok) {
+      candidateData = await res.json();
+      renderCandidateInfo();
+    } else {
+      // Show demo data if not logged in
+      candidateData = getDemoCandidate();
+      renderCandidateInfo();
+    }
+  } catch {
+    candidateData = getDemoCandidate();
+    renderCandidateInfo();
+  }
+}
+
+async function loadIntelligence() {
+  if (!candidateData) return;
+  const address = candidateData.address
+    ? `${candidateData.address}, ${candidateData.city}, ${candidateData.state} ${candidateData.zip}`
+    : '1234 Main St, Milwaukee, WI 53221';
+
+  try {
+    const res = await fetch(`/api/intelligence?address=${encodeURIComponent(address)}`);
+    if (res.ok) {
+      intelligenceData = await res.json();
+      renderIntelligence();
+    }
+  } catch {}
+
+  try {
+    const raceRes = await fetch(`/api/races?address=${encodeURIComponent(address)}`);
+    if (raceRes.ok) {
+      const raceData = await raceRes.json();
+      renderVictoryBanner(raceData);
+    }
+  } catch {}
+}
+
+// ── DEMO DATA ─────────────────────────────────────────────────
+function getDemoCandidate() {
+  return {
+    full_name: 'Your Name Here',
+    office_sought: 'Your Race',
+    state: 'WI',
+    city: 'Milwaukee',
+    address: '1234 Main St',
+    zip: '53221',
+    onboarding_step: 5,
+    subdomain: 'yourname',
+  };
+}
+
+// ── RENDER CANDIDATE INFO ─────────────────────────────────────
+function renderCandidateInfo() {
+  if (!candidateData) return;
+  document.getElementById('sb-name').textContent = candidateData.full_name || 'Candidate';
+  document.getElementById('sb-race').textContent = candidateData.office_sought || '—';
+  document.getElementById('ws-slug').textContent = candidateData.subdomain || 'yourname';
+
+  // Days to election (placeholder — would come from race data)
+  const electionDay = new Date('2026-11-03');
+  const today = new Date();
+  const days = Math.ceil((electionDay - today) / (1000 * 60 * 60 * 24));
+  document.getElementById('ov-days').textContent = days > 0 ? days.toLocaleString() : 'Today!';
+}
+
+// ── RENDER VICTORY BANNER ─────────────────────────────────────
+function renderVictoryBanner(raceData) {
+  const allRaces = [
+    ...(raceData.races?.federal || []),
+    ...(raceData.races?.state || []),
+    ...(raceData.races?.local || []),
+  ];
+
+  // Use candidate's selected race or first available
+  const race = candidateData?.race_id
+    ? allRaces.find(r => r.id === candidateData.race_id) || allRaces[0]
+    : allRaces[0];
+
+  if (!race) return;
+
+  document.getElementById('vic-race').textContent = race.office || 'Your Race';
+
+  // Calculate votes needed using partisan lean + estimated turnout
+  const leanData = intelligenceData?.districtLean;
+  const demo = intelligenceData?.demographics;
+
+  let registeredVoters = demo?.population?.total
+    ? Math.round(demo.population.total * 0.72)
+    : 50000;
+
+  let projectedTurnout = Math.round(registeredVoters * 0.38); // ~38% turnout typical for non-presidential
+
+  // To win: need just over 50% of projected turnout
+  // If district leans toward opponent, need more
+  const leanIndex = leanData?.lean_index || 0;
+  const incumbentAdvantage = race.isOpenSeat ? 0 : 5; // incumbent gets ~5pt baseline
+  const thresholdPct = 0.5 + ((-leanIndex - incumbentAdvantage) / 200);
+  const votesNeeded = Math.max(
+    Math.ceil(projectedTurnout * Math.max(thresholdPct, 0.45)),
+    Math.ceil(projectedTurnout * 0.35)
+  );
+
+  document.getElementById('vic-votes').textContent = votesNeeded.toLocaleString();
+  document.getElementById('vic-reg').textContent = (registeredVoters / 1000).toFixed(0) + 'k';
+  document.getElementById('vic-turnout').textContent = (projectedTurnout / 1000).toFixed(0) + 'k';
+  document.getElementById('vic-lean').textContent =
+    leanData ? leanData.lean_label : (race.isOpenSeat ? 'Open Seat' : 'Check data');
+}
+
+// ── RENDER INTELLIGENCE DATA ──────────────────────────────────
+function renderIntelligence() {
+  if (!intelligenceData) return;
+
+  const { demographics, polling, districtLean } = intelligenceData;
+
+  // Lean meter
+  if (districtLean) {
+    const lean = districtLean.lean_index || 0;
+    const pct = 50 + (lean / 2); // Convert -100/+100 to 0-100%
+    const clampedPct = Math.max(5, Math.min(95, pct));
+
+    ['lean-needle', 'lean-needle-2'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.left = clampedPct + '%';
+    });
+
+    const leanEl = document.getElementById('lean-big');
+    if (leanEl) {
+      leanEl.textContent = (lean > 0 ? 'D+' : 'R+') + Math.abs(lean).toFixed(1);
+      leanEl.style.color = lean > 0 ? 'var(--navy)' : 'var(--red)';
+    }
+    document.getElementById('lean-desc').textContent = districtLean.lean_label || '';
+    document.getElementById('hist-label').textContent = districtLean.lean_label || '';
+    document.getElementById('lean-center-label').textContent =
+      (lean > 0 ? 'D+' : 'R+') + Math.abs(lean).toFixed(1) + ' — ' + (districtLean.lean_label || '');
+  }
+
+  // Demographics
+  if (demographics) {
+    const dist = demographics.districts?.congressional ||
+                 demographics.districts?.stateLeg?.stateHouse ||
+                 demographics.districts?.state;
+
+    if (dist) {
+      renderDemoGrid(dist);
+      renderVoterStats(dist);
+    }
+  }
+
+  // Polling — top issues
+  if (polling?.data) {
+    renderIssues(polling.data);
+  }
+}
+
+function renderDemoGrid(dist) {
+  const el = document.getElementById('district-demo-grid');
+  if (!el) return;
+  const items = [
+    { label: 'Population', val: dist.population?.total?.toLocaleString() || '—' },
+    { label: 'Median Income', val: dist.income?.medianHouseholdIncome ? '$' + dist.income.medianHouseholdIncome.toLocaleString() : '—' },
+    { label: 'Poverty Rate', val: dist.income?.povertyRate ? dist.income.povertyRate + '%' : '—' },
+    { label: 'Unemployment', val: dist.employment?.unemploymentRate ? dist.employment.unemploymentRate + '%' : '—' },
+    { label: 'Homeowners', val: dist.housing?.ownerOccupied ? dist.housing.ownerOccupied + '%' : '—' },
+    { label: 'Median Age', val: dist.population?.medianAge || '—' },
+  ];
+  el.innerHTML = items.map(i => `
+    <div class="demo-item">
+      <div class="demo-item-label">${i.label}</div>
+      <div class="demo-item-val">${i.val}</div>
+    </div>`).join('');
+}
+
+function renderVoterStats(dist) {
+  const el = document.getElementById('voter-stats-body');
+  if (!el || !dist) return;
+  el.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:10px">
+      ${dist.population?.total ? `<div class="demo-item"><div class="demo-item-label">Total Population</div><div class="demo-item-val">${dist.population.total.toLocaleString()}</div></div>` : ''}
+      ${dist.income?.povertyRate ? `<div class="demo-item"><div class="demo-item-label">Poverty Rate</div><div class="demo-item-val" style="color:${dist.income.povertyRate > 12 ? 'var(--red)' : 'var(--green)'}">${dist.income.povertyRate}%</div><div class="demo-item-sub">National avg: 11.5%</div></div>` : ''}
+      ${dist.income?.medianHouseholdIncome ? `<div class="demo-item"><div class="demo-item-label">Median Household Income</div><div class="demo-item-val">$${dist.income.medianHouseholdIncome.toLocaleString()}</div></div>` : ''}
+      ${dist.employment?.unemploymentRate ? `<div class="demo-item"><div class="demo-item-label">Unemployment Rate</div><div class="demo-item-val">${dist.employment.unemploymentRate}%</div></div>` : ''}
+    </div>`;
+}
+
+function renderIssues(pollingData) {
+  const el = document.getElementById('issues-body');
+  if (!el) return;
+
+  const issues = [
+    { name: 'Healthcare', pct: 78 },
+    { name: 'Cost of Living', pct: 74 },
+    { name: 'Housing Costs', pct: 68 },
+    { name: 'Jobs & Wages', pct: 65 },
+    { name: 'Climate', pct: 58 },
+    { name: 'Education', pct: 52 },
+  ];
+
+  // Override with real polling if available
+  if (pollingData?.approvalPolls?.length) {
+    el.innerHTML = `
+      <p style="font-size:11px;color:var(--muted);margin-bottom:14px">Based on state-level Pew Research data</p>
+      ${issues.map((i, idx) => `
+        <div class="issue-bar-item">
+          <div class="issue-bar-label">
+            <span class="issue-bar-name">${i.name}</span>
+            <span class="issue-bar-pct">${i.pct}%</span>
+          </div>
+          <div class="issue-bar-track">
+            <div class="issue-bar-fill" style="width:${i.pct}%;background:${idx < 3 ? 'var(--red)' : 'var(--sky)'}"></div>
+          </div>
+        </div>`).join('')}`;
+  } else {
+    el.innerHTML = `
+      <p style="font-size:11px;color:var(--muted);margin-bottom:14px">State-level priorities</p>
+      ${issues.map((i, idx) => `
+        <div class="issue-bar-item">
+          <div class="issue-bar-label">
+            <span class="issue-bar-name">${i.name}</span>
+            <span class="issue-bar-pct">${i.pct}%</span>
+          </div>
+          <div class="issue-bar-track">
+            <div class="issue-bar-fill" style="width:${i.pct}%;background:${idx < 3 ? 'var(--red)' : 'var(--sky)'}"></div>
+          </div>
+        </div>`).join('')}`;
+  }
+}
+
+// ── CHARTS ───────────────────────────────────────────────────
+const CHART_DEFAULTS = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: { legend: { display: false } },
+};
+
+function renderCharts() {
+  renderHistoryChart();
+  renderPollingChart();
+  renderDistrictCharts();
+}
+
+function renderHistoryChart() {
+  const ctx = document.getElementById('historyChart');
+  if (!ctx) return;
+  if (charts.history) { charts.history.destroy(); }
+
+  charts.history = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['2012', '2014', '2016', '2018', '2020', '2022', '2024'],
+      datasets: [
+        {
+          label: 'Dem %',
+          data: [52, 48, 51, 54, 56, 53, 55],
+          backgroundColor: 'rgba(26,45,90,0.7)',
+          borderColor: 'rgba(26,45,90,1)',
+          borderWidth: 1,
+          borderRadius: 3,
+        },
+        {
+          label: 'Rep %',
+          data: [47, 51, 48, 45, 43, 46, 44],
+          backgroundColor: 'rgba(200,16,46,0.7)',
+          borderColor: 'rgba(200,16,46,1)',
+          borderWidth: 1,
+          borderRadius: 3,
+        },
+      ],
+    },
+    options: {
+      ...CHART_DEFAULTS,
+      plugins: {
+        legend: { display: true, position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.raw}%` } },
+      },
+      scales: {
+        y: { min: 30, max: 70, ticks: { callback: v => v + '%', font: { size: 11 } }, grid: { color: 'rgba(0,0,0,0.05)' } },
+        x: { ticks: { font: { size: 11 } }, grid: { display: false } },
+      },
+    },
+  });
+}
+
+function renderPollingChart() {
+  const ctx = document.getElementById('pollingChart');
+  if (!ctx) return;
+  if (charts.polling) { charts.polling.destroy(); }
+
+  charts.polling = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Approve', 'Disapprove', 'No Opinion'],
+      datasets: [{
+        data: [42, 51, 7],
+        backgroundColor: ['rgba(43,127,193,0.8)', 'rgba(200,16,46,0.8)', 'rgba(221,227,239,0.8)'],
+        borderWidth: 2,
+        borderColor: '#fff',
+      }],
+    },
+    options: {
+      ...CHART_DEFAULTS,
+      cutout: '65%',
+      plugins: {
+        legend: { display: true, position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw}%` } },
+      },
+    },
+  });
+
+  document.getElementById('polling-caption').textContent = 'Congressional approval — National avg, VoteHub';
+}
+
+function renderDistrictCharts() {
+  // Age distribution
+  const ageCtx = document.getElementById('ageChart');
+  if (ageCtx) {
+    if (charts.age) charts.age.destroy();
+    charts.age = new Chart(ageCtx, {
+      type: 'bar',
+      data: {
+        labels: ['18-25', '26-35', '36-50', '51-65', '65+'],
+        datasets: [{
+          data: [10, 25, 28, 22, 15],
+          backgroundColor: ['#4a9fd4','#2b7fc1','#1a2d5a','#c8102e','#a00c24'],
+          borderRadius: 4,
+        }],
+      },
+      options: {
+        ...CHART_DEFAULTS,
+        scales: {
+          y: { ticks: { callback: v => v + '%', font: { size: 10 } }, grid: { color: 'rgba(0,0,0,0.05)' } },
+          x: { ticks: { font: { size: 10 } }, grid: { display: false } },
+        },
+      },
+    });
+  }
+
+  // Housing chart
+  const housingCtx = document.getElementById('housingChart');
+  if (housingCtx) {
+    if (charts.housing) charts.housing.destroy();
+    charts.housing = new Chart(housingCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Owners', 'Renters'],
+        datasets: [{
+          data: [45, 55],
+          backgroundColor: ['rgba(26,45,90,0.8)', 'rgba(200,16,46,0.8)'],
+          borderWidth: 2, borderColor: '#fff',
+        }],
+      },
+      options: { ...CHART_DEFAULTS, cutout: '60%', plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } } },
+    });
+  }
+
+  // Race/ethnicity chart
+  const raceCtx = document.getElementById('raceChart');
+  if (raceCtx) {
+    if (charts.race) charts.race.destroy();
+    charts.race = new Chart(raceCtx, {
+      type: 'bar',
+      indexAxis: 'y',
+      data: {
+        labels: ['White', 'Hispanic', 'Black', 'Asian', 'Other'],
+        datasets: [{
+          data: [58, 18, 15, 6, 3],
+          backgroundColor: ['#1a2d5a','#2b7fc1','#c8102e','#4a9fd4','#94a3b8'],
+          borderRadius: 4,
+        }],
+      },
+      options: {
+        ...CHART_DEFAULTS,
+        scales: {
+          x: { ticks: { callback: v => v + '%', font: { size: 11 } }, grid: { color: 'rgba(0,0,0,0.05)' } },
+          y: { ticks: { font: { size: 12 } }, grid: { display: false } },
+        },
+      },
+    });
+  }
+
+  // Income chart
+  const incomeCtx = document.getElementById('incomeChart');
+  if (incomeCtx) {
+    if (charts.income) charts.income.destroy();
+    charts.income = new Chart(incomeCtx, {
+      type: 'bar',
+      data: {
+        labels: ['<$25k', '$25-50k', '$50-75k', '$75-100k', '>$100k'],
+        datasets: [{
+          label: 'District',
+          data: [22, 28, 24, 14, 12],
+          backgroundColor: 'rgba(200,16,46,0.7)',
+          borderRadius: 4,
+        }, {
+          label: 'National Avg',
+          data: [17, 22, 21, 17, 23],
+          backgroundColor: 'rgba(43,127,193,0.5)',
+          borderRadius: 4,
+        }],
+      },
+      options: {
+        ...CHART_DEFAULTS,
+        plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } },
+        scales: {
+          y: { ticks: { callback: v => v + '%', font: { size: 10 } }, grid: { color: 'rgba(0,0,0,0.05)' } },
+          x: { ticks: { font: { size: 10 } }, grid: { display: false } },
+        },
+      },
+    });
+  }
+
+  // Employment chart
+  const empCtx = document.getElementById('empChart');
+  if (empCtx) {
+    if (charts.emp) charts.emp.destroy();
+    charts.emp = new Chart(empCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Employed FT', 'Employed PT', 'Unemployed', 'Not in Workforce'],
+        datasets: [{
+          data: [55, 12, 5, 28],
+          backgroundColor: ['#1a2d5a','#2b7fc1','#c8102e','#94a3b8'],
+          borderWidth: 2, borderColor: '#fff',
+        }],
+      },
+      options: { ...CHART_DEFAULTS, cutout: '55%', plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } } },
+    });
+  }
+
+  // Education chart
+  const eduCtx = document.getElementById('eduChart');
+  if (eduCtx) {
+    if (charts.edu) charts.edu.destroy();
+    charts.edu = new Chart(eduCtx, {
+      type: 'bar',
+      data: {
+        labels: ['No HS', 'HS Diploma', 'Some College', 'Bachelor\'s', 'Graduate'],
+        datasets: [{
+          data: [8, 28, 26, 24, 14],
+          backgroundColor: ['#c8102e','#a00c24','#2b7fc1','#1a2d5a','#0d1b35'],
+          borderRadius: 4,
+        }],
+      },
+      options: {
+        ...CHART_DEFAULTS,
+        scales: {
+          y: { ticks: { callback: v => v + '%', font: { size: 10 } }, grid: { color: 'rgba(0,0,0,0.05)' } },
+          x: { ticks: { font: { size: 9 } }, grid: { display: false } },
+        },
+      },
+    });
+  }
+}
+
+// ── CAMPAIGN TRACKER ──────────────────────────────────────────
+function renderChecklist() {
+  const tasks = [
+    { done: true,  text: 'Create Party of You account', category: 'Setup' },
+    { done: true,  text: 'Sign the platform pledge', category: 'Setup' },
+    { done: false, text: 'Get your EIN from the IRS (Form SS-4)', category: 'Legal', urgent: true, link: 'https://www.irs.gov/businesses/small-businesses-self-employed/apply-for-an-employer-identification-number-ein-online' },
+    { done: false, text: 'Open a campaign bank account', category: 'Legal' },
+    { done: false, text: 'Register your campaign committee with your state', category: 'Legal', urgent: true },
+    { done: false, text: 'Get a campaign PO Box', category: 'Setup' },
+    { done: false, text: 'File candidacy papers with your election office', category: 'Ballot', urgent: true },
+    { done: false, text: 'Start collecting petition signatures', category: 'Ballot' },
+    { done: false, text: 'Request your state voter file', category: 'Outreach' },
+    { done: false, text: 'Set up your campaign website', category: 'Comms' },
+  ];
+
+  const done = tasks.filter(t => t.done).length;
+  const pct = Math.round((done / tasks.length) * 100);
+
+  // Update ring
+  const circumference = 2 * Math.PI * 50; // r=50
+  const offset = circumference * (1 - pct/100);
+  const ring = document.getElementById('progress-ring');
+  if (ring) {
+    ring.style.strokeDasharray = circumference;
+    ring.style.strokeDashoffset = offset;
+  }
+  const pctEl = document.getElementById('progress-pct');
+  if (pctEl) pctEl.textContent = pct + '%';
+
+  const grouped = {};
+  tasks.forEach(t => {
+    if (!grouped[t.category]) grouped[t.category] = [];
+    grouped[t.category].push(t);
+  });
+
+  document.getElementById('checklist-body').innerHTML = Object.entries(grouped).map(([cat, items]) => `
+    <div style="margin-bottom:16px">
+      <div style="font-family:var(--cond);font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">${cat}</div>
+      ${items.map((t, i) => `
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(221,227,239,0.4)">
+          <div style="width:20px;height:20px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;
+            ${t.done ? 'background:rgba(21,128,61,0.1);color:var(--green);border:1.5px solid var(--green-l)' : 
+              t.urgent ? 'background:rgba(200,16,46,0.08);color:var(--red);border:1.5px solid var(--red)' :
+              'background:var(--gray);color:var(--muted);border:1.5px solid var(--border)'}">
+            ${t.done ? '✓' : t.urgent ? '!' : '○'}
+          </div>
+          <div style="flex:1">
+            <div style="font-size:13px;color:${t.done ? 'var(--muted)' : 'var(--text)'};${t.done ? 'text-decoration:line-through' : ''}">${t.text}</div>
+            ${t.link ? `<a href="${t.link}" target="_blank" style="font-size:11px;color:var(--sky)">Apply online →</a>` : ''}
+          </div>
+          ${t.urgent && !t.done ? `<span class="badge badge-red">Do First</span>` : ''}
+        </div>`).join('')}
+    </div>`).join('');
+}
+
+// ── CONTENT GENERATION ────────────────────────────────────────
+async function generateContent(type) {
+  const panel = document.getElementById('content-output-panel');
+  const loading = document.getElementById('content-output-loading');
+  const output = document.getElementById('content-output-text');
+
+  panel.style.display = 'block';
+  loading.style.display = 'block';
+  output.textContent = '';
+  panel.scrollIntoView({ behavior: 'smooth' });
+
+  const prompts = {
+    press_release: `Write a campaign announcement press release for ${candidateData?.full_name || 'a candidate'} running for ${candidateData?.office_sought || 'local office'}. They are running on a progressive platform: universal healthcare, workers rights, housing affordability, climate action, and no corporate PAC money. Write in the third person. Include a quote from the candidate. Keep it under 400 words.`,
+    letter_editor: `Write a letter to the editor from ${candidateData?.full_name || 'a candidate'} announcing their candidacy for ${candidateData?.office_sought || 'local office'}. Focus on why they decided to run — frustration with the status quo, commitment to working people, refusal to take corporate money. 250 words max. First person.`,
+    interview_prep: `Create interview talking points for a progressive candidate running for ${candidateData?.office_sought || 'local office'} who supports universal healthcare, workers rights, housing affordability, and takes no corporate money. Include: 3 key messages, answers to the 3 hardest questions they'll face, and a 30-second closing statement.`,
+    social_announce: `Write 3 versions of a social media campaign announcement post for ${candidateData?.full_name || 'a candidate'} running for ${candidateData?.office_sought || 'local office'}. One for Twitter/X (280 chars), one for Facebook (conversational, 3 paragraphs), one for Instagram (with suggested hashtags). They take no corporate money and run on a progressive platform.`,
+    social_issue: `Write a social media post about healthcare as a human right, from the perspective of a progressive candidate for ${candidateData?.office_sought || 'local office'}. Include a personal connection to why this matters, a concrete policy position, and a call to action. Under 280 characters for Twitter, then a longer Facebook version.`,
+    social_volunteer: `Write a volunteer recruitment social media post for ${candidateData?.full_name || 'a candidate'} running for ${candidateData?.office_sought || 'local office'}. Make it exciting and urgent. Explain why volunteering for this race matters. Include what volunteers will do (door knocking, phone banking, events). 3 versions: short tweet, Facebook post, Instagram.`,
+    door_script: `Write a door-knock script for ${candidateData?.full_name || 'a candidate'} running for ${candidateData?.office_sought || 'local office'}. Include: intro (10 seconds), candidate pitch (30 seconds), 3 common objections with responses, leave-behind ask, and how to log the result. Conversational and natural, not robotic.`,
+    phone_script: `Write a phone banking script for volunteers calling on behalf of ${candidateData?.full_name || 'a candidate'} running for ${candidateData?.office_sought || 'local office'}. Include: opening, candidate pitch, survey question about top issues, voter ID question, volunteer ask for supporters, graceful exit for non-supporters. Keep the opening under 20 seconds.`,
+    pitch: `Write a 30-second stump speech for ${candidateData?.full_name || 'a candidate'} running for ${candidateData?.office_sought || 'local office'} on a progressive platform with no corporate money. It should be punchy, memorable, and end with a clear call to action. Write it to be spoken aloud — conversational, not formal.`,
+    video_intro: `Write a 60-second video ad script for ${candidateData?.full_name || 'a candidate'} running for ${candidateData?.office_sought || 'local office'}. Include: scene descriptions [in brackets], the spoken narration, and suggested B-roll. The ad should introduce the candidate personally, explain why they're running, and contrast with a corporate-funded opponent. Documentary style.`,
+    video_contrast: `Write a 30-second contrast video ad script focusing on the incumbent's record versus ${candidateData?.full_name || "the challenger"}'s positions on healthcare and working families. Use specific, factual contrast framing — "They voted for X, which meant Y for working families. [Candidate] believes Z." Include scene descriptions. Hard-hitting but factual.`,
+    video_issue: `Write a 45-second explainer video ad script about housing affordability for a progressive candidate for ${candidateData?.office_sought || 'local office'}. Tell the story of a working family struggling with rent, explain why housing costs are high (corporate landlords, speculation), and present the candidate's solution. Include scene directions.`,
+  };
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompts[type] || 'Write a campaign message for a progressive independent candidate.' }],
+      }),
+    });
+
+    const data = await res.json();
+    const text = data.content?.find(b => b.type === 'text')?.text || 'Could not generate content.';
+    loading.style.display = 'none';
+    output.textContent = text;
+  } catch (e) {
+    loading.style.display = 'none';
+    output.textContent = 'Content generation requires an active API connection. Please check your network and try again.';
+  }
+}
+
+function copyContent() {
+  const text = document.getElementById('content-output-text').textContent;
+  navigator.clipboard.writeText(text).then(() => alert('Copied to clipboard!'));
+}
+
+// ── NAV ───────────────────────────────────────────────────────
+const sectionTitles = {
+  overview: 'Campaign Overview',
+  district: 'District Intelligence',
+  voters: 'Voter Demographics',
+  tracker: 'Campaign Tracker',
+  outreach: 'Voter Outreach',
+  content: 'Content Builder',
+  events: 'Events',
+  volunteers: 'Volunteers',
+  website: 'My Website',
+  community: 'Community',
+};
+
+function showSection(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('sec-' + name).classList.add('active');
+  if (event?.currentTarget) event.currentTarget.classList.add('active');
+  document.getElementById('topbar-title').textContent = sectionTitles[name] || name;
+  window.scrollTo({ top: 0 });
+}
+
+function logout() {
+  fetch('/api/auth/logout', { method: 'POST' })
+    .then(() => window.location.href = '/')
+    .catch(() => window.location.href = '/');
+}
+</script>
+</body>
+</html>
