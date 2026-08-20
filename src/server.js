@@ -269,12 +269,12 @@ app.use('/dashboard', (req, res) => {
     (req.headers.authorization?.startsWith('Bearer ')
       ? req.headers.authorization.slice(7) : null);
 
-  if (!token) return res.redirect('/apply.html?redirect=/dashboard/');
+  if (!token) return res.redirect('/login.html?redirect=/dashboard/');
 
   try {
     const payload = verifyToken(token);
     if (!payload || payload.role !== 'candidate') {
-      return res.redirect('/apply.html');
+      return res.redirect('/login.html');
     }
 
     const dashboardPath = path.join(__dirname, '../public/dashboard/index.html');
@@ -287,7 +287,7 @@ app.use('/dashboard', (req, res) => {
     });
   } catch (err) {
     console.error('Dashboard guard error:', err.message);
-    return res.redirect('/apply.html?redirect=/dashboard/');
+    return res.redirect('/login.html?redirect=/dashboard/');
   }
 });
 

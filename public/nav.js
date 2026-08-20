@@ -28,6 +28,7 @@
   ];
 
   const CTA = { href: '/apply.html', label: 'Run for Office →' };
+  const LOGIN = { href: '/login.html', label: 'Sign In' };
 
   // ── DETECT ACTIVE PAGE ──────────────────────────────────────────
   function isActive(href) {
@@ -187,6 +188,7 @@
         </a>
         <div class="poy-nav-links">
           ${desktopLinks}
+          <a href="/login.html" id="poy-signin-link" style="font-family:var(--poy-cond);font-size:13px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:rgba(255,255,255,0.6);padding:8px 12px;text-decoration:none;border-radius:6px;transition:color 0.15s">Sign In</a>
           ${ctaHtml}
         </div>
         <button class="poy-hamburger" onclick="document.getElementById('poy-nav-drawer').classList.toggle('open')" aria-label="Toggle menu">☰</button>
@@ -218,24 +220,20 @@
   }
 
   function swapToDashboard() {
-    // Find by class first, then by href as fallback
     const nav = document.getElementById('poy-nav');
     const drawer = document.getElementById('poy-nav-drawer');
 
     if (nav) {
       const cta = nav.querySelector('.poy-nav-cta') || nav.querySelector('a[href="/apply.html"]');
-      if (cta) {
-        cta.setAttribute('href', '/dashboard/');
-        cta.innerHTML = '⚡ My Dashboard';
-      }
+      if (cta) { cta.setAttribute('href', '/dashboard/'); cta.innerHTML = '⚡ My Dashboard'; }
+      // Hide Sign In link
+      const signin = document.getElementById('poy-signin-link');
+      if (signin) signin.style.display = 'none';
     }
 
     if (drawer) {
       const cta = drawer.querySelector('.poy-nav-cta') || drawer.querySelector('a[href="/apply.html"]');
-      if (cta) {
-        cta.setAttribute('href', '/dashboard/');
-        cta.textContent = '⚡ My Dashboard';
-      }
+      if (cta) { cta.setAttribute('href', '/dashboard/'); cta.textContent = '⚡ My Dashboard'; }
     }
   }
 
