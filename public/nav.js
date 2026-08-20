@@ -63,7 +63,7 @@
       background: var(--poy-navy-d);
       border-bottom: 2px solid var(--poy-red);
       display: flex; align-items: center; justify-content: space-between;
-      padding: 0 32px; height: 56px;
+      padding: 0 32px; height: 64px;
       font-family: var(--poy-body);
     }
 
@@ -72,13 +72,8 @@
       flex-shrink: 0;
     }
     #poy-nav .poy-nav-logo img {
-      height: 38px; width: auto;
-      border-radius: 4px;
+      height: 52px; width: auto;
       display: block;
-      filter:
-        drop-shadow(0 0 1px white)
-        drop-shadow(0 0 2px white)
-        drop-shadow(0 0 3px white);
     }
 
     #poy-nav .poy-nav-links {
