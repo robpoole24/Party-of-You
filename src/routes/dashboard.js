@@ -30,6 +30,7 @@ router.get('/profile', async (req, res) => {
         c.onboarding_step, c.platform_agreed, c.platform_agreed_at,
         c.created_at, c.updated_at,
         u.email, u.last_login,
+        u.address, u.city, u.zip,
         cp.pledged_at
       FROM candidates c
       JOIN users u ON u.id = c.user_id

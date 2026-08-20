@@ -868,23 +868,44 @@ async function loadCandidateData() {
     const res = await fetch('/api/dashboard/profile');
     if (res.ok) {
       candidateData = await res.json();
-      renderCandidateInfo();
     } else {
-      // Show demo data if not logged in
       candidateData = getDemoCandidate();
-      renderCandidateInfo();
     }
   } catch {
     candidateData = getDemoCandidate();
-    renderCandidateInfo();
+  }
+
+  renderCandidateInfo();
+
+  // Auto-populate address field with candidate's home address
+  const addressInput = document.getElementById('address-input');
+  if (addressInput && candidateData) {
+    const parts = [
+      candidateData.address,
+      candidateData.city,
+      candidateData.state,
+      candidateData.zip,
+    ].filter(Boolean);
+
+    if (parts.length >= 2) {
+      // We have enough address info — auto-load and hide the bar
+      const fullAddress = parts.join(', ');
+      addressInput.value = fullAddress;
+
+      // Auto-trigger intelligence load
+      setTimeout(() => lookupAddress(), 300);
+    }
   }
 }
 
 async function loadIntelligence() {
   if (!candidateData) return;
-  const address = candidateData.address
-    ? `${candidateData.address}, ${candidateData.city}, ${candidateData.state} ${candidateData.zip}`
-    : `${candidateData.city || 'Milwaukee'}, ${candidateData.state || 'WI'}`;
+
+  // Use manually entered address if available, otherwise build from profile
+  const address = candidateData._lookupAddress ||
+    [candidateData.address, candidateData.city, candidateData.state, candidateData.zip]
+    .filter(Boolean).join(', ') ||
+    `${candidateData.city || 'Milwaukee'}, ${candidateData.state || 'WI'}`;
 
   // Try intelligence API — fail gracefully
   try {
@@ -1461,27 +1482,34 @@ async function generateContent(type) {
 // ── ADDRESS LOOKUP ────────────────────────────────────────────
 async function lookupAddress() {
   const input = document.getElementById('address-input');
-  const address = input?.value?.trim();
-  if (!address) { alert('Please enter your campaign address.'); return; }
+  const address = input?.value?.trim() ||
+    [candidateData?.address, candidateData?.city, candidateData?.state, candidateData?.zip]
+    .filter(Boolean).join(', ');
 
-  const btn = input.nextElementSibling;
-  const orig = btn.textContent;
-  btn.textContent = 'Loading...';
-  btn.disabled = true;
-
-  // Override candidateData address for this session
-  if (candidateData) {
-    const parts = address.split(',');
-    candidateData.address = parts[0]?.trim() || address;
+  if (!address) {
+    alert('Please enter your campaign address.');
+    return;
   }
+
+  const btn = document.querySelector('#address-entry-bar button');
+  if (btn) { btn.textContent = 'Loading...'; btn.disabled = true; }
+
+  // Store the address on candidateData for intelligence calls
+  if (candidateData && input?.value) {
+    const parts = input.value.split(',');
+    candidateData.address = parts[0]?.trim() || input.value;
+  }
+
+  // Override address for this load
+  const savedAddress = candidateData?.address;
+  if (candidateData) candidateData._lookupAddress = address;
 
   await loadIntelligence();
   renderCharts();
 
-  btn.textContent = orig;
-  btn.disabled = false;
+  if (btn) { btn.textContent = 'Load Data'; btn.disabled = false; }
 
-  // Hide the bar after successful load
+  // Hide bar after successful load
   const bar = document.getElementById('address-entry-bar');
   if (bar) bar.style.display = 'none';
 }
@@ -1500,6 +1528,7 @@ function startOutreach(method) {
   alert(messages[method] || 'Feature coming soon.');
 }
 
+function copyContent() {
   const text = document.getElementById('content-output-text').textContent;
   navigator.clipboard.writeText(text).then(() => alert('Copied to clipboard!'));
 }
