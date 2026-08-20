@@ -159,9 +159,13 @@ body { font-family: var(--body); color: var(--text); background: var(--white); -
   font-weight: 700;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.35);
+  color: rgba(255,255,255,0.75);
   display: flex; align-items: center; gap: 10px;
   position: relative; z-index: 1;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+  background: rgba(0,0,0,0.25);
+  padding: 8px 16px;
+  border-radius: 4px;
 }
 .hero-tagline span { color: var(--red); font-size: 8px; }
 
@@ -449,7 +453,7 @@ footer {
 </section>
 
 <!-- HOW IT WORKS -->
-<section class="how-section">
+<section class="how-section" id="how-it-works">
   <div class="section-eyebrow">How It Works</div>
   <h2 class="section-title">From Address to Candidate<br>in Four Steps</h2>
   <p class="section-sub">Everything a new candidate needs to know, organized so you can act on it.</p>

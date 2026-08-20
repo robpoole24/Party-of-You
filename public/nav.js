@@ -23,7 +23,7 @@
   // Add, remove, or reorder links here. One source of truth.
   const NAV_LINKS = [
     { href: '/platform.html',      label: 'Our Platform'   },
-    { href: '/how-it-works.html',  label: 'How It Works'   },
+    { href: '/#how-it-works',      label: 'How It Works'   },
     { href: '/results.html',       label: 'Find Your Race' },
   ];
 

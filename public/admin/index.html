@@ -908,16 +908,18 @@ async function deleteFile(source, filename) {
   if (data.success) loadDatasets();
 }
 
-async function triggerIngest(source) {
+async function triggerIngest(source, btnEl) {
+  const btn = btnEl || event?.target;
   if (!confirm(`Trigger ingestion for ${source}?\n\nThis may take several minutes for large files.`)) return;
-  const btn = event.target;
-  btn.textContent = 'Running...';
-  btn.disabled = true;
-  const data = await api('/datasets/' + source + '/ingest', { method: 'POST' });
-  btn.textContent = 'Ingest';
-  btn.disabled = false;
-  if (data) alert(data.message + '\n\nRefresh the page in a minute to see updated row counts.');
-  setTimeout(loadDatasets, 3000); // Refresh after 3s
+  if (btn) { btn.textContent = 'Running...'; btn.disabled = true; }
+  try {
+    const data = await api('/datasets/' + source + '/ingest', { method: 'POST' });
+    if (data) alert(data.message + '\n\nRow counts update in the background — refresh in a minute.');
+  } catch(e) {
+    alert('Ingest request failed: ' + e.message);
+  }
+  if (btn) { btn.textContent = 'Ingest'; btn.disabled = false; }
+  setTimeout(loadDatasets, 5000);
 }
 
 

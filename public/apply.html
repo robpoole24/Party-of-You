@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Run for Office — Party of You</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --navy: #1a2d5a; --navy-d: #0d1b35; --red: #c8102e; --red-d: #a00c24;
+  --sky: #2b7fc1; --sky-l: #4a9fd4;
+  --white: #f8fafc; --gray: #f4f6fb; --border: #dde3ef;
+  --text: #0d1b35; --muted: #5a6a8a;
+  --cond: 'Barlow Condensed', sans-serif; --body: 'Barlow', sans-serif;
+}
+body { font-family: var(--body); background: var(--navy-d); color: var(--white); -webkit-font-smoothing: antialiased; padding-top: 56px; }
+
+.page { max-width: 760px; margin: 0 auto; padding: 56px 24px 80px; }
+
+/* Hero */
+.hero { text-align: center; margin-bottom: 48px; }
+.hero img { width: 200px; border-radius: 8px; margin-bottom: 28px; }
+.hero-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--red); margin-bottom: 14px; }
+.hero h1 { font-family: var(--cond); font-size: clamp(40px,7vw,72px); font-weight: 900; text-transform: uppercase; line-height: 0.95; color: var(--white); margin-bottom: 20px; }
+.hero h1 .accent { color: var(--sky-l); }
+.hero-sub { font-size: 17px; color: rgba(255,255,255,0.6); line-height: 1.6; max-width: 520px; margin: 0 auto; }
+.hero-sub strong { color: var(--white); }
+
+/* Steps indicator */
+.steps-bar { display: flex; gap: 0; margin-bottom: 40px; border-radius: 8px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
+.step-indicator { flex: 1; padding: 12px 8px; text-align: center; background: rgba(255,255,255,0.04); border-right: 1px solid rgba(255,255,255,0.08); font-family: var(--cond); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: rgba(255,255,255,0.3); transition: all 0.2s; }
+.step-indicator:last-child { border-right: none; }
+.step-indicator.active { background: var(--red); color: var(--white); }
+.step-indicator.done { background: rgba(34,197,94,0.15); color: #4ade80; }
+
+/* Form panels */
+.panel { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 36px; margin-bottom: 20px; display: none; }
+.panel.active { display: block; }
+.panel-title { font-family: var(--cond); font-size: 28px; font-weight: 900; text-transform: uppercase; color: var(--white); margin-bottom: 6px; }
+.panel-sub { font-size: 14px; color: rgba(255,255,255,0.5); margin-bottom: 28px; line-height: 1.6; }
+
+/* Form fields */
+.field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.field-grid.one { grid-template-columns: 1fr; }
+.field-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+.field { display: flex; flex-direction: column; gap: 7px; }
+label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.5); }
+input, select, textarea {
+  height: 44px; padding: 0 14px;
+  background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 7px; color: var(--white); font-size: 15px;
+  font-family: var(--body); outline: none; transition: border-color 0.15s;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--sky); }
+input::placeholder, textarea::placeholder { color: rgba(255,255,255,0.25); }
+select { cursor: pointer; }
+select option { background: var(--navy-d); }
+textarea { height: 100px; padding: 12px 14px; resize: vertical; }
+
+/* Pledge section */
+.pledge-intro { background: rgba(200,16,46,0.08); border: 1px solid rgba(200,16,46,0.2); border-radius: 8px; padding: 20px; margin-bottom: 24px; font-size: 14px; color: rgba(255,255,255,0.6); line-height: 1.7; }
+.pledge-intro strong { color: var(--white); }
+.pledge-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px; }
+.pledge-item { display: flex; gap: 14px; align-items: flex-start; }
+.pledge-item input[type="checkbox"] {
+  width: 20px; height: 20px; flex-shrink: 0; margin-top: 2px;
+  accent-color: var(--red); cursor: pointer;
+  background: rgba(255,255,255,0.07);
+}
+.pledge-item label { font-size: 14px; color: rgba(255,255,255,0.75); text-transform: none; letter-spacing: 0; font-weight: 400; cursor: pointer; line-height: 1.5; }
+.pledge-item label strong { color: var(--white); }
+
+.signature-block { margin-top: 24px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.08); }
+.signature-block p { font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 12px; }
+.signature-field { background: rgba(255,255,255,0.06); border: 2px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 14px; font-family: 'Georgia', serif; font-size: 20px; color: var(--white); font-style: italic; }
+.signature-field:focus { border-color: var(--red); }
+
+/* Navigation buttons */
+.btn-row { display: flex; gap: 14px; justify-content: space-between; margin-top: 28px; }
+.btn-primary { background: var(--red); color: white; font-family: var(--cond); font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; padding: 13px 32px; border-radius: 7px; border: none; cursor: pointer; transition: background 0.15s; }
+.btn-primary:hover { background: var(--red-d); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-back { background: transparent; color: rgba(255,255,255,0.5); font-family: var(--cond); font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 13px 20px; border-radius: 7px; border: 1px solid rgba(255,255,255,0.15); cursor: pointer; transition: all 0.15s; }
+.btn-back:hover { color: var(--white); border-color: rgba(255,255,255,0.3); }
+
+/* Error */
+.error-msg { background: rgba(200,16,46,0.12); border: 1px solid rgba(200,16,46,0.25); border-radius: 6px; padding: 10px 14px; font-size: 13px; color: #ff8fa3; margin-bottom: 16px; display: none; }
+.error-msg.show { display: block; }
+
+/* Success */
+.success-panel { text-align: center; padding: 60px 32px; }
+.success-icon { font-size: 64px; margin-bottom: 20px; }
+.success-panel h2 { font-family: var(--cond); font-size: 40px; font-weight: 900; text-transform: uppercase; color: var(--white); margin-bottom: 12px; }
+.success-panel p { font-size: 16px; color: rgba(255,255,255,0.6); line-height: 1.7; max-width: 480px; margin: 0 auto 28px; }
+.success-panel a { display: inline-block; background: var(--red); color: white; font-family: var(--cond); font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; padding: 13px 32px; border-radius: 7px; text-decoration: none; }
+
+@media (max-width: 600px) {
+  .field-grid, .field-grid.three { grid-template-columns: 1fr; }
+  .panel { padding: 24px; }
+}
+</style>
+</head>
+<body>
+<script src="/nav.js"></script>
+
+<div class="page">
+
+  <div class="hero">
+    <img src="/images/partyofyoulogo.png" alt="Party of You">
+    <div class="hero-eyebrow">Candidate Application</div>
+    <h1>Ready to <span class="accent">Run?</span></h1>
+    <p class="hero-sub">
+      This takes about 5 minutes. We'll set up your account, find your races,
+      and get you access to everything you need.
+      <strong>Free. No corporate money. No compromise.</strong>
+    </p>
+  </div>
+
+  <!-- Steps indicator -->
+  <div class="steps-bar">
+    <div class="step-indicator active" id="step-1-ind">1. Your Info</div>
+    <div class="step-indicator" id="step-2-ind">2. Your Race</div>
+    <div class="step-indicator" id="step-3-ind">3. The Pledge</div>
+    <div class="step-indicator" id="step-4-ind">4. Done</div>
+  </div>
+
+  <!-- Error message -->
+  <div class="error-msg" id="error-msg"></div>
+
+  <!-- STEP 1: Basic info -->
+  <div class="panel active" id="step-1">
+    <div class="panel-title">About You</div>
+    <div class="panel-sub">Tell us who you are and where you live. We'll use your address to find the races you're eligible to run in.</div>
+
+    <div class="field-grid">
+      <div class="field">
+        <label>First Name *</label>
+        <input type="text" id="first_name" placeholder="First name">
+      </div>
+      <div class="field">
+        <label>Last Name *</label>
+        <input type="text" id="last_name" placeholder="Last name">
+      </div>
+    </div>
+    <div class="field-grid one">
+      <div class="field">
+        <label>Email Address *</label>
+        <input type="email" id="email" placeholder="your@email.com">
+      </div>
+    </div>
+    <div class="field-grid">
+      <div class="field">
+        <label>Phone Number</label>
+        <input type="tel" id="phone" placeholder="(414) 555-0100">
+      </div>
+      <div class="field">
+        <label>Password *</label>
+        <input type="password" id="password" placeholder="Minimum 10 characters">
+      </div>
+    </div>
+    <div class="field-grid one">
+      <div class="field">
+        <label>Street Address *</label>
+        <input type="text" id="address" placeholder="123 Main St">
+      </div>
+    </div>
+    <div class="field-grid three">
+      <div class="field">
+        <label>City *</label>
+        <input type="text" id="city" placeholder="Milwaukee">
+      </div>
+      <div class="field">
+        <label>State *</label>
+        <select id="state">
+          <option value="">State</option>
+          <option>AL</option><option>AK</option><option>AZ</option><option>AR</option>
+          <option>CA</option><option>CO</option><option>CT</option><option>DE</option>
+          <option>FL</option><option>GA</option><option>HI</option><option>ID</option>
+          <option>IL</option><option>IN</option><option>IA</option><option>KS</option>
+          <option>KY</option><option>LA</option><option>ME</option><option>MD</option>
+          <option>MA</option><option>MI</option><option>MN</option><option>MS</option>
+          <option>MO</option><option>MT</option><option>NE</option><option>NV</option>
+          <option>NH</option><option>NJ</option><option>NM</option><option>NY</option>
+          <option>NC</option><option>ND</option><option>OH</option><option>OK</option>
+          <option>OR</option><option>PA</option><option>RI</option><option>SC</option>
+          <option>SD</option><option>TN</option><option>TX</option><option>UT</option>
+          <option>VT</option><option>VA</option><option>WA</option><option>WV</option>
+          <option selected>WI</option><option>WY</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>ZIP Code *</label>
+        <input type="text" id="zip" placeholder="53221" maxlength="10">
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <div></div>
+      <button class="btn-primary" onclick="goToStep2()">Find My Races →</button>
+    </div>
+  </div>
+
+  <!-- STEP 2: Race selection -->
+  <div class="panel" id="step-2">
+    <div class="panel-title">Your Race</div>
+    <div class="panel-sub">Based on your address, here are the races you're eligible to run in. Select the one you want to pursue.</div>
+
+    <div id="races-loading" style="text-align:center;padding:40px;color:rgba(255,255,255,0.4)">
+      <div style="font-size:32px;margin-bottom:12px">⏳</div>
+      Looking up races for your address...
+    </div>
+    <div id="races-list" style="display:none"></div>
+
+    <div class="field-grid one" style="margin-top:20px">
+      <div class="field">
+        <label>Or describe the office you want to run for</label>
+        <input type="text" id="office_custom" placeholder="e.g. Milwaukee County Supervisor District 4">
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-back" onclick="goToStep(1)">← Back</button>
+      <button class="btn-primary" onclick="goToStep3()">Continue to Platform Pledge →</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: Platform pledge -->
+  <div class="panel" id="step-3">
+    <div class="panel-title">The Platform Pledge</div>
+    <div class="panel-sub">Every candidate on Party of You agrees to these principles. Read each one and check the box to confirm your agreement. This is a permanent record.</div>
+
+    <div class="pledge-intro">
+      <strong>This is not a legal document.</strong> It is a statement of values and intent — what you're committing to in plain language. Violations of these commitments may result in account suspension and a full data export within 14 business days.
+    </div>
+
+    <div class="pledge-list">
+      <div class="pledge-item">
+        <input type="checkbox" id="plank_1">
+        <label for="plank_1"><strong>Healthcare is a human right.</strong> I support universal, publicly funded healthcare and oppose privatizing or cutting Medicaid, Medicare, or public health programs.</label>
+      </div>
+      <div class="pledge-item">
+        <input type="checkbox" id="plank_2">
+        <label for="plank_2"><strong>Workers come before shareholders.</strong> I support a living wage, the right to organize, and safe working conditions. I oppose union-busting and right-to-work laws.</label>
+      </div>
+      <div class="pledge-item">
+        <input type="checkbox" id="plank_3">
+        <label for="plank_3"><strong>Housing is a necessity, not an investment vehicle.</strong> I support tenant protections and affordable housing. I oppose speculative real estate practices that price working families out of their communities.</label>
+      </div>
+      <div class="pledge-item">
+        <input type="checkbox" id="plank_4">
+        <label for="plank_4"><strong>Public education must be fully funded.</strong> I oppose privatizing public schools through vouchers. I support canceling student debt and tuition-free public college.</label>
+      </div>
+      <div class="pledge-item">
+        <input type="checkbox" id="plank_5">
+        <label for="plank_5"><strong>The climate crisis demands immediate action.</strong> I accept the scientific consensus on climate change and support aggressive investment in clean energy.</label>
+      </div>
+      <div class="pledge-item">
+        <input type="checkbox" id="plank_6">
+        <label for="plank_6"><strong>Civil rights are non-negotiable.</strong> I stand unconditionally for the rights of Black Americans, Indigenous peoples, immigrants, women, LGBTQ+ people, and people with disabilities.</label>
+      </div>
+      <div class="pledge-item">
+        <input type="checkbox" id="plank_7">
+        <label for="plank_7"><strong>Democracy belongs to people, not donors.</strong> I support public campaign financing, ranked choice voting, and automatic voter registration.</label>
+      </div>
+      <div class="pledge-item">
+        <input type="checkbox" id="plank_8">
+        <label for="plank_8"><strong>Wealthy individuals and corporations must pay their share.</strong> I support progressive taxation and closing loopholes that allow billionaires to pay lower rates than their employees.</label>
+      </div>
+      <div class="pledge-item">
+        <input type="checkbox" id="plank_9">
+        <label for="plank_9"><strong>No more endless wars. Stop funding genocide.</strong> I oppose U.S. military interventions that serve defense contractors over working people. I oppose funding governments committing war crimes, including in Gaza.</label>
+      </div>
+      <div class="pledge-item" style="border-top:1px solid rgba(255,255,255,0.1);padding-top:16px;margin-top:4px">
+        <input type="checkbox" id="no_corporate_money">
+        <label for="no_corporate_money"><strong>I will not accept corporate PAC money or dark money contributions.</strong> Every dollar I raise will be from individuals. This is a hard commitment, not a guideline.</label>
+      </div>
+      <div class="pledge-item">
+        <input type="checkbox" id="exclusions_acknowledged">
+        <label for="exclusions_acknowledged"><strong>I am not a conservative candidate</strong> using this platform to rebrand. I am not a corporate Democrat primarily accountable to donors. I have read the full platform and the exclusions.</label>
+      </div>
+    </div>
+
+    <div class="signature-block">
+      <p>By typing your full name below, you are signing this pledge. This record is permanent and will be included in any data export associated with your account.</p>
+      <input type="text" class="signature-field" id="signature" placeholder="Type your full legal name">
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-back" onclick="goToStep(2)">← Back</button>
+      <button class="btn-primary" id="submit-btn" onclick="submitApplication()">Sign the Pledge & Create Account →</button>
+    </div>
+  </div>
+
+  <!-- STEP 4: Success -->
+  <div class="panel" id="step-4">
+    <div class="success-panel">
+      <div class="success-icon">🎉</div>
+      <h2>Welcome to the Fight</h2>
+      <p>Your account has been created and your platform pledge is on record. Your candidate dashboard is being set up now.</p>
+      <p id="success-detail" style="font-size:14px"></p>
+      <a href="/dashboard/" style="margin-top:8px">Go to Your Dashboard →</a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let formData = {};
+let selectedRace = null;
+
+// ── STEP 1 → 2 ──────────────────────────────────────────────
+async function goToStep2() {
+  const first = document.getElementById('first_name').value.trim();
+  const last  = document.getElementById('last_name').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const pass  = document.getElementById('password').value;
+  const addr  = document.getElementById('address').value.trim();
+  const city  = document.getElementById('city').value.trim();
+  const state = document.getElementById('state').value;
+  const zip   = document.getElementById('zip').value.trim();
+
+  const missing = [];
+  if (!first) missing.push('First name');
+  if (!last)  missing.push('Last name');
+  if (!email) missing.push('Email');
+  if (!pass || pass.length < 10) missing.push('Password (minimum 10 characters)');
+  if (!addr)  missing.push('Street address');
+  if (!city)  missing.push('City');
+  if (!state) missing.push('State');
+
+  if (missing.length) {
+    showError('Please fill in: ' + missing.join(', '));
+    return;
+  }
+
+  clearError();
+  formData = { first_name: first, last_name: last, full_name: `${first} ${last}`,
+               email, password: pass, phone: document.getElementById('phone').value,
+               address: addr, city, state, zip };
+
+  goToStep(2);
+
+  // Look up races
+  document.getElementById('races-loading').style.display = 'block';
+  document.getElementById('races-list').style.display = 'none';
+
+  try {
+    const fullAddress = `${addr}, ${city}, ${state} ${zip}`;
+    const res = await fetch(`/api/races?address=${encodeURIComponent(fullAddress)}`);
+
+    if (res.ok) {
+      const data = await res.json();
+      renderRaces(data);
+    } else {
+      renderRacesError();
+    }
+  } catch (e) {
+    renderRacesError();
+  }
+}
+
+function renderRaces(data) {
+  document.getElementById('races-loading').style.display = 'none';
+  const list = document.getElementById('races-list');
+  list.style.display = 'block';
+
+  const allRaces = [
+    ...(data.races?.federal || []),
+    ...(data.races?.state   || []),
+    ...(data.races?.local   || []),
+  ];
+
+  if (!allRaces.length) {
+    list.innerHTML = `<p style="color:rgba(255,255,255,0.5);font-size:14px">No specific races found via our data sources for this address. Enter your office below.</p>`;
+    return;
+  }
+
+  list.innerHTML = allRaces.map((r, i) => `
+    <div onclick="selectRace(${i})" id="race-${i}" style="
+      padding:16px 18px; border-radius:8px; cursor:pointer; margin-bottom:10px;
+      background:rgba(255,255,255,0.04); border:1.5px solid rgba(255,255,255,0.1);
+      transition:all 0.15s;
+    ">
+      <div style="font-family:var(--cond);font-size:17px;font-weight:800;text-transform:uppercase;color:var(--white)">${r.office}</div>
+      ${r.isOpenSeat ? `<span style="font-size:11px;color:#4ade80;font-weight:600">✓ Open Seat</span>` : ''}
+      ${r.incumbent?.name ? `<div style="font-size:12px;color:rgba(255,255,255,0.4);margin-top:4px">Incumbent: ${r.incumbent.name}</div>` : ''}
+    </div>
+  `).join('');
+
+  window._races = allRaces;
+}
+
+function selectRace(i) {
+  document.querySelectorAll('[id^="race-"]').forEach(el => {
+    el.style.borderColor = 'rgba(255,255,255,0.1)';
+    el.style.background = 'rgba(255,255,255,0.04)';
+  });
+  const el = document.getElementById(`race-${i}`);
+  el.style.borderColor = 'var(--red)';
+  el.style.background = 'rgba(200,16,46,0.08)';
+  selectedRace = window._races?.[i];
+}
+
+function renderRacesError() {
+  document.getElementById('races-loading').style.display = 'none';
+  document.getElementById('races-list').innerHTML = `
+    <p style="color:rgba(255,255,255,0.5);font-size:14px">
+      Could not load race data automatically. Please enter the office you're running for below.
+    </p>`;
+  document.getElementById('races-list').style.display = 'block';
+}
+
+// ── STEP 2 → 3 ──────────────────────────────────────────────
+function goToStep3() {
+  const custom = document.getElementById('office_custom').value.trim();
+  if (!selectedRace && !custom) {
+    showError('Please select a race or enter the office you want to run for.');
+    return;
+  }
+  formData.race = selectedRace || { office: custom, id: 'custom' };
+  clearError();
+  goToStep(3);
+}
+
+// ── SUBMIT ───────────────────────────────────────────────────
+async function submitApplication() {
+  const pledgeIds = ['plank_1','plank_2','plank_3','plank_4','plank_5',
+                     'plank_6','plank_7','plank_8','plank_9',
+                     'no_corporate_money','exclusions_acknowledged'];
+  const unchecked = pledgeIds.filter(id => !document.getElementById(id).checked);
+
+  if (unchecked.length) {
+    showError(`Please check all platform planks. ${unchecked.length} remain unchecked.`);
+    return;
+  }
+
+  const sig = document.getElementById('signature').value.trim();
+  if (!sig) { showError('Please type your full name to sign the pledge.'); return; }
+
+  const sigNorm = sig.toLowerCase().replace(/\s+/g,' ');
+  const namNorm = formData.full_name.toLowerCase().replace(/\s+/g,' ');
+  if (sigNorm !== namNorm) {
+    showError(`Signature must match your full name exactly: "${formData.full_name}"`);
+    return;
+  }
+
+  clearError();
+  const btn = document.getElementById('submit-btn');
+  btn.textContent = 'Creating your account...';
+  btn.disabled = true;
+
+  try {
+    // Step 1: Register
+    const regRes = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: formData.email,
+        password: formData.password,
+        full_name: formData.full_name,
+        phone: formData.phone,
+        address: formData.address,
+        city: formData.city,
+        state: formData.state,
+        zip: formData.zip,
+      }),
+    });
+
+    const regData = await regRes.json();
+    if (!regData.success) {
+      showError(regData.error || 'Registration failed. Please try again.');
+      btn.textContent = 'Sign the Pledge & Create Account →';
+      btn.disabled = false;
+      return;
+    }
+
+    const candidateId = regData.candidateId;
+
+    // Step 2: Select race
+    await fetch('/api/auth/onboarding/select-race', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        candidateId,
+        raceId: formData.race.id || 'custom',
+        office: formData.race.office,
+        state: formData.state,
+      }),
+    });
+
+    // Step 3: Submit pledge
+    const pledges = {};
+    pledgeIds.forEach(id => { pledges[id] = true; });
+
+    const pledgeRes = await fetch('/api/auth/onboarding/pledge', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ candidateId, pledges, signature: sig }),
+    });
+
+    const pledgeData = await pledgeRes.json();
+    if (!pledgeData.success) {
+      showError(pledgeData.error || 'Could not record pledge. Please try again.');
+      btn.textContent = 'Sign the Pledge & Create Account →';
+      btn.disabled = false;
+      return;
+    }
+
+    // Success
+    document.getElementById('success-detail').textContent =
+      `Pledge signed on ${new Date().toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'})}. Running for: ${formData.race.office}.`;
+    goToStep(4);
+
+  } catch (e) {
+    showError('Network error. Please check your connection and try again.');
+    btn.textContent = 'Sign the Pledge & Create Account →';
+    btn.disabled = false;
+  }
+}
+
+// ── NAVIGATION ───────────────────────────────────────────────
+function goToStep(n) {
+  clearError();
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(`step-${n}`).classList.add('active');
+
+  document.querySelectorAll('.step-indicator').forEach((el, i) => {
+    el.classList.remove('active','done');
+    if (i + 1 === n) el.classList.add('active');
+    if (i + 1 < n)  el.classList.add('done');
+  });
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showError(msg) {
+  const el = document.getElementById('error-msg');
+  el.textContent = msg;
+  el.classList.add('show');
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+function clearError() {
+  document.getElementById('error-msg').classList.remove('show');
+}
+</script>
+</body>
+</html>
