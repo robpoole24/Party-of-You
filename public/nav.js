@@ -49,7 +49,7 @@
   const CSS = `
     :root {
       --poy-navy:   #1a2d5a;
-      --poy-navy-d: #0d1b35;
+      --poy-navy-d: #021434;
       --poy-red:    #c8102e;
       --poy-red-d:  #a00c24;
       --poy-sky:    #2b7fc1;

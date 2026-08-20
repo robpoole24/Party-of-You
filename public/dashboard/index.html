@@ -796,7 +796,7 @@ body { font-family: var(--body); background: var(--gray); color: var(--text); -w
               <textarea id="evt-desc" placeholder="What will happen at this event? Who should attend?" style="width:100%;height:80px;padding:10px 12px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:var(--body);resize:vertical"></textarea>
             </div>
             <div style="display:flex;gap:10px">
-              <button onclick="createEvent()" class="topbar-btn primary">Create Event</button>
+              <button onclick="submitNewEvent()" class="topbar-btn primary">Create Event</button>
               <button onclick="toggleEventForm()" class="topbar-btn secondary">Cancel</button>
             </div>
           </div>
@@ -852,9 +852,16 @@ body { font-family: var(--body); background: var(--gray); color: var(--text); -w
             <div style="margin-bottom:16px">
               <label style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);display:block;margin-bottom:8px">Skills (check all that apply)</label>
               <div style="display:flex;flex-wrap:wrap;gap:10px">
-                ${['Door Knocking','Phone Banking','Data Entry','Social Media','Graphic Design','Photography','Driving','Fundraising','Spanish Speaker','Other'].map(s =>
-                  `<label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" class="vol-skill" value="${s}"> ${s}</label>`
-                ).join('')}
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" class="vol-skill" value="Door Knocking"> Door Knocking</label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" class="vol-skill" value="Phone Banking"> Phone Banking</label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" class="vol-skill" value="Data Entry"> Data Entry</label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" class="vol-skill" value="Social Media"> Social Media</label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" class="vol-skill" value="Graphic Design"> Graphic Design</label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" class="vol-skill" value="Photography"> Photography</label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" class="vol-skill" value="Driving"> Driving</label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" class="vol-skill" value="Fundraising"> Fundraising</label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" class="vol-skill" value="Spanish Speaker"> Spanish Speaker</label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" class="vol-skill" value="Other"> Other</label>
               </div>
             </div>
             <div style="display:flex;gap:10px">
@@ -1124,16 +1131,24 @@ function getDemoCandidate() {
 // ── RENDER CANDIDATE INFO ─────────────────────────────────────
 function renderCandidateInfo() {
   if (!candidateData) return;
-  document.getElementById('sb-name').textContent = candidateData.full_name || 'Candidate';
-  document.getElementById('sb-race').textContent = candidateData.office_sought || '—';
-  document.getElementById('ws-slug').textContent = candidateData.subdomain || 'yourname';
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+
+  set('sb-name', candidateData.full_name || 'Candidate');
+  set('sb-race', candidateData.office_sought || '—');
+  set('ws-slug', candidateData.subdomain || 'yourname');
+  set('ws-slug-display', candidateData.subdomain || 'yourname');
+
+  // Update view site link
+  const wsLink = document.getElementById('ws-view-link');
+  if (wsLink && candidateData.subdomain) {
+    wsLink.href = `/c/${candidateData.subdomain}`;
+  }
 
   const electionDay = new Date('2026-11-03');
   const today = new Date();
   const days = Math.ceil((electionDay - today) / (1000 * 60 * 60 * 24));
-  document.getElementById('ov-days').textContent = days > 0 ? days.toLocaleString() : 'Today!';
+  set('ov-days', days > 0 ? days.toLocaleString() : 'Today!');
 
-  // Render key dates timeline
   renderKeyDates();
 }
 
@@ -1640,25 +1655,50 @@ function renderDistrictCharts() {
 }
 
 // ── CAMPAIGN TRACKER ──────────────────────────────────────────
-function renderChecklist() {
-  const tasks = [
-    { done: true,  text: 'Create Party of You account', category: 'Setup' },
-    { done: true,  text: 'Sign the platform pledge', category: 'Setup' },
-    { done: false, text: 'Get your EIN from the IRS (Form SS-4)', category: 'Legal', urgent: true, link: 'https://www.irs.gov/businesses/small-businesses-self-employed/apply-for-an-employer-identification-number-ein-online' },
-    { done: false, text: 'Open a campaign bank account', category: 'Legal' },
-    { done: false, text: 'Register your campaign committee with your state', category: 'Legal', urgent: true },
-    { done: false, text: 'Get a campaign PO Box', category: 'Setup' },
-    { done: false, text: 'File candidacy papers with your election office', category: 'Ballot', urgent: true },
-    { done: false, text: 'Start collecting petition signatures', category: 'Ballot' },
-    { done: false, text: 'Request your state voter file', category: 'Outreach' },
-    { done: false, text: 'Set up your campaign website', category: 'Comms' },
-  ];
+async function renderChecklist() {
+  const el = document.getElementById('checklist-body');
+  if (!el) return;
 
-  const done = tasks.filter(t => t.done).length;
-  const pct = Math.round((done / tasks.length) * 100);
+  let tasks = [];
+  let completed = 2;
+  let total = 14;
+
+  try {
+    const res = await fetch('/api/dashboard/checklist');
+    if (res.ok) {
+      const data = await res.json();
+      tasks = data.tasks || [];
+      completed = data.completed || 2;
+      total = data.total || tasks.length;
+    }
+  } catch {}
+
+  // Fallback default tasks
+  if (!tasks.length) {
+    tasks = [
+      { id: 'account_created', category: 'Setup', text: 'Create Party of You account', done: true },
+      { id: 'pledge_signed', category: 'Setup', text: 'Sign the platform pledge', done: true },
+      { id: 'get_ein', category: 'Legal', text: 'Get your EIN from the IRS (Form SS-4)', urgent: true, done: false, link: 'https://www.irs.gov/businesses/small-businesses-self-employed/apply-for-an-employer-identification-number-ein-online' },
+      { id: 'bank_account', category: 'Legal', text: 'Open a campaign bank account', done: false },
+      { id: 'register_committee', category: 'Legal', text: 'Register campaign committee with your state', urgent: true, done: false },
+      { id: 'po_box', category: 'Setup', text: 'Get a campaign PO Box', done: false },
+      { id: 'file_candidacy', category: 'Ballot', text: 'File candidacy papers with your election office', urgent: true, done: false },
+      { id: 'petition_signatures', category: 'Ballot', text: 'Start collecting petition signatures', done: false },
+      { id: 'voter_file', category: 'Outreach', text: 'Request your state voter file', done: false },
+      { id: 'campaign_website', category: 'Comms', text: 'Set up your campaign website', done: false },
+      { id: 'social_media', category: 'Comms', text: 'Set up campaign social media accounts', done: false },
+      { id: 'first_event', category: 'Outreach', text: 'Schedule your first public event', done: false },
+      { id: 'first_volunteer', category: 'Outreach', text: 'Recruit your first volunteer', done: false },
+      { id: 'press_release', category: 'Comms', text: 'Send announcement press release', done: false },
+    ];
+    completed = 2;
+    total = tasks.length;
+  }
+
+  const pct = Math.round((completed / total) * 100);
 
   // Update ring
-  const circumference = 2 * Math.PI * 50; // r=50
+  const circumference = 2 * Math.PI * 50;
   const offset = circumference * (1 - pct/100);
   const ring = document.getElementById('progress-ring');
   if (ring) {
@@ -1668,19 +1708,20 @@ function renderChecklist() {
   const pctEl = document.getElementById('progress-pct');
   if (pctEl) pctEl.textContent = pct + '%';
 
+  // Group by category
   const grouped = {};
   tasks.forEach(t => {
     if (!grouped[t.category]) grouped[t.category] = [];
     grouped[t.category].push(t);
   });
 
-  document.getElementById('checklist-body').innerHTML = Object.entries(grouped).map(([cat, items]) => `
+  el.innerHTML = Object.entries(grouped).map(([cat, items]) => `
     <div style="margin-bottom:16px">
       <div style="font-family:var(--cond);font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">${cat}</div>
-      ${items.map((t, i) => `
+      ${items.map(t => `
         <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(221,227,239,0.4)">
           <div style="width:20px;height:20px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;
-            ${t.done ? 'background:rgba(21,128,61,0.1);color:var(--green);border:1.5px solid var(--green-l)' : 
+            ${t.done ? 'background:rgba(21,128,61,0.1);color:var(--green);border:1.5px solid var(--green-l)' :
               t.urgent ? 'background:rgba(200,16,46,0.08);color:var(--red);border:1.5px solid var(--red)' :
               'background:var(--gray);color:var(--muted);border:1.5px solid var(--border)'}">
             ${t.done ? '✓' : t.urgent ? '!' : '○'}
@@ -1797,7 +1838,7 @@ function toggleEventForm() {
   if (panel.style.display === 'block') panel.scrollIntoView({ behavior: 'smooth' });
 }
 
-async function createEvent() {
+async function submitNewEvent() {
   const title = document.getElementById('evt-title').value.trim();
   const type = document.getElementById('evt-type').value;
   const start = document.getElementById('evt-start').value;
@@ -1925,9 +1966,8 @@ async function loadVolunteers() {
 
 // ── WEBSITE INTEGRATIONS ──────────────────────────────────────
 function openListmonk() {
-  // Listmonk runs on internal Railway network — open admin URL
-  const listmonkUrl = window.LISTMONK_URL || 'https://listmonk.partyofyou.org';
-  window.open(listmonkUrl, '_blank');
+  // Listmonk is accessed via our server proxy to avoid CORS/auth issues
+  window.open('/admin/listmonk/', '_blank');
 }
 
 function setupTwilio() {

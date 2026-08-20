@@ -98,6 +98,30 @@ app.get('/profile-edit.html', (req, res) => {
   }
 });
 
+// Listmonk proxy — forwards admin users to Listmonk dashboard
+// Listmonk runs on internal Railway network, not accessible externally directly
+app.use('/admin/listmonk', requireAdmin, (req, res) => {
+  const listmonkUrl = process.env.LISTMONK_URL || 'http://listmonk.railway.internal:9000';
+  const targetUrl = listmonkUrl + req.path + (req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '');
+
+  // Simple redirect — Listmonk handles its own auth via Railway
+  // For now, send them to the Railway public URL if LISTMONK_PUBLIC_URL is set
+  const publicUrl = process.env.LISTMONK_PUBLIC_URL;
+  if (publicUrl) {
+    return res.redirect(publicUrl);
+  }
+  res.send(`
+    <html><body style="font-family:sans-serif;padding:40px;background:#0d1b35;color:white">
+      <h2>Listmonk Dashboard</h2>
+      <p>To access your Listmonk email dashboard, you need to expose it via a public URL in Railway.</p>
+      <p>Go to Railway → listmonk service → Settings → Networking → Generate Domain</p>
+      <p>Then add that URL as <code>LISTMONK_PUBLIC_URL</code> in your Party of You service variables.</p>
+      <p>Listmonk admin credentials are the ones you set when configuring the service.</p>
+      <a href="/admin/" style="color:#4a9fd4">← Back to Admin</a>
+    </body></html>
+  `);
+});
+
 // nav.js — never cache so auth state updates immediately
 app.get('/nav.js', (req, res) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');

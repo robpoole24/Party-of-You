@@ -14,7 +14,7 @@
   --cond: 'Barlow Condensed', sans-serif; --body: 'Barlow', sans-serif;
 }
 body { font-family: var(--body); background: var(--gray); color: var(--text); min-height: 100vh; }
-.shell { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+.shell { min-height: 100vh; }
 .sidebar {
   background: var(--navy-d); border-right: 1px solid rgba(255,255,255,0.06);
   position: fixed; top: 0; left: 0; bottom: 0; width: 240px;
@@ -31,7 +31,7 @@ body { font-family: var(--body); background: var(--gray); color: var(--text); mi
 .sidebar-footer { margin-top: auto; padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.06); }
 .sidebar-footer button { padding: 8px; border: 1px solid rgba(255,255,255,0.15); border-radius: 5px; color: rgba(255,255,255,0.4); font-size: 11px; }
 
-.main { margin-left: 240px; padding: 40px 40px 80px; max-width: 860px; }
+.main { margin-left: 240px; padding: 40px 40px 80px; max-width: 860px; box-sizing: border-box; }
 h1 { font-family: var(--cond); font-size: 36px; font-weight: 900; text-transform: uppercase; color: var(--navy); margin-bottom: 6px; }
 .page-sub { font-size: 14px; color: var(--muted); margin-bottom: 32px; }
 
