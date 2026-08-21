@@ -329,7 +329,7 @@ app.post('/api/candidate/:subdomain/volunteer', async (req, res) => {
   try {
     // Find the candidate by subdomain
     const cResult = await db.query(
-      'SELECT id FROM candidates WHERE subdomain = $1 AND status IN ('active', 'approved', 'pending')',
+      "SELECT id FROM candidates WHERE subdomain = $1 AND status IN ('active', 'approved', 'pending')",
       [subdomain]
     );
     if (!cResult.rows.length) {
