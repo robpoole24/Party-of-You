@@ -194,7 +194,18 @@ router.get('/', async (req, res) => {
     let geography = null;
 
     if (address) {
-      geography = await resolveAddress(address);
+      try {
+        geography = await resolveAddress(address);
+      } catch (err) {
+        console.warn('[Races] Address resolution failed:', err.message);
+        // Extract state from address string as fallback
+        const stateMatch = address.match(/\b([A-Z]{2})\b/);
+        geography = {
+          state: stateMatch?.[1] || null,
+          districts: {},
+          normalizedAddress: address,
+        };
+      }
     } else {
       geography = { state: stateParam, districts: {}, normalizedAddress: null };
     }
