@@ -1946,60 +1946,90 @@ function renderRaceSelection(raceData) {
   const body = document.getElementById('race-selection-body');
   if (!panel || !body) return;
 
-  const all = [
-    ...(raceData.races?.federal || []).map(r => ({ ...r, level: 'Federal' })),
-    ...(raceData.races?.state   || []).map(r => ({ ...r, level: 'State' })),
-    ...(raceData.races?.local   || []).map(r => ({ ...r, level: 'Local' })),
-  ];
+  const calendar = raceData.calendar;
+  const federal = (raceData.races?.federal || []).map(r => ({ ...r, levelLabel: 'Federal Offices' }));
+  const stateR  = (raceData.races?.state   || []).map(r => ({ ...r, levelLabel: 'State Offices' }));
+  const local   = (raceData.races?.local   || []).map(r => ({ ...r, levelLabel: 'Local Offices' }));
+  const all = [...federal, ...stateR, ...local];
 
-  if (!all.length) {
-    body.innerHTML = `
-      <p style="font-size:13px;color:var(--muted);margin-bottom:14px">No races found automatically for your address. Enter the office you want to run for:</p>
-      <div style="display:flex;gap:10px">
-        <input type="text" id="custom-office" placeholder="e.g. Milwaukee County Supervisor District 4"
-          style="flex:1;height:40px;padding:0 12px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:var(--body)">
-        <button onclick="saveRaceSelection(null, document.getElementById('custom-office').value)"
-          class="topbar-btn primary" style="flex-shrink:0">Set My Race</button>
-      </div>`;
-    return;
-  }
+  const calHtml = calendar ? `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:20px;background:var(--navy-d);border-radius:8px;padding:16px 20px">
+      ${calendar.filingDeadline ? `
+      <div style="text-align:center">
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:4px">${raceData.geography?.state} Filing Deadline</div>
+        <div style="font-family:var(--cond);font-size:17px;font-weight:900;color:${calendar.daysUntilFiling < 60 ? '#ff6b6b' : '#4a9fd4'}">${calendar.filingDeadlineFormatted}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.4)">${calendar.daysUntilFiling > 0 ? calendar.daysUntilFiling + ' days away' : 'PASSED'}</div>
+      </div>` : ''}
+      ${calendar.primary ? `
+      <div style="text-align:center">
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:4px">Primary Election</div>
+        <div style="font-family:var(--cond);font-size:17px;font-weight:900;color:rgba(255,255,255,0.85)">${calendar.primaryFormatted}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.4)">${calendar.daysUntilPrimary} days away</div>
+      </div>` : ''}
+      <div style="text-align:center">
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:4px">General Election</div>
+        <div style="font-family:var(--cond);font-size:17px;font-weight:900;color:rgba(255,255,255,0.85)">${calendar.generalFormatted}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.4)">${calendar.daysUntilGeneral} days away</div>
+      </div>
+    </div>` : '';
 
-  // Group by level
   const grouped = {};
   all.forEach(r => {
-    if (!grouped[r.level]) grouped[r.level] = [];
-    grouped[r.level].push(r);
+    if (!grouped[r.levelLabel]) grouped[r.levelLabel] = [];
+    grouped[r.levelLabel].push(r);
   });
 
-  body.innerHTML = `
-    <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Based on your address, here are the races you're eligible to run in. Select the one you want to pursue.</p>
-    ${Object.entries(grouped).map(([level, races]) => `
-      <div style="margin-bottom:16px">
-        <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">${level} Offices</div>
-        ${races.map(r => `
-          <div onclick="saveRaceSelection('${r.id || ''}', '${(r.office || r.title || '').replace(/'/g, "\\'")}', this)"
-            style="padding:12px 16px;border:1.5px solid var(--border);border-radius:8px;margin-bottom:8px;cursor:pointer;transition:all 0.15s"
-            onmouseover="this.style.borderColor='var(--red)';this.style.background='rgba(200,16,46,0.04)'"
-            onmouseout="this.style.borderColor='var(--border)';this.style.background=''">
-            <div style="font-family:var(--cond);font-size:16px;font-weight:800;text-transform:uppercase;color:var(--navy)">${r.office || r.title}</div>
-            <div style="font-size:12px;color:var(--muted);margin-top:3px;display:flex;gap:12px;flex-wrap:wrap">
-              ${r.isOpenSeat ? `<span style="color:var(--green-l);font-weight:600">✓ Open Seat</span>` : ''}
-              ${r.incumbent?.name ? `<span>Incumbent: ${r.incumbent.name}</span>` : ''}
-              ${r.electionDate ? `<span>Election: ${new Date(r.electionDate).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</span>` : ''}
-              ${r.filingDeadline ? `<span style="color:var(--red)">Filing deadline: ${new Date(r.filingDeadline).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</span>` : ''}
+  const racesHtml = Object.entries(grouped).map(([label, races]) => `
+    <div style="margin-bottom:20px">
+      <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">${label}</div>
+      ${races.map(r => `
+        <div onclick="saveRaceSelection('${r.id || ''}', '${(r.office || '').replace(/'/g, "\\'")}', this)"
+          style="padding:14px 18px;border:1.5px solid var(--border);border-radius:8px;margin-bottom:10px;cursor:pointer;transition:all 0.15s;background:var(--white)"
+          onmouseover="this.style.borderColor='var(--red)';this.style.boxShadow='0 2px 12px rgba(200,16,46,0.1)'"
+          onmouseout="this.style.borderColor='var(--border)';this.style.boxShadow=''">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+            <div>
+              <div style="font-family:var(--cond);font-size:17px;font-weight:800;text-transform:uppercase;color:var(--navy);margin-bottom:5px">${r.office}</div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap">
+                ${r.isOpenSeat ? '<span style="font-size:12px;font-weight:700;color:#15803d;background:rgba(21,128,61,0.1);padding:2px 8px;border-radius:4px">✓ Open Seat</span>' : ''}
+                ${r.incumbent && r.incumbent.name ? `<span style="font-size:12px;color:var(--muted)">Incumbent: ${r.incumbent.name} (${r.incumbent.party})</span>` : ''}
+                ${r.isPlaceholder ? '<span style="font-size:12px;color:var(--amber);background:rgba(180,83,9,0.08);padding:2px 8px;border-radius:4px">⚠ Contact your clerk for local race details</span>' : ''}
+              </div>
             </div>
-          </div>`).join('')}
-      </div>`).join('')}
-    <div style="margin-top:8px;padding-top:16px;border-top:1px solid var(--border)">
-      <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Don't see your race? Enter it manually:</div>
+            ${r.filingDeadline ? `
+            <div style="text-align:right;flex-shrink:0">
+              <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em">Filing Deadline</div>
+              <div style="font-size:13px;font-weight:700;color:var(--navy)">${fmtDate(r.filingDeadline)}</div>
+            </div>` : ''}
+          </div>
+          ${r.notes ? '<div style="font-size:11px;color:var(--muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">' + r.notes + '</div>' : ''}
+        </div>`).join('')}
+    </div>`).join('');
+
+  body.innerHTML = `
+    <p style="font-size:14px;color:var(--text);margin-bottom:16px">Based on your address in <strong>${raceData.geography?.state || ''}</strong>, here are the races you're eligible to run in. Click one to select it.</p>
+    ${calHtml}
+    ${racesHtml}
+    <div style="margin-top:4px;padding-top:16px;border-top:1px solid var(--border)">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Running for a local office not listed? Enter it precisely:</div>
       <div style="display:flex;gap:10px">
         <input type="text" id="custom-office" placeholder="e.g. Milwaukee County Supervisor District 4"
-          style="flex:1;height:38px;padding:0 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--body)">
+          style="flex:1;height:40px;padding:0 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--body)">
         <button onclick="saveRaceSelection(null, document.getElementById('custom-office').value)"
           class="topbar-btn secondary" style="flex-shrink:0;font-size:11px">Use This Race</button>
       </div>
     </div>`;
 }
+
+function fmtDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+function daysUntilLocal(d) {
+  if (!d) return 999;
+  return Math.ceil((new Date(d) - new Date()) / (1000 * 60 * 60 * 24));
+}
+
 
 async function saveRaceSelection(raceId, officeName, el) {
   if (!officeName?.trim()) { alert('Please enter an office name.'); return; }

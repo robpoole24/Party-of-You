@@ -35,16 +35,19 @@ async function listmonkFetch(path, options = {}) {
   const timeout = setTimeout(() => controller.abort(), 8000);
 
   try {
+    const apiToken = process.env.LISTMONK_API_TOKEN;
+    const authHeader = apiToken
+      ? `token ${apiToken}`
+      : `Basic ${credentials}`;
+
+    console.log(`[Listmonk] Auth method: ${apiToken ? 'API token' : 'Basic auth'}`);
+
     const res = await fetch(url, {
       ...options,
       signal: controller.signal,
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Basic ${credentials}`,
-        // Also try token auth if set
-        ...(process.env.LISTMONK_API_TOKEN
-          ? { 'Authorization': `token ${process.env.LISTMONK_API_TOKEN}` }
-          : { 'Authorization': `Basic ${credentials}` }),
+        'Authorization': authHeader,
         ...options.headers,
       },
     });
