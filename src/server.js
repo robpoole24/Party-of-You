@@ -123,29 +123,31 @@ app.use('/admin/listmonk', requireAdmin, (req, res) => {
 });
 
 // Election calendar scraper endpoint
+const { scrapeState: scrapeSingleState, scrapeAll: scrapeAllStates, ensureTable: ensureCalendarTable } = require('./jobs/scrape-election-calendar');
+
 app.post('/api/admin/scrape/election-calendar', requireAdmin, async (req, res) => {
   const { state = 'all' } = req.body;
-  const { scrapeState, scrapeAll, ensureTable } = require('./jobs/scrape-election-calendar');
 
+  // Ensure table exists (non-fatal if it fails)
   try {
-    await ensureTable(db);
+    await ensureCalendarTable(db);
   } catch (e) {
     console.warn('[Scraper] Could not ensure table:', e.message);
   }
 
-  // Run async — don't block response
+  // Respond immediately — scraping runs in background
   res.json({
     success: true,
     message: `Election calendar scrape started for: ${state}. Check server logs for progress.`,
-    note: 'All 50 states takes ~2 minutes with polite rate limiting.',
+    note: state === 'all' ? 'All 50 states takes ~2 minutes.' : `Scraping ${state} — should complete in ~5 seconds.`,
   });
 
   setImmediate(async () => {
     try {
       if (state === 'all') {
-        await scrapeAll(db, 2000);
+        await scrapeAllStates(db, 2000);
       } else {
-        await scrapeState(state.toUpperCase(), db);
+        await scrapeSingleState(state.toUpperCase(), db);
       }
       console.log(`[Scraper] Election calendar scrape complete for: ${state}`);
     } catch (err) {

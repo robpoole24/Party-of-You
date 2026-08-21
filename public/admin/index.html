@@ -950,11 +950,13 @@ async function loadOperations() {
   if (!data) return;
 
   const panel = document.getElementById('costs-panel');
+  if (!panel) return; // panel was removed — no-op
+
   panel.innerHTML = `
-    <div class="modal-row"><span class="modal-row-label">Railway</span><span class="modal-row-value">${data.infrastructure.railway.estimatedMonthly}/mo</span></div>
-    <div class="modal-row"><span class="modal-row-label">Cloudflare R2</span><span class="modal-row-value">${data.infrastructure.cloudflareR2.freeTier}</span></div>
+    <div class="modal-row"><span class="modal-row-label">Railway</span><span class="modal-row-value">${data.infrastructure?.railway?.estimatedMonthly || '~$20'}/mo</span></div>
+    <div class="modal-row"><span class="modal-row-label">Cloudflare R2</span><span class="modal-row-value">${data.infrastructure?.cloudflareR2?.freeTier || 'Free tier'}</span></div>
     <div style="margin-top:14px;font-size:11px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;font-weight:600;margin-bottom:8px">Pending Funding</div>
-    ${data.dataApis.pendingFunding.map(p => `
+    ${(data.dataApis?.pendingFunding || []).map(p => `
       <div class="modal-row">
         <span class="modal-row-label">${p.name}</span>
         <span class="modal-row-value" style="color:var(--amber)">${p.estimatedAnnual}/yr</span>
@@ -970,10 +972,13 @@ async function runScraper(state) {
   statusEl.style.color = 'var(--amber)';
 
   try {
-    const data = await api('/admin/scrape/election-calendar', {
+    // Use fetch directly to avoid the /api/admin/ prefix doubling
+    const res = await fetch('/api/admin/scrape/election-calendar', {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ state }),
     });
+    const data = await res.json();
     statusEl.textContent = `✓ ${data.message}`;
     statusEl.style.color = 'var(--green)';
   } catch (e) {
