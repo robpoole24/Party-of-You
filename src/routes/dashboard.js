@@ -147,6 +147,7 @@ router.patch('/profile', async (req, res) => {
     campaign_address, campaign_city, campaign_state, campaign_zip,
     campaign_email, campaign_phone, campaign_website,
     fec_committee_id, subdomain, password,
+    office_sought, race_id,
   } = req.body;
 
   try {
@@ -173,13 +174,17 @@ router.patch('/profile', async (req, res) => {
         campaign_website = $6,
         fec_committee_id = $7,
         subdomain = $8,
+        office_sought = COALESCE($9, office_sought),
+        race_id = COALESCE($10, race_id),
         updated_at = NOW()
-      WHERE id = $9
+      WHERE id = $11
     `, [
       full_name, preferred_name || null, bio || null,
       campaign_email || null, campaign_phone || null,
       campaign_website || null, fec_committee_id || null,
-      subdomain || null, candidateId,
+      subdomain || null,
+      office_sought || null, race_id || null,
+      candidateId,
     ]);
 
     // Update campaign address fields if columns exist

@@ -31,7 +31,6 @@ async function listmonkFetch(path, options = {}) {
 
   console.log(`[Listmonk] ${options.method || 'GET'} ${url}`);
 
-  // 8-second timeout — if Listmonk is unreachable, fail fast
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 8000);
 
@@ -42,6 +41,10 @@ async function listmonkFetch(path, options = {}) {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Basic ${credentials}`,
+        // Also try token auth if set
+        ...(process.env.LISTMONK_API_TOKEN
+          ? { 'Authorization': `token ${process.env.LISTMONK_API_TOKEN}` }
+          : { 'Authorization': `Basic ${credentials}` }),
         ...options.headers,
       },
     });
@@ -52,7 +55,6 @@ async function listmonkFetch(path, options = {}) {
     if (err.name === 'AbortError') {
       throw new Error(`Listmonk timed out after 8s — is it running? URL: ${base}`);
     }
-    console.error(`[Listmonk] Fetch failed for ${url}:`, err.message);
     throw new Error(`Cannot reach Listmonk at ${base}: ${err.message}`);
   }
 }

@@ -364,6 +364,17 @@ body { font-family: var(--body); background: var(--gray); color: var(--text); -w
           </button>
         </div>
 
+        <!-- Race Selection Panel — shows when no race is selected -->
+        <div id="race-selection-panel" class="panel" style="display:none;margin-bottom:20px;border-left:4px solid var(--red)">
+          <div class="panel-hdr">
+            <h2><span class="ph-icon">🗳️</span> Select Your Race</h2>
+            <span style="font-size:12px;color:var(--muted)">Required to calculate votes needed to win</span>
+          </div>
+          <div class="panel-body" id="race-selection-body">
+            <div style="color:var(--muted);font-size:13px">Loading available races...</div>
+          </div>
+        </div>
+
         <!-- Path to Victory Banner -->
         <div class="victory-banner">
           <div>
@@ -1170,7 +1181,7 @@ async function loadCandidateData() {
 
   renderCandidateInfo();
 
-  // Auto-populate address field with candidate's home address
+  // Auto-populate address from candidate profile
   const addressInput = document.getElementById('address-input');
   if (addressInput && candidateData) {
     const parts = [
@@ -1181,13 +1192,16 @@ async function loadCandidateData() {
     ].filter(Boolean);
 
     if (parts.length >= 2) {
-      // We have enough address info — auto-load and hide the bar
       const fullAddress = parts.join(', ');
       addressInput.value = fullAddress;
-
-      // Auto-trigger intelligence load
+      candidateData._lookupAddress = fullAddress;
       setTimeout(() => lookupAddress(), 300);
     }
+  }
+
+  // Show race selection if no race chosen yet
+  if (!candidateData?.office_sought || candidateData.office_sought === 'Local Offices (County, City, School Board)') {
+    document.getElementById('race-selection-panel').style.display = 'block';
   }
 }
 
@@ -1219,6 +1233,11 @@ async function loadIntelligence() {
     if (raceRes.ok) {
       const raceData = await raceRes.json();
       renderVictoryBanner(raceData);
+      // Show race selection if candidate hasn't chosen one yet
+      if (!candidateData?.office_sought || candidateData.office_sought === 'Local Offices (County, City, School Board)') {
+        renderRaceSelection(raceData);
+        document.getElementById('race-selection-panel').style.display = 'block';
+      }
     } else {
       renderDefaultVictoryBanner();
     }
@@ -1921,7 +1940,102 @@ async function generateContent(type) {
   }
 }
 
-// ── ADDRESS LOOKUP ────────────────────────────────────────────
+// ── RACE SELECTION ────────────────────────────────────────────
+function renderRaceSelection(raceData) {
+  const panel = document.getElementById('race-selection-panel');
+  const body = document.getElementById('race-selection-body');
+  if (!panel || !body) return;
+
+  const all = [
+    ...(raceData.races?.federal || []).map(r => ({ ...r, level: 'Federal' })),
+    ...(raceData.races?.state   || []).map(r => ({ ...r, level: 'State' })),
+    ...(raceData.races?.local   || []).map(r => ({ ...r, level: 'Local' })),
+  ];
+
+  if (!all.length) {
+    body.innerHTML = `
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px">No races found automatically for your address. Enter the office you want to run for:</p>
+      <div style="display:flex;gap:10px">
+        <input type="text" id="custom-office" placeholder="e.g. Milwaukee County Supervisor District 4"
+          style="flex:1;height:40px;padding:0 12px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:var(--body)">
+        <button onclick="saveRaceSelection(null, document.getElementById('custom-office').value)"
+          class="topbar-btn primary" style="flex-shrink:0">Set My Race</button>
+      </div>`;
+    return;
+  }
+
+  // Group by level
+  const grouped = {};
+  all.forEach(r => {
+    if (!grouped[r.level]) grouped[r.level] = [];
+    grouped[r.level].push(r);
+  });
+
+  body.innerHTML = `
+    <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Based on your address, here are the races you're eligible to run in. Select the one you want to pursue.</p>
+    ${Object.entries(grouped).map(([level, races]) => `
+      <div style="margin-bottom:16px">
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">${level} Offices</div>
+        ${races.map(r => `
+          <div onclick="saveRaceSelection('${r.id || ''}', '${(r.office || r.title || '').replace(/'/g, "\\'")}', this)"
+            style="padding:12px 16px;border:1.5px solid var(--border);border-radius:8px;margin-bottom:8px;cursor:pointer;transition:all 0.15s"
+            onmouseover="this.style.borderColor='var(--red)';this.style.background='rgba(200,16,46,0.04)'"
+            onmouseout="this.style.borderColor='var(--border)';this.style.background=''">
+            <div style="font-family:var(--cond);font-size:16px;font-weight:800;text-transform:uppercase;color:var(--navy)">${r.office || r.title}</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:3px;display:flex;gap:12px;flex-wrap:wrap">
+              ${r.isOpenSeat ? `<span style="color:var(--green-l);font-weight:600">✓ Open Seat</span>` : ''}
+              ${r.incumbent?.name ? `<span>Incumbent: ${r.incumbent.name}</span>` : ''}
+              ${r.electionDate ? `<span>Election: ${new Date(r.electionDate).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</span>` : ''}
+              ${r.filingDeadline ? `<span style="color:var(--red)">Filing deadline: ${new Date(r.filingDeadline).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</span>` : ''}
+            </div>
+          </div>`).join('')}
+      </div>`).join('')}
+    <div style="margin-top:8px;padding-top:16px;border-top:1px solid var(--border)">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Don't see your race? Enter it manually:</div>
+      <div style="display:flex;gap:10px">
+        <input type="text" id="custom-office" placeholder="e.g. Milwaukee County Supervisor District 4"
+          style="flex:1;height:38px;padding:0 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--body)">
+        <button onclick="saveRaceSelection(null, document.getElementById('custom-office').value)"
+          class="topbar-btn secondary" style="flex-shrink:0;font-size:11px">Use This Race</button>
+      </div>
+    </div>`;
+}
+
+async function saveRaceSelection(raceId, officeName, el) {
+  if (!officeName?.trim()) { alert('Please enter an office name.'); return; }
+
+  // Highlight selection
+  if (el) {
+    el.style.borderColor = 'var(--red)';
+    el.style.background = 'rgba(200,16,46,0.08)';
+    el.innerHTML += ' <span style="float:right;color:var(--red);font-weight:700">✓ Selected</span>';
+  }
+
+  try {
+    const res = await fetch('/api/dashboard/profile', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        office_sought: officeName.trim(),
+        race_id: raceId || null,
+      }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      // Update local state
+      if (candidateData) candidateData.office_sought = officeName.trim();
+      document.getElementById('sb-race').textContent = officeName.trim();
+      document.getElementById('vic-race').textContent = officeName.trim();
+
+      // Hide race selection panel after a moment
+      setTimeout(() => {
+        document.getElementById('race-selection-panel').style.display = 'none';
+      }, 1500);
+    }
+  } catch (e) {
+    console.error('Could not save race selection:', e);
+  }
+}
 async function lookupAddress() {
   const input = document.getElementById('address-input');
   const address = input?.value?.trim() ||
