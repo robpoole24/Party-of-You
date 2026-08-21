@@ -31,19 +31,29 @@ async function listmonkFetch(path, options = {}) {
 
   console.log(`[Listmonk] ${options.method || 'GET'} ${url}`);
 
+  // 8-second timeout — if Listmonk is unreachable, fail fast
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
+
   try {
     const res = await fetch(url, {
       ...options,
+      signal: controller.signal,
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Basic ${credentials}`,
         ...options.headers,
       },
     });
+    clearTimeout(timeout);
     return res;
   } catch (err) {
+    clearTimeout(timeout);
+    if (err.name === 'AbortError') {
+      throw new Error(`Listmonk timed out after 8s — is it running? URL: ${base}`);
+    }
     console.error(`[Listmonk] Fetch failed for ${url}:`, err.message);
-    throw new Error(`Cannot reach Listmonk at ${base}. Error: ${err.message}`);
+    throw new Error(`Cannot reach Listmonk at ${base}: ${err.message}`);
   }
 }
 
@@ -60,7 +70,11 @@ async function getOrCreateCandidateList(candidate, db) {
   }
 
   // Create a new list for this candidate
-  const listName = `${candidate.full_name} — ${candidate.office_sought || 'Campaign'} (${candidate.state || ''})`;
+  const listName = [
+    candidate.full_name || 'Candidate',
+    candidate.office_sought ? `— ${candidate.office_sought}` : '',
+    candidate.state ? `(${candidate.state})` : '',
+  ].filter(Boolean).join(' ');
 
   const res = await listmonkFetch('/lists', {
     method: 'POST',
@@ -152,7 +166,7 @@ router.get('/status', async (req, res) => {
     res.json({
       connected: true,
       listId,
-      listName: listData.data?.name,
+      listName: listData.data?.name || `Candidate List #${listId}`,
       subscriberCount: listData.data?.subscriber_count || 0,
     });
   } catch (err) {
@@ -193,7 +207,13 @@ router.get('/subscribers', async (req, res) => {
     const candidate = candResult.rows[0];
     if (!candidate) return res.status(404).json({ error: 'Candidate not found' });
 
-    const listId = await getOrCreateCandidateList({ ...candidate, id: candidateId }, db);
+    let listId = null;
+    try {
+      listId = await getOrCreateCandidateList({ ...candidate, id: candidateId }, db);
+    } catch (listErr) {
+      console.error('[Email] Could not get list ID:', listErr.message);
+      return res.json({ subscribers: [], total: 0, page: 1, perPage: 25, error: listErr.message });
+    }
     if (!listId) return res.json({ subscribers: [], total: 0, page: 1, perPage: 25 });
 
     const params = new URLSearchParams({
