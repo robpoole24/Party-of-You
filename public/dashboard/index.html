@@ -1189,39 +1189,87 @@ body { font-family: var(--body); background: var(--gray); color: var(--text); -w
         <div style="display:flex;flex-direction:column;gap:16px" id="upgrades-list">
 
           <!-- BallotReady -->
-          <div class="upgrade-card" style="background:var(--white);border:1px solid var(--border);border-radius:12px;overflow:hidden">
-            <div style="display:grid;grid-template-columns:1fr auto;gap:16px;padding:20px 24px;align-items:start">
+          <div class="upgrade-card" style="background:var(--white);border:2px solid var(--sky);border-radius:12px;overflow:hidden">
+            <!-- Header -->
+            <div style="display:grid;grid-template-columns:1fr auto;gap:16px;padding:20px 24px 16px;align-items:start">
               <div>
-                <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
-                  <div style="font-family:var(--cond);font-size:20px;font-weight:900;text-transform:uppercase;color:var(--navy)">BallotReady — Local Race Data</div>
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap">
+                  <div style="font-family:var(--cond);font-size:22px;font-weight:900;text-transform:uppercase;color:var(--navy)">BallotReady — Local Race Intelligence</div>
                   <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:white;background:var(--sky);padding:2px 8px;border-radius:4px">Highest Priority</span>
                 </div>
-                <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:12px;max-width:640px">The single biggest gap in the platform right now. BallotReady has data on hundreds of thousands of local races — city council, county board, school board, water district. Without this, we can show you federal and state races but not the local offices where independent candidates have the best odds of winning. This is the data that tells you who's running, who's the incumbent, when the filing deadline is, and what the seat's election history looks like.</div>
-                <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted)">
-                  <span>📋 <strong>Includes:</strong> All local races in your district + filing deadlines + incumbent data</span>
-                  <span>🔄 <strong>Updated:</strong> Continuously</span>
-                  <span>📍 <strong>Coverage:</strong> All 50 states, 130,000+ races</span>
+                <div style="font-size:13px;color:var(--muted);line-height:1.7;max-width:680px">
+                  The single biggest gap in the platform. Right now we can show you federal and state races — but most independent candidates win their first election at the <em>local</em> level: city council, county board, school board, water district. BallotReady covers <strong>130,000+ local races</strong> across all 50 states with continuously updated data sourced directly from election authorities. Here's exactly what we'd get:
                 </div>
               </div>
               <div style="text-align:right;flex-shrink:0">
-                <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">Total Cost</div>
-                <div style="font-family:var(--cond);font-size:28px;font-weight:900;color:var(--navy)">$5,000</div>
-                <div style="font-size:11px;color:var(--muted)">per year</div>
+                <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">Annual Cost</div>
+                <div style="font-family:var(--cond);font-size:32px;font-weight:900;color:var(--navy)">$5,000</div>
+                <div style="font-size:11px;color:var(--muted)">billed yearly</div>
               </div>
             </div>
+
+            <!-- Two dataset panels -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:1px solid var(--border)">
+
+              <!-- Dataset 1: Recruitment / Race Data -->
+              <div style="padding:18px 22px;border-right:1px solid var(--border)">
+                <div style="font-family:var(--cond);font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:var(--sky);margin-bottom:10px">📋 Dataset 1 — Race &amp; Filing Data</div>
+                <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:12px">One row per race — every combination of position, election day, and race type (primary, general, runoff, unexpired term). Continuously updated from official election sources.</div>
+                <div style="display:flex;flex-direction:column;gap:7px">
+                  <div style="font-size:12px;display:flex;gap:8px;align-items:flex-start"><span style="color:var(--sky);font-size:14px;line-height:1">✓</span><div><strong style="color:var(--text)">Filing deadlines</strong> — exact start/end dates, including separate deadlines for incumbents vs. challengers and major vs. minor party candidates</div></div>
+                  <div style="font-size:12px;display:flex;gap:8px;align-items:flex-start"><span style="color:var(--sky);font-size:14px;line-height:1">✓</span><div><strong style="color:var(--text)">Position details</strong> — official name, district/ward/region breakdown, number of seats, term length, and election frequency</div></div>
+                  <div style="font-size:12px;display:flex;gap:8px;align-items:flex-start"><span style="color:var(--sky);font-size:14px;line-height:1">✓</span><div><strong style="color:var(--text)">Race type flags</strong> — primary, runoff, unexpired term, blanket primary, majority-vote primary rules by state</div></div>
+                  <div style="font-size:12px;display:flex;gap:8px;align-items:flex-start"><span style="color:var(--sky);font-size:14px;line-height:1">✓</span><div><strong style="color:var(--text)">Partisan type</strong> — partisan, nonpartisan, or partisan-for-primary-only (critical for independent candidates)</div></div>
+                  <div style="font-size:12px;display:flex;gap:8px;align-items:flex-start"><span style="color:var(--sky);font-size:14px;line-height:1">✓</span><div><strong style="color:var(--text)">Census geography linking</strong> — FIPS and MTFCC codes so every race maps to a precise geographic boundary</div></div>
+                  <div style="font-size:12px;display:flex;gap:8px;align-items:flex-start"><span style="color:var(--sky);font-size:14px;line-height:1">✓</span><div><strong style="color:var(--text)">Position descriptions</strong> — plain-language summaries of what each office actually does</div></div>
+                  <div style="font-size:12px;display:flex;gap:8px;align-items:flex-start"><span style="color:var(--sky);font-size:14px;line-height:1">✓</span><div><strong style="color:var(--text)">Level classification</strong> — federal / state / regional / county / city / local, enabling precise filtering</div></div>
+                </div>
+              </div>
+
+              <!-- Dataset 2: Officeholders -->
+              <div style="padding:18px 22px">
+                <div style="font-family:var(--cond);font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:var(--red);margin-bottom:10px">🏛️ Dataset 2 — Incumbent &amp; Officeholder Data</div>
+                <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:12px">One row per officeholder term. Current and historical officials from federal down to local — who holds the seat, how long, and how to reach them.</div>
+                <div style="display:flex;flex-direction:column;gap:7px">
+                  <div style="font-size:12px;display:flex;gap:8px;align-items:flex-start"><span style="color:var(--red);font-size:14px;line-height:1">✓</span><div><strong style="color:var(--text)">Full name + party</strong> — first, middle, last, suffix, nickname, and party as it appeared on the ballot</div></div>
+                  <div style="font-size:12px;display:flex;gap:8px;align-items:flex-start"><span style="color:var(--red);font-size:14px;line-height:1">✓</span><div><strong style="color:var(--text)">Term dates with precision</strong> — exact start/end plus a specificity flag (day/month/year accuracy) so you know how solid the data is</div></div>
+                  <div style="font-size:12px;display:flex;gap:8px;align-items:flex-start"><span style="color:var(--red);font-size:14px;line-height:1">✓</span><div><strong style="color:var(--text)">Open seat detection</strong> — vacancy flag plus off-cycle flag for special elections and mid-term appointments</div></div>
+                  <div style="font-size:12px;display:flex;gap:8px;align-items:flex-start"><span style="color:var(--red);font-size:14px;line-height:1">✓</span><div><strong style="color:var(--text)">Contact information</strong> — office phone, district phone, email, and mailing address per officeholder</div></div>
+                  <div style="font-size:12px;display:flex;gap:8px;align-items:flex-start"><span style="color:var(--red);font-size:14px;line-height:1">✓</span><div><strong style="color:var(--text)">Web presence</strong> — government website, Wikipedia, LinkedIn, Twitter/X, Facebook, Instagram links</div></div>
+                  <div style="font-size:12px;display:flex;gap:8px;align-items:flex-start"><span style="color:var(--red);font-size:14px;line-height:1">✓</span><div><strong style="color:var(--text)">Appointed vs. elected</strong> — flag distinguishes elected winners from appointed replacements</div></div>
+                  <div style="font-size:12px;display:flex;gap:8px;align-items:flex-start"><span style="color:var(--red);font-size:14px;line-height:1">✓</span><div><strong style="color:var(--text)">Full term history</strong> — every prior officeholder per seat, enabling incumbency research and term-limit tracking</div></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- What this unlocks -->
+            <div style="background:rgba(43,127,193,0.06);border-top:1px solid var(--border);padding:14px 22px">
+              <div style="font-family:var(--cond);font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:var(--navy);margin-bottom:8px">🔓 What this unlocks on the platform</div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap">
+                <span style="font-size:12px;background:var(--white);border:1px solid var(--border);border-radius:6px;padding:4px 10px;color:var(--text)">Local race cards in Race Selection</span>
+                <span style="font-size:12px;background:var(--white);border:1px solid var(--border);border-radius:6px;padding:4px 10px;color:var(--text)">Filing deadline alerts (60/30/14 days)</span>
+                <span style="font-size:12px;background:var(--white);border:1px solid var(--border);border-radius:6px;padding:4px 10px;color:var(--text)">Incumbent research panel</span>
+                <span style="font-size:12px;background:var(--white);border:1px solid var(--border);border-radius:6px;padding:4px 10px;color:var(--text)">Open seat alerts in your area</span>
+                <span style="font-size:12px;background:var(--white);border:1px solid var(--border);border-radius:6px;padding:4px 10px;color:var(--text)">Partisan vs. nonpartisan race flags</span>
+                <span style="font-size:12px;background:var(--white);border:1px solid var(--border);border-radius:6px;padding:4px 10px;color:var(--text)">130,000+ local races (vs. ~500 now)</span>
+              </div>
+            </div>
+
+            <!-- Cost calculator footer -->
             <div style="background:var(--gray);border-top:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
-              <div style="display:flex;gap:24px;flex-wrap:wrap">
+              <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:center">
+                <div style="font-size:12px;color:var(--muted)">Split cost per campaign:</div>
                 <div style="text-align:center">
                   <div style="font-family:var(--cond);font-size:22px;font-weight:900;color:var(--red)">$500</div>
-                  <div style="font-size:10px;color:var(--muted);text-transform:uppercase">per campaign @ 10</div>
+                  <div style="font-size:10px;color:var(--muted);text-transform:uppercase">@ 10 campaigns</div>
                 </div>
                 <div style="text-align:center">
                   <div style="font-family:var(--cond);font-size:22px;font-weight:900;color:var(--sky)">$200</div>
-                  <div style="font-size:10px;color:var(--muted);text-transform:uppercase">per campaign @ 25</div>
+                  <div style="font-size:10px;color:var(--muted);text-transform:uppercase">@ 25 campaigns</div>
                 </div>
                 <div style="text-align:center">
                   <div style="font-family:var(--cond);font-size:22px;font-weight:900;color:#15803d">$100</div>
-                  <div style="font-size:10px;color:var(--muted);text-transform:uppercase">per campaign @ 50</div>
+                  <div style="font-size:10px;color:var(--muted);text-transform:uppercase">@ 50 campaigns</div>
                 </div>
               </div>
               <button onclick="pledgeUpgrade('ballotready')" class="topbar-btn primary" id="pledge-ballotready">Express Interest →</button>
