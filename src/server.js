@@ -178,6 +178,22 @@ app.use('/admin', express.static(path.join(__dirname, '../public/admin'), {
   },
 }));
 
+// Public candidate pages — /c/:subdomain
+// Serves the candidate page HTML; JS fetches data from /api/candidate/:subdomain
+app.get('/c/:subdomain', (req, res) => {
+  const { subdomain } = req.params;
+  if (!/^[a-z0-9-]{1,50}$/.test(subdomain)) {
+    return res.status(400).send('Invalid campaign URL');
+  }
+  const filePath = path.join(__dirname, '../public/candidate-page.html');
+  res.sendFile(filePath, (err) => {
+    if (err) {
+      console.error('[CandidatePage] Could not serve candidate-page.html:', err.message);
+      res.status(500).send('Candidate page unavailable. Please try again shortly.');
+    }
+  });
+});
+
 // All other static files — 1h cache in production
 app.use(express.static(path.join(__dirname, '../public'), {
   maxAge: process.env.NODE_ENV === 'production' ? '1h' : 0,
@@ -303,22 +319,6 @@ app.use('/api/intelligence', require('./routes/intelligence'));
 
 // Public candidate pages API
 app.use('/api/candidate', require('./routes/candidate-page'));
-
-// Public candidate pages — /c/:subdomain
-// Serves the candidate page HTML; JS fetches data from /api/candidate/:subdomain
-app.get('/c/:subdomain', (req, res) => {
-  const { subdomain } = req.params;
-  if (!/^[a-z0-9-]{1,50}$/.test(subdomain)) {
-    return res.status(400).send('Invalid campaign URL');
-  }
-  const filePath = path.join(__dirname, '../public/candidate-page.html');
-  res.sendFile(filePath, (err) => {
-    if (err) {
-      console.error('[CandidatePage] Could not serve candidate-page.html:', err.message);
-      res.status(500).send('Candidate page unavailable. Please try again shortly.');
-    }
-  });
-});
 
 // Public volunteer signup — no auth required, called from /c/:subdomain pages
 app.post('/api/candidate/:subdomain/volunteer', async (req, res) => {
