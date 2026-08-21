@@ -123,10 +123,17 @@ app.use('/admin/listmonk', requireAdmin, (req, res) => {
 });
 
 // Election calendar scraper endpoint
-const { scrapeState: scrapeSingleState, scrapeAll: scrapeAllStates, ensureTable: ensureCalendarTable } = require('./jobs/scrape-election-calendar');
-
 app.post('/api/admin/scrape/election-calendar', requireAdmin, async (req, res) => {
   const { state = 'all' } = req.body;
+
+  let scraperModule;
+  try {
+    scraperModule = require('./jobs/scrape-election-calendar');
+  } catch (e) {
+    return res.status(500).json({ error: 'Scraper module failed to load', detail: e.message });
+  }
+
+  const { scrapeState: scrapeSingleState, scrapeAll: scrapeAllStates, ensureTable: ensureCalendarTable } = scraperModule;
 
   // Ensure table exists (non-fatal if it fails)
   try {

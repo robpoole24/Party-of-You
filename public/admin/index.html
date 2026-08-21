@@ -490,9 +490,9 @@ body { font-family: var(--body); background: var(--navy-d); color: var(--text); 
           <div class="panel-hdr"><h2>🗳️ Election Calendar Scraper</h2></div>
           <div class="panel-body">
             <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Scrape live election dates and filing deadlines from USVoteFoundation.org. Runs ~2 minutes for all 50 states. Run weekly to keep data current.</p>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px">
               <button class="btn-sm primary" onclick="runScraper('all')">Scrape All 50 States</button>
-              <select id="scraper-state-select" style="height:30px;padding:0 8px;background:rgba(255,255,255,0.07);border:1px solid var(--border);border-radius:5px;color:var(--white);font-size:12px">
+              <select id="scraper-state-select" size="1" style="height:30px;padding:0 8px;background:rgba(255,255,255,0.07);border:1px solid var(--border);border-radius:5px;color:var(--white);font-size:12px;width:140px">
                 <option value="">— Single State —</option>
                 <option>AL</option><option>AK</option><option>AZ</option><option>AR</option>
                 <option>CA</option><option>CO</option><option>CT</option><option>DE</option>
