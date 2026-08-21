@@ -23,25 +23,32 @@ const router = express.Router();
 // ── LISTMONK CLIENT ───────────────────────────────────────────────
 async function listmonkFetch(path, options = {}) {
   const base = (process.env.LISTMONK_URL || 'http://listmonk.railway.internal:9000').replace(/\/$/, '');
-  const username = process.env.LISTMONK_USERNAME || 'admin';
-  const password = process.env.LISTMONK_PASSWORD || '';
-
-  const credentials = Buffer.from(`${username}:${password}`).toString('base64');
   const url = `${base}/api${path}`;
 
-  console.log(`[Listmonk] ${options.method || 'GET'} ${url}`);
+  // Auth: API token takes priority over basic auth
+  // Listmonk token format: "Authorization: token username:token"
+  // or Basic auth: base64(username:password)
+  let authHeader;
+  const apiToken = process.env.LISTMONK_API_TOKEN;
+  const apiUsername = process.env.LISTMONK_API_USERNAME || 'partyofyouadmin';
+
+  if (apiToken) {
+    // Correct Listmonk v6 token format
+    authHeader = `token ${apiUsername}:${apiToken}`;
+  } else {
+    // Fall back to basic auth with admin credentials
+    const username = process.env.LISTMONK_USERNAME || 'admin';
+    const password = process.env.LISTMONK_PASSWORD || '';
+    const credentials = Buffer.from(`${username}:${password}`).toString('base64');
+    authHeader = `Basic ${credentials}`;
+  }
+
+  console.log(`[Listmonk] ${options.method || 'GET'} ${url} (${apiToken ? 'token' : 'basic'} auth)`);
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 8000);
 
   try {
-    const apiToken = process.env.LISTMONK_API_TOKEN;
-    const authHeader = apiToken
-      ? `token ${apiToken}`
-      : `Basic ${credentials}`;
-
-    console.log(`[Listmonk] Auth method: ${apiToken ? 'API token' : 'Basic auth'}`);
-
     const res = await fetch(url, {
       ...options,
       signal: controller.signal,

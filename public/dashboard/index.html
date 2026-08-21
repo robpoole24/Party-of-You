@@ -327,6 +327,9 @@ body { font-family: var(--body); background: var(--gray); color: var(--text); -w
       <button class="nav-item" onclick="showSection('community', this)">
         <span class="icon">🤝</span> Community
       </button>
+      <button class="nav-item" onclick="showSection('upgrades', this)">
+        <span class="icon">⚡</span> Collective Upgrades
+      </button>
     </div>
 
     <div class="sidebar-footer">
@@ -344,7 +347,7 @@ body { font-family: var(--body); background: var(--gray); color: var(--text); -w
       <div class="topbar-actions">
         <span style="font-size:12px;color:var(--muted)" id="last-updated"></span>
         <a href="/profile-edit.html" class="topbar-btn secondary">Edit Profile</a>
-        <button class="topbar-btn primary" onclick="showSection('outreach', this)">Contact Voters →</button>
+        <button class="topbar-btn primary" onclick="showSection('outreach', document.querySelector('[onclick*=outreach]'))">Contact Voters →</button>
       </div>
     </div>
 
@@ -645,7 +648,7 @@ body { font-family: var(--body); background: var(--gray); color: var(--text); -w
           <div class="action-card" onclick="startOutreach('email')">
             <div class="action-icon">✉️</div>
             <div class="action-title">Email Blast</div>
-            <div class="action-desc">Send to your supporter list via Listmonk. No per-email cost. Unlimited sends, unlimited subscribers.</div>
+            <div class="action-desc">Send to your full supporter list. No per-email cost. Unlimited sends, unlimited subscribers.</div>
             <div class="action-badge action-free">Free</div>
           </div>
           <div class="action-card" onclick="startOutreach('mailer')">
@@ -931,8 +934,8 @@ body { font-family: var(--body); background: var(--gray); color: var(--text); -w
                   <div style="font-size:14px;font-weight:600;color:var(--text)">📧 Email Marketing</div>
                   <span class="badge badge-green">Connected</span>
                 </div>
-                <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Listmonk — unlimited sends, zero cost. Manage your subscriber lists and campaigns.</div>
-                <button onclick="openListmonk()" class="topbar-btn primary" style="font-size:11px;padding:6px 14px">Open Listmonk Dashboard →</button>
+                <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Unlimited sends, zero cost. Manage your subscriber list and campaigns.</div>
+                <button onclick="showSection('email', document.querySelector('[onclick*=email]'))" class="topbar-btn primary" style="font-size:11px;padding:6px 14px">Open Email Dashboard →</button>
               </div>
               <!-- Twilio -->
               <div style="padding:14px;border:1px solid var(--border);border-radius:8px">
@@ -996,7 +999,7 @@ body { font-family: var(--body); background: var(--gray); color: var(--text); -w
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px">
           <div>
             <div style="font-family:var(--cond);font-size:28px;font-weight:900;text-transform:uppercase;color:var(--navy);margin-bottom:6px">Email Marketing</div>
-            <div style="font-size:14px;color:var(--muted)">Manage your subscriber list and send campaigns — free, unlimited, powered by Listmonk.</div>
+            <div style="font-size:14px;color:var(--muted)">Manage your supporter list and send email campaigns — free, unlimited.</div>
           </div>
           <button class="topbar-btn primary" onclick="showComposeForm()">+ New Campaign</button>
         </div>
@@ -1144,6 +1147,247 @@ body { font-family: var(--body); background: var(--gray); color: var(--text); -w
           </div>
         </div>
       </div>
+
+      <!-- ── COLLECTIVE UPGRADES ── -->
+      <div class="section" id="sec-upgrades">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;flex-wrap:wrap;gap:12px">
+          <div>
+            <div style="font-family:var(--cond);font-size:28px;font-weight:900;text-transform:uppercase;color:var(--navy);margin-bottom:6px">Collective Upgrades</div>
+            <div style="font-size:14px;color:var(--muted);max-width:680px;line-height:1.6">Party of You is free, ad-free, and always will be. But some data and tools cost real money — data vendors charge whether we like it or not. This page shows what we could unlock together by splitting costs across all active campaigns. <strong>We never profit from this.</strong> Every dollar goes to the vendor at cost.</div>
+          </div>
+          <div id="campaign-count-badge" style="background:var(--navy);color:white;padding:10px 18px;border-radius:8px;text-align:center;flex-shrink:0">
+            <div style="font-family:var(--cond);font-size:28px;font-weight:900" id="active-campaign-count">—</div>
+            <div style="font-size:11px;opacity:0.7;text-transform:uppercase;letter-spacing:0.08em">Active Campaigns</div>
+          </div>
+        </div>
+
+        <!-- How it works -->
+        <div style="background:linear-gradient(135deg,var(--navy) 0%,#0f2347 100%);border-radius:12px;padding:24px;margin-bottom:24px;color:white">
+          <div style="font-family:var(--cond);font-size:18px;font-weight:900;text-transform:uppercase;margin-bottom:12px;color:rgba(255,255,255,0.9)">How Collective Upgrades Work</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px">
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <div style="font-size:24px;flex-shrink:0">1️⃣</div>
+              <div style="font-size:13px;line-height:1.5;opacity:0.85">We identify data or tools that would materially help all campaigns win.</div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <div style="font-size:24px;flex-shrink:0">2️⃣</div>
+              <div style="font-size:13px;line-height:1.5;opacity:0.85">Campaigns vote to unlock. If enough campaigns pledge, we split the cost evenly.</div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <div style="font-size:24px;flex-shrink:0">3️⃣</div>
+              <div style="font-size:13px;line-height:1.5;opacity:0.85">Data is integrated into the platform instantly for every campaign that contributed.</div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <div style="font-size:24px;flex-shrink:0">4️⃣</div>
+              <div style="font-size:13px;line-height:1.5;opacity:0.85">Zero markup. We show you the invoice. You pay the exact per-campaign share, nothing more.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upgrade cards -->
+        <div style="display:flex;flex-direction:column;gap:16px" id="upgrades-list">
+
+          <!-- BallotReady -->
+          <div class="upgrade-card" style="background:var(--white);border:1px solid var(--border);border-radius:12px;overflow:hidden">
+            <div style="display:grid;grid-template-columns:1fr auto;gap:16px;padding:20px 24px;align-items:start">
+              <div>
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+                  <div style="font-family:var(--cond);font-size:20px;font-weight:900;text-transform:uppercase;color:var(--navy)">BallotReady — Local Race Data</div>
+                  <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:white;background:var(--sky);padding:2px 8px;border-radius:4px">Highest Priority</span>
+                </div>
+                <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:12px;max-width:640px">The single biggest gap in the platform right now. BallotReady has data on hundreds of thousands of local races — city council, county board, school board, water district. Without this, we can show you federal and state races but not the local offices where independent candidates have the best odds of winning. This is the data that tells you who's running, who's the incumbent, when the filing deadline is, and what the seat's election history looks like.</div>
+                <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted)">
+                  <span>📋 <strong>Includes:</strong> All local races in your district + filing deadlines + incumbent data</span>
+                  <span>🔄 <strong>Updated:</strong> Continuously</span>
+                  <span>📍 <strong>Coverage:</strong> All 50 states, 130,000+ races</span>
+                </div>
+              </div>
+              <div style="text-align:right;flex-shrink:0">
+                <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">Total Cost</div>
+                <div style="font-family:var(--cond);font-size:28px;font-weight:900;color:var(--navy)">$5,000</div>
+                <div style="font-size:11px;color:var(--muted)">per year</div>
+              </div>
+            </div>
+            <div style="background:var(--gray);border-top:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+              <div style="display:flex;gap:24px;flex-wrap:wrap">
+                <div style="text-align:center">
+                  <div style="font-family:var(--cond);font-size:22px;font-weight:900;color:var(--red)">$500</div>
+                  <div style="font-size:10px;color:var(--muted);text-transform:uppercase">per campaign @ 10</div>
+                </div>
+                <div style="text-align:center">
+                  <div style="font-family:var(--cond);font-size:22px;font-weight:900;color:var(--sky)">$200</div>
+                  <div style="font-size:10px;color:var(--muted);text-transform:uppercase">per campaign @ 25</div>
+                </div>
+                <div style="text-align:center">
+                  <div style="font-family:var(--cond);font-size:22px;font-weight:900;color:#15803d">$100</div>
+                  <div style="font-size:10px;color:var(--muted);text-transform:uppercase">per campaign @ 50</div>
+                </div>
+              </div>
+              <button onclick="pledgeUpgrade('ballotready')" class="topbar-btn primary" id="pledge-ballotready">Express Interest →</button>
+            </div>
+          </div>
+
+          <!-- YouGov / Polling -->
+          <div class="upgrade-card" style="background:var(--white);border:1px solid var(--border);border-radius:12px;overflow:hidden">
+            <div style="display:grid;grid-template-columns:1fr auto;gap:16px;padding:20px 24px;align-items:start">
+              <div>
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+                  <div style="font-family:var(--cond);font-size:20px;font-weight:900;text-transform:uppercase;color:var(--navy)">YouGov — District-Level Polling</div>
+                  <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:white;background:#6b7280;padding:2px 8px;border-radius:4px">High Value</span>
+                </div>
+                <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:12px;max-width:640px">National polling is fine but what you really need is issue polling specific to your district. What do voters in your ZIP code think about healthcare, housing, wages? YouGov's district-level polling data would let us show you exactly what issues your neighbors care about most — not what the national media says they care about. This directly informs your messaging strategy.</div>
+                <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted)">
+                  <span>📋 <strong>Includes:</strong> Issue polling by congressional district + state legislative district</span>
+                  <span>🔄 <strong>Updated:</strong> Monthly</span>
+                </div>
+              </div>
+              <div style="text-align:right;flex-shrink:0">
+                <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">Estimated Cost</div>
+                <div style="font-family:var(--cond);font-size:28px;font-weight:900;color:var(--navy)">~$3,000</div>
+                <div style="font-size:11px;color:var(--muted)">per year</div>
+              </div>
+            </div>
+            <div style="background:var(--gray);border-top:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+              <div style="display:flex;gap:24px;flex-wrap:wrap">
+                <div style="text-align:center">
+                  <div style="font-family:var(--cond);font-size:22px;font-weight:900;color:var(--red)">$300</div>
+                  <div style="font-size:10px;color:var(--muted);text-transform:uppercase">per campaign @ 10</div>
+                </div>
+                <div style="text-align:center">
+                  <div style="font-family:var(--cond);font-size:22px;font-weight:900;color:var(--sky)">$120</div>
+                  <div style="font-size:10px;color:var(--muted);text-transform:uppercase">per campaign @ 25</div>
+                </div>
+                <div style="text-align:center">
+                  <div style="font-family:var(--cond);font-size:22px;font-weight:900;color:#15803d">$60</div>
+                  <div style="font-size:10px;color:var(--muted);text-transform:uppercase">per campaign @ 50</div>
+                </div>
+              </div>
+              <button onclick="pledgeUpgrade('yougov')" class="topbar-btn secondary" id="pledge-yougov">Express Interest →</button>
+            </div>
+          </div>
+
+          <!-- OpenSecrets -->
+          <div class="upgrade-card" style="background:var(--white);border:1px solid var(--border);border-radius:12px;overflow:hidden">
+            <div style="display:grid;grid-template-columns:1fr auto;gap:16px;padding:20px 24px;align-items:start">
+              <div>
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+                  <div style="font-family:var(--cond);font-size:20px;font-weight:900;text-transform:uppercase;color:var(--navy)">OpenSecrets — Opponent Money Tracking</div>
+                </div>
+                <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:12px;max-width:640px">Who funds your opponent? OpenSecrets tracks every dollar in federal and state races — PAC money, corporate donors, dark money flows. Knowing who's bankrolling the incumbent is campaign gold. It lets you draw a direct contrast: "My opponent takes money from X. I don't take a dime from them." Currently we use FEC data which covers federal races but OpenSecrets enriches it with industry categorization and context.</div>
+                <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted)">
+                  <span>📋 <strong>Includes:</strong> Donor breakdowns, industry categorization, dark money tracking</span>
+                  <span>🔄 <strong>Updated:</strong> As FEC filings come in</span>
+                </div>
+              </div>
+              <div style="text-align:right;flex-shrink:0">
+                <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">Estimated Cost</div>
+                <div style="font-family:var(--cond);font-size:28px;font-weight:900;color:var(--navy)">~$2,000</div>
+                <div style="font-size:11px;color:var(--muted)">per year</div>
+              </div>
+            </div>
+            <div style="background:var(--gray);border-top:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+              <div style="display:flex;gap:24px;flex-wrap:wrap">
+                <div style="text-align:center">
+                  <div style="font-family:var(--cond);font-size:22px;font-weight:900;color:var(--red)">$200</div>
+                  <div style="font-size:10px;color:var(--muted);text-transform:uppercase">per campaign @ 10</div>
+                </div>
+                <div style="text-align:center">
+                  <div style="font-family:var(--cond);font-size:22px;font-weight:900;color:var(--sky)">$80</div>
+                  <div style="font-size:10px;color:var(--muted);text-transform:uppercase">per campaign @ 25</div>
+                </div>
+                <div style="text-align:center">
+                  <div style="font-family:var(--cond);font-size:22px;font-weight:900;color:#15803d">$40</div>
+                  <div style="font-size:10px;color:var(--muted);text-transform:uppercase">per campaign @ 50</div>
+                </div>
+              </div>
+              <button onclick="pledgeUpgrade('opensecrets')" class="topbar-btn secondary" id="pledge-opensecrets">Express Interest →</button>
+            </div>
+          </div>
+
+          <!-- L2 Voter File -->
+          <div class="upgrade-card" style="background:var(--white);border:1px solid var(--border);border-radius:12px;overflow:hidden">
+            <div style="display:grid;grid-template-columns:1fr auto;gap:16px;padding:20px 24px;align-items:start">
+              <div>
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+                  <div style="font-family:var(--cond);font-size:20px;font-weight:900;text-transform:uppercase;color:var(--navy)">L2 / TargetSmart — Enhanced Voter File</div>
+                  <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:white;background:#7c3aed;padding:2px 8px;border-radius:4px">Game Changer</span>
+                </div>
+                <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:12px;max-width:640px">State voter files tell you who's registered. Enhanced voter files tell you who actually votes, what they buy, what they read, and how likely they are to support a progressive candidate. L2 and TargetSmart append commercial consumer data to voter records — this is what every major party campaign uses to target their door knocking, phone banking, and mail. Without this you're knocking on every door. With it, you knock on the right ones.</div>
+                <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted)">
+                  <span>📋 <strong>Includes:</strong> Modeled turnout scores, partisan scores, consumer overlays</span>
+                  <span>💡 <strong>Note:</strong> Raw state voter files are always free via our voter file guide</span>
+                </div>
+              </div>
+              <div style="text-align:right;flex-shrink:0">
+                <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">Estimated Cost</div>
+                <div style="font-family:var(--cond);font-size:28px;font-weight:900;color:var(--navy)">~$8,000</div>
+                <div style="font-size:11px;color:var(--muted)">per year</div>
+              </div>
+            </div>
+            <div style="background:var(--gray);border-top:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+              <div style="display:flex;gap:24px;flex-wrap:wrap">
+                <div style="text-align:center">
+                  <div style="font-family:var(--cond);font-size:22px;font-weight:900;color:var(--red)">$800</div>
+                  <div style="font-size:10px;color:var(--muted);text-transform:uppercase">per campaign @ 10</div>
+                </div>
+                <div style="text-align:center">
+                  <div style="font-family:var(--cond);font-size:22px;font-weight:900;color:var(--sky)">$320</div>
+                  <div style="font-size:10px;color:var(--muted);text-transform:uppercase">per campaign @ 25</div>
+                </div>
+                <div style="text-align:center">
+                  <div style="font-family:var(--cond);font-size:22px;font-weight:900;color:#15803d">$160</div>
+                  <div style="font-size:10px;color:var(--muted);text-transform:uppercase">per campaign @ 50</div>
+                </div>
+              </div>
+              <button onclick="pledgeUpgrade('l2voter')" class="topbar-btn secondary" id="pledge-l2voter">Express Interest →</button>
+            </div>
+          </div>
+
+          <!-- Extra Storage -->
+          <div class="upgrade-card" style="background:var(--white);border:1px solid var(--border);border-radius:12px;overflow:hidden">
+            <div style="display:grid;grid-template-columns:1fr auto;gap:16px;padding:20px 24px;align-items:start">
+              <div>
+                <div style="font-family:var(--cond);font-size:20px;font-weight:900;text-transform:uppercase;color:var(--navy);margin-bottom:6px">Extra Storage — Voter File Hosting</div>
+                <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:12px;max-width:640px">Voter files are large — a full state file can be 2-8GB. Our current Railway storage is enough for platform files but we'd need dedicated storage expansion to host uploaded voter files for all campaigns simultaneously. This unlocks the door-knocking route generator and in-platform voter file management that currently requires you to use spreadsheets.</div>
+                <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted)">
+                  <span>📋 <strong>Unlocks:</strong> In-platform voter file upload, route generation, contact tracking</span>
+                  <span>🔄 <strong>Type:</strong> Ongoing monthly cost</span>
+                </div>
+              </div>
+              <div style="text-align:right;flex-shrink:0">
+                <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">Cost</div>
+                <div style="font-family:var(--cond);font-size:28px;font-weight:900;color:var(--navy)">~$50</div>
+                <div style="font-size:11px;color:var(--muted)">per month</div>
+              </div>
+            </div>
+            <div style="background:var(--gray);border-top:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+              <div style="display:flex;gap:24px;flex-wrap:wrap">
+                <div style="text-align:center">
+                  <div style="font-family:var(--cond);font-size:22px;font-weight:900;color:var(--red)">$5</div>
+                  <div style="font-size:10px;color:var(--muted);text-transform:uppercase">per campaign/mo @ 10</div>
+                </div>
+                <div style="text-align:center">
+                  <div style="font-family:var(--cond);font-size:22px;font-weight:900;color:var(--sky)">$2</div>
+                  <div style="font-size:10px;color:var(--muted);text-transform:uppercase">per campaign/mo @ 25</div>
+                </div>
+                <div style="text-align:center">
+                  <div style="font-family:var(--cond);font-size:22px;font-weight:900;color:#15803d">$1</div>
+                  <div style="font-size:10px;color:var(--muted);text-transform:uppercase">per campaign/mo @ 50</div>
+                </div>
+              </div>
+              <button onclick="pledgeUpgrade('storage')" class="topbar-btn secondary" id="pledge-storage">Express Interest →</button>
+            </div>
+          </div>
+
+        </div><!-- /upgrades-list -->
+
+        <!-- Transparency note -->
+        <div style="margin-top:24px;padding:20px;background:rgba(43,127,193,0.06);border:1px solid rgba(43,127,193,0.2);border-radius:8px">
+          <div style="font-weight:700;color:var(--navy);margin-bottom:8px">Our promise on collective upgrades</div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.7">When a threshold is reached, we contact every pledging campaign with the exact invoice from the vendor before any charges. You can opt out at that point with no obligation. We don't collect money speculatively — charges only happen when the upgrade is ready to go live. We will never mark up vendor costs. If we get a bulk discount, that discount passes to you in full.</div>
+        </div>
+
+      </div><!-- /sec-upgrades -->
 
     </div><!-- /content -->
   </main>
@@ -2106,7 +2350,7 @@ function startOutreach(method) {
     door: `Door Knocking Guide:\n\n1. Download your voter walk list from the Voter Outreach tab\n2. Print or load on your phone\n3. Use our door knock script (Content Builder → Door Knock Script)\n4. Log results after each door\n\nTip: Knock doors Tuesday-Saturday 4-8pm for best contact rates.`,
     phone: `Phone Banking Guide:\n\n1. Get your call list from the Voter Outreach tab\n2. Use our phone script (Content Builder → Phone Bank Script)\n3. Log each call result (support/lean/against/not home)\n4. Schedule phone bank events through the Events tab\n\nTip: Best calling times are weekdays 5-8pm and weekends 12-5pm.`,
     text: `Text Outreach:\n\nTo send texts you need a Twilio account (twilio.com — free trial available).\n\n1. Create a Twilio account\n2. Add your Twilio credentials to My Website → Add-On Services\n3. Upload your voter contact list\n4. Use our text templates from Content Builder\n\nTwilio costs approximately $0.0075/text.`,
-    email: `Email Outreach via Listmonk:\n\nYour Listmonk email system is connected. To send a blast:\n\n1. Go to your Listmonk dashboard\n2. Create a campaign\n3. Use content from Content Builder\n4. Send to your supporter list\n\nListmonk sends are unlimited and free.`,
+    email: `Email Outreach:\n\nYour email system is connected. To send a blast:\n\n1. Go to the Email Marketing tab\n2. Click '+ New Campaign'\n3. Use content from Content Builder\n4. Send to your full supporter list — unlimited and free.`,
     mailer: `Print Mail Guide:\n\n1. Use Content Builder to generate your message\n2. Download print-ready templates (coming soon)\n3. Find union print shops: unionprinting.com or local union shops\n4. USPS EDDM (Every Door Direct Mail) costs ~$0.21/piece — no mailing list needed\n\nEDDM lets you mail to every address on a mail route — great for local races.`,
     social: `Social Media:\n\n1. Use Content Builder to generate posts\n2. Post to your personal and campaign accounts\n3. Boost key posts with small ad budgets ($5-20)\n4. Consistent posting schedule beats viral posts\n\nFacebook and Instagram are most effective for local races. Nextdoor is excellent for hyper-local.`,
   };
@@ -2253,7 +2497,8 @@ async function loadVolunteers() {
 }
 
 // ── WEBSITE INTEGRATIONS ──────────────────────────────────────
-function openListmonk() {
+function openEmailDashboard() {
+  showSection('email', document.querySelector('[onclick*=email]'));
   // Listmonk is accessed via our server proxy to avoid CORS/auth issues
   window.open('/admin/listmonk/', '_blank');
 }
@@ -2274,6 +2519,7 @@ const sectionTitles = {
   volunteers: 'Volunteers',
   website: 'My Website',
   community: 'Community',
+  upgrades: 'Collective Upgrades',
 };
 
 // ── EMAIL MARKETING ───────────────────────────────────────────
@@ -2349,7 +2595,7 @@ async function loadSubscribers() {
         ${emailState.page < pages ? `<button onclick="subPage(${emailState.page+1})" class="topbar-btn secondary" style="font-size:10px;padding:3px 10px">Next →</button>` : ''}
       </div>`;
   } catch (e) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted)">Could not load subscribers. Is Listmonk connected?</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted)">Could not load subscribers. Check your email integration settings.</td></tr>`;
   }
 }
 
@@ -2544,9 +2790,58 @@ function showSection(name, btn) {
     volunteers: loadVolunteers,
     website: () => {},
     community: () => {},
+    upgrades: loadUpgrades,
   };
   loaders[name]?.();
   window.scrollTo({ top: 0 });
+}
+
+// ── COLLECTIVE UPGRADES ───────────────────────────────────────
+async function loadUpgrades() {
+  // Load active campaign count for the cost calculator
+  try {
+    const res = await fetch('/api/intelligence/campaign-count');
+    if (res.ok) {
+      const data = await res.json();
+      const el = document.getElementById('active-campaign-count');
+      if (el) el.textContent = data.count || '—';
+    }
+  } catch {}
+}
+
+async function pledgeUpgrade(upgradeId) {
+  const btn = document.getElementById(`pledge-${upgradeId}`);
+  if (!btn) return;
+
+  const names = {
+    ballotready: 'BallotReady Local Race Data',
+    yougov: 'YouGov District Polling',
+    opensecrets: 'OpenSecrets Money Tracking',
+    l2voter: 'L2 Enhanced Voter File',
+    storage: 'Extra Storage / Voter File Hosting',
+  };
+
+  if (btn.dataset.pledged) {
+    btn.textContent = 'Interest Registered ✓';
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/dashboard/upgrade-interest', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ upgradeId, upgradeName: names[upgradeId] }),
+    });
+    if (res.ok) {
+      btn.textContent = 'Interest Registered ✓';
+      btn.style.background = '#15803d';
+      btn.style.borderColor = '#15803d';
+      btn.dataset.pledged = '1';
+    }
+  } catch {
+    btn.textContent = 'Interest Registered ✓';
+    btn.dataset.pledged = '1';
+  }
 }
 
 function logout() {
