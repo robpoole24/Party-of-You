@@ -296,10 +296,10 @@ app.get('/api/status', (req, res) => {
 });
 
 // Module 2: Open Seat Tracker
-app.use('/api/races', featureGuard('FEATURE_OPEN_SEAT_TRACKER'), require('./routes/races'));
+app.use('/api/races', require('./routes/races'));
 
 // Module 5: District Intelligence
-app.use('/api/intelligence', featureGuard('FEATURE_POLLING_INTELLIGENCE'), require('./routes/intelligence'));
+app.use('/api/intelligence', require('./routes/intelligence'));
 
 // ─────────────────────────────────────────────────
 // CANDIDATE DASHBOARD GUARD

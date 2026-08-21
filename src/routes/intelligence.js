@@ -129,6 +129,21 @@ router.get('/', async (req, res) => {
   });
 });
 
+// GET /api/intelligence/campaign-count — active candidate count for Collective Upgrades cost calculator
+router.get('/campaign-count', async (req, res) => {
+  const db = req.db;
+  if (!db) return res.json({ count: 0 });
+  try {
+    const result = await db.query(
+      `SELECT COUNT(*) FROM candidates WHERE status IN ('active', 'approved')`
+    );
+    res.json({ count: parseInt(result.rows[0].count) || 0 });
+  } catch (e) {
+    console.warn('[Intelligence] campaign-count failed:', e.message);
+    res.json({ count: 0 });
+  }
+});
+
 // GET /api/intelligence/polling?state=WI
 router.get('/polling', async (req, res) => {
   const { state } = req.query;
