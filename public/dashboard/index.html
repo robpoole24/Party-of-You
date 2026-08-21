@@ -271,6 +271,7 @@ body { font-family: var(--body); background: var(--gray); color: var(--text); -w
   .content { padding: 16px; }
   .victory-banner { grid-template-columns: 1fr; }
 }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
 </style>
 </head>
 <body>
@@ -1502,7 +1503,11 @@ function renderPlaceholderIntelligence() {
   const leanBig = document.getElementById('lean-big');
   if (leanBig) { leanBig.textContent = '—'; }
   const leanDesc = document.getElementById('lean-desc');
-  if (leanDesc) leanDesc.textContent = 'District data loading...';
+  if (leanDesc) leanDesc.textContent = 'Enter your address in Overview to load district data';
+
+  // Clear voter stats loading spinner
+  const voterStats = document.getElementById('voter-stats-body');
+  if (voterStats) voterStats.innerHTML = '<p style="color:var(--muted);font-size:13px">Enter your campaign address in the Overview tab to load district voter data.</p>';
 
   // Placeholder demo grid
   const demoGrid = document.getElementById('district-demo-grid');
@@ -1845,7 +1850,8 @@ const CHART_DEFAULTS = {
 function renderCharts() {
   renderHistoryChart();
   renderPollingChart();
-  renderDistrictCharts();
+  // District charts render lazily when the Voter Demographics tab is shown
+  // (rendering in a hidden section causes Chart.js to misread dimensions)
 }
 
 function renderHistoryChart() {
@@ -2346,16 +2352,108 @@ async function lookupAddress() {
 
 // ── OUTREACH ACTIONS ──────────────────────────────────────────
 function startOutreach(method) {
-  const messages = {
-    door: `Door Knocking Guide:\n\n1. Download your voter walk list from the Voter Outreach tab\n2. Print or load on your phone\n3. Use our door knock script (Content Builder → Door Knock Script)\n4. Log results after each door\n\nTip: Knock doors Tuesday-Saturday 4-8pm for best contact rates.`,
-    phone: `Phone Banking Guide:\n\n1. Get your call list from the Voter Outreach tab\n2. Use our phone script (Content Builder → Phone Bank Script)\n3. Log each call result (support/lean/against/not home)\n4. Schedule phone bank events through the Events tab\n\nTip: Best calling times are weekdays 5-8pm and weekends 12-5pm.`,
-    text: `Text Outreach:\n\nTo send texts you need a Twilio account (twilio.com — free trial available).\n\n1. Create a Twilio account\n2. Add your Twilio credentials to My Website → Add-On Services\n3. Upload your voter contact list\n4. Use our text templates from Content Builder\n\nTwilio costs approximately $0.0075/text.`,
-    email: `Email Outreach:\n\nYour email system is connected. To send a blast:\n\n1. Go to the Email Marketing tab\n2. Click '+ New Campaign'\n3. Use content from Content Builder\n4. Send to your full supporter list — unlimited and free.`,
-    mailer: `Print Mail Guide:\n\n1. Use Content Builder to generate your message\n2. Download print-ready templates (coming soon)\n3. Find union print shops: unionprinting.com or local union shops\n4. USPS EDDM (Every Door Direct Mail) costs ~$0.21/piece — no mailing list needed\n\nEDDM lets you mail to every address on a mail route — great for local races.`,
-    social: `Social Media:\n\n1. Use Content Builder to generate posts\n2. Post to your personal and campaign accounts\n3. Boost key posts with small ad budgets ($5-20)\n4. Consistent posting schedule beats viral posts\n\nFacebook and Instagram are most effective for local races. Nextdoor is excellent for hyper-local.`,
+  const guides = {
+    door: {
+      icon: '🚶', title: 'Door Knocking Guide',
+      steps: [
+        'Download your voter walk list from the <strong>Voter File Guide</strong> (see link below)',
+        'Print it or load it on your phone — use Google Maps for routing',
+        'Generate a door-knock script in <strong>Content Builder</strong>',
+        'Log results after each door: Support / Lean / Against / Not Home',
+      ],
+      tip: 'Knock doors Tuesday–Saturday, 4–8pm for best contact rates. Weekends 10am–noon also work well.',
+      links: [{ label: 'Voter File Guide →', href: '/voter-file-guide.html' }, { label: 'Content Builder →', onclick: "showSection('content', document.querySelector('[onclick*=content]'))" }],
+    },
+    phone: {
+      icon: '📞', title: 'Phone Banking Guide',
+      steps: [
+        'Get your voter call list from your state voter file',
+        'Generate a phone script in <strong>Content Builder</strong>',
+        'Log each call: Support / Lean / Against / Not Home',
+        'Schedule a phone bank event in the <strong>Events</strong> tab',
+      ],
+      tip: 'Best calling times: weekdays 5–8pm and weekends 12–5pm. Avoid early morning and after 9pm.',
+      links: [{ label: 'Content Builder →', onclick: "showSection('content', document.querySelector('[onclick*=content]'))" }, { label: 'Events →', onclick: "showSection('events', document.querySelector('[onclick*=events]'))" }],
+    },
+    text: {
+      icon: '📱', title: 'Text Outreach',
+      steps: [
+        'Create a free Twilio account at <a href="https://twilio.com" target="_blank" style="color:var(--sky)">twilio.com</a>',
+        'Add your Twilio credentials under <strong>My Website → Add-On Services</strong>',
+        'Upload your voter contact list',
+        'Generate text messages in <strong>Content Builder</strong>',
+      ],
+      tip: 'Twilio costs ~$0.0075/text. A 5,000-voter district costs about $37.50 per blast.',
+      links: [{ label: 'twilio.com', href: 'https://twilio.com', external: true }],
+    },
+    email: {
+      icon: '✉️', title: 'Email Blast',
+      steps: [
+        'Go to the <strong>Email Marketing</strong> tab',
+        'Click <strong>+ New Campaign</strong>',
+        'Use content generated in <strong>Content Builder</strong>',
+        'Send to your full supporter list — unlimited, free',
+      ],
+      tip: 'Tuesday and Thursday mornings have the highest open rates. Always include your name, race, and an action item.',
+      links: [{ label: 'Email Marketing →', onclick: "showSection('email', document.querySelector('[onclick*=email]'))" }],
+    },
+    mailer: {
+      icon: '📬', title: 'Mailer / Print Guide',
+      steps: [
+        'Generate your message in <strong>Content Builder</strong>',
+        'Use USPS EDDM (Every Door Direct Mail) — no mailing list needed',
+        'Find union print shops at <a href="https://unionprinting.com" target="_blank" style="color:var(--sky)">unionprinting.com</a>',
+        'EDDM costs ~$0.21/piece — great for saturation coverage of a neighborhood',
+      ],
+      tip: 'Mailers work best 2–3 weeks before election day. A single well-designed piece beats multiple cheap ones.',
+      links: [{ label: 'USPS EDDM →', href: 'https://eddm.usps.com', external: true }, { label: 'Content Builder →', onclick: "showSection('content', document.querySelector('[onclick*=content]'))" }],
+    },
+    social: {
+      icon: '📊', title: 'Social Media',
+      steps: [
+        'Generate platform-specific posts in <strong>Content Builder</strong>',
+        'Post to your personal and campaign accounts',
+        'Boost key posts with small budgets ($5–20) for local reach',
+        'Maintain a consistent schedule — 3–5 posts/week beats sporadic virality',
+      ],
+      tip: 'Facebook and Instagram work best for local races. Nextdoor is excellent for hyper-local neighborhoods.',
+      links: [{ label: 'Content Builder →', onclick: "showSection('content', document.querySelector('[onclick*=content]'))" }],
+    },
   };
 
-  alert(messages[method] || 'Feature coming soon.');
+  const guide = guides[method];
+  if (!guide) return;
+
+  // Remove any existing guide panel
+  const existing = document.getElementById('outreach-guide-panel');
+  if (existing) existing.remove();
+
+  const panel = document.createElement('div');
+  panel.id = 'outreach-guide-panel';
+  panel.style.cssText = 'background:var(--white);border:2px solid var(--navy);border-radius:12px;padding:24px 28px;margin-top:24px;animation:fadeIn 0.2s ease';
+
+  const linkHTML = guide.links.map(l => {
+    if (l.onclick) return `<button onclick="${l.onclick}" style="background:var(--navy);color:white;border:none;border-radius:6px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer">${l.label}</button>`;
+    return `<a href="${l.href}" ${l.external ? 'target="_blank"' : ''} style="background:var(--navy);color:white;border-radius:6px;padding:8px 16px;font-size:13px;font-weight:600;text-decoration:none;display:inline-block">${l.label}</a>`;
+  }).join('');
+
+  panel.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
+      <div style="font-family:var(--cond);font-size:22px;font-weight:900;text-transform:uppercase;color:var(--navy)">${guide.icon} ${guide.title}</div>
+      <button onclick="document.getElementById('outreach-guide-panel').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);line-height:1">×</button>
+    </div>
+    <ol style="margin:0 0 16px 20px;padding:0;color:var(--text);line-height:2;font-size:14px">
+      ${guide.steps.map(s => `<li>${s}</li>`).join('')}
+    </ol>
+    <div style="background:rgba(43,127,193,0.08);border-left:3px solid var(--sky);padding:10px 14px;border-radius:0 6px 6px 0;font-size:13px;color:var(--text);margin-bottom:16px">
+      💡 <strong>Pro tip:</strong> ${guide.tip}
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">${linkHTML}</div>
+  `;
+
+  const grid = document.querySelector('#sec-outreach .action-grid');
+  grid?.parentNode?.insertBefore(panel, grid.nextSibling);
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 function copyContent() {
@@ -2781,7 +2879,7 @@ function showSection(name, btn) {
   const loaders = {
     overview: () => {},
     district: () => {},
-    voters: () => {},
+    voters: () => { renderDistrictCharts(); },
     tracker: renderChecklist,
     email: loadEmail,
     outreach: () => {},
