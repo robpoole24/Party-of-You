@@ -80,11 +80,16 @@ async function getOrCreateCandidateList(candidate, db) {
   const data = await res.json();
   const listId = data.data?.id;
 
-  // Save list ID to DB
-  await db.query(
-    'UPDATE candidates SET listmonk_list_id = $1 WHERE id = $2',
-    [listId, candidate.id]
-  );
+  // Save list ID to DB — handle missing column gracefully
+  try {
+    await db.query(
+      'UPDATE candidates SET listmonk_list_id = $1 WHERE id = $2',
+      [listId, candidate.id]
+    );
+  } catch (e) {
+    // Column may not exist yet — run: ALTER TABLE candidates ADD COLUMN IF NOT EXISTS listmonk_list_id INTEGER;
+    console.warn('[Listmonk] Could not save list ID to DB:', e.message);
+  }
 
   return listId;
 }
@@ -107,13 +112,27 @@ router.get('/status', async (req, res) => {
   }
 
   try {
-    // Test Listmonk connection
-    const listmonkBase = (process.env.LISTMONK_URL || '').replace(/\/$/, '');
-    const healthRes = await listmonkFetch('/health');
-    if (!healthRes.ok) {
-      const body = await healthRes.text();
-      throw new Error(`Listmonk returned ${healthRes.status}: ${body.slice(0, 200)}`);
+    // Test Listmonk connection — try multiple health endpoints
+    let connected = false;
+    let healthErr = '';
+
+    for (const path of ['/health', '/ping', '/lists?per_page=1']) {
+      try {
+        const healthRes = await listmonkFetch(path);
+        if (healthRes.ok || healthRes.status === 401) {
+          // 401 means we reached Listmonk but creds are wrong — still "connected" at network level
+          connected = true;
+          if (healthRes.status === 401) throw new Error('Listmonk returned 401 Unauthorized — check LISTMONK_USERNAME and LISTMONK_PASSWORD');
+          break;
+        }
+        healthErr = `Listmonk returned ${healthRes.status} on ${path}`;
+      } catch (e) {
+        if (e.message.includes('401')) throw e;
+        healthErr = e.message;
+      }
     }
+
+    if (!connected) throw new Error(healthErr || 'Cannot reach Listmonk');
 
     // Get candidate info
     const candResult = await db.query(
@@ -153,12 +172,29 @@ router.get('/subscribers', async (req, res) => {
   const { page = 1, per_page = 25, search = '' } = req.query;
 
   try {
-    const candResult = await db.query(
-      'SELECT full_name, office_sought, state, listmonk_list_id FROM candidates WHERE id = $1',
-      [candidateId]
-    );
+    // First just verify DB connection works
+    if (!db) return res.status(503).json({ error: 'Database not connected' });
+    if (!candidateId) return res.status(401).json({ error: 'Not authenticated' });
+
+    let candResult;
+    try {
+      candResult = await db.query(
+        'SELECT full_name, office_sought, state, listmonk_list_id FROM candidates WHERE id = $1',
+        [candidateId]
+      );
+    } catch (dbErr) {
+      // listmonk_list_id column may not exist yet — try without it
+      candResult = await db.query(
+        'SELECT full_name, office_sought, state FROM candidates WHERE id = $1',
+        [candidateId]
+      );
+    }
+
     const candidate = candResult.rows[0];
+    if (!candidate) return res.status(404).json({ error: 'Candidate not found' });
+
     const listId = await getOrCreateCandidateList({ ...candidate, id: candidateId }, db);
+    if (!listId) return res.json({ subscribers: [], total: 0, page: 1, perPage: 25 });
 
     const params = new URLSearchParams({
       page,
@@ -232,7 +268,8 @@ router.post('/subscribers', async (req, res) => {
     const data = await subRes.json();
     res.json({ success: true, subscriber: data.data });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[Email subscribers] Error:', err.message, err.stack?.split('\n')[1]);
+    res.status(500).json({ error: err.message, location: 'subscribers' });
   }
 });
 
@@ -284,7 +321,8 @@ router.get('/campaigns', async (req, res) => {
 
     res.json({ campaigns, listId });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[Email campaigns] Error:', err.message, err.stack?.split('\n')[1]);
+    res.status(500).json({ error: err.message, location: 'campaigns' });
   }
 });
 
