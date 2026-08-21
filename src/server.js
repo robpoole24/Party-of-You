@@ -311,7 +311,13 @@ app.get('/c/:subdomain', (req, res) => {
   if (!/^[a-z0-9-]{1,50}$/.test(subdomain)) {
     return res.status(400).send('Invalid campaign URL');
   }
-  res.sendFile(path.join(__dirname, '../public/candidate-page.html'));
+  const filePath = path.join(__dirname, '../public/candidate-page.html');
+  res.sendFile(filePath, (err) => {
+    if (err) {
+      console.error('[CandidatePage] Could not serve candidate-page.html:', err.message);
+      res.status(500).send('Candidate page unavailable. Please try again shortly.');
+    }
+  });
 });
 
 // Public volunteer signup — no auth required, called from /c/:subdomain pages
