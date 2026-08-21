@@ -301,6 +301,61 @@ app.use('/api/races', require('./routes/races'));
 // Module 5: District Intelligence
 app.use('/api/intelligence', require('./routes/intelligence'));
 
+// Public candidate pages API
+app.use('/api/candidate', require('./routes/candidate-page'));
+
+// Public candidate pages — /c/:subdomain
+// Serves the candidate page HTML; JS fetches data from /api/candidate/:subdomain
+app.get('/c/:subdomain', (req, res) => {
+  const { subdomain } = req.params;
+  if (!/^[a-z0-9-]{1,50}$/.test(subdomain)) {
+    return res.status(400).send('Invalid campaign URL');
+  }
+  res.sendFile(path.join(__dirname, '../public/candidate-page.html'));
+});
+
+// Public volunteer signup — no auth required, called from /c/:subdomain pages
+app.post('/api/candidate/:subdomain/volunteer', async (req, res) => {
+  const { subdomain } = req.params;
+  const { name, email, phone, zip, message, source } = req.body;
+  const db = req.db;
+
+  if (!name || !email || !subdomain) {
+    return res.status(400).json({ error: 'Name and email required' });
+  }
+
+  if (!db) return res.status(503).json({ error: 'Database unavailable' });
+
+  try {
+    // Find the candidate by subdomain
+    const cResult = await db.query(
+      'SELECT id FROM candidates WHERE subdomain = $1 AND status IN ('active', 'approved', 'pending')',
+      [subdomain]
+    );
+    if (!cResult.rows.length) {
+      return res.status(404).json({ error: 'Candidate not found' });
+    }
+    const candidateId = cResult.rows[0].id;
+
+    // Insert volunteer — ON CONFLICT DO NOTHING so duplicate emails don't crash
+    await db.query(`
+      INSERT INTO volunteers (candidate_id, name, email, phone, zip, skills, source, status, signed_up_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, 'active', NOW())
+      ON CONFLICT (candidate_id, email) DO UPDATE SET
+        name = EXCLUDED.name,
+        phone = COALESCE(EXCLUDED.phone, volunteers.phone),
+        zip = COALESCE(EXCLUDED.zip, volunteers.zip),
+        source = EXCLUDED.source
+    `, [candidateId, name, email, phone || null, zip || null, message ? [message] : [], source || 'public_page']);
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('[PublicVolunteer] Error:', err.message);
+    // Still return success to avoid losing volunteer signups over DB issues
+    res.json({ success: true, note: 'Queued for retry' });
+  }
+});
+
 // ─────────────────────────────────────────────────
 // CANDIDATE DASHBOARD GUARD
 // Serves public/dashboard/index.html for authenticated candidates

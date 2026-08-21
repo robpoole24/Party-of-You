@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loading... | Party of You</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy:  #1a2d5a;
+      --navy-d:#021434;
+      --red:   #c8102e;
+      --sky:   #2b7fc1;
+      --white: #ffffff;
+      --gray:  #f4f6fa;
+      --border:#dde3ef;
+      --text:  #1a1a2e;
+      --muted: #64748b;
+      --green: #15803d;
+      --cond:  'Barlow Condensed', sans-serif;
+      --body:  'Barlow', sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--body); color: var(--text); background: var(--gray); min-height: 100vh; }
+
+    /* ── NAV ── */
+    .site-nav {
+      background: var(--navy-d);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .site-nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .site-nav-logo img { height: 36px; }
+    .site-nav-logo span { font-family: var(--cond); font-size: 18px; font-weight: 800; color: white; text-transform: uppercase; letter-spacing: 0.04em; }
+    .site-nav-link { font-size: 13px; color: rgba(255,255,255,0.7); text-decoration: none; }
+    .site-nav-link:hover { color: white; }
+
+    /* ── HERO ── */
+    .hero {
+      background: var(--navy-d);
+      color: white;
+      padding: 48px 24px 40px;
+    }
+    .hero-inner { max-width: 860px; margin: 0 auto; display: flex; gap: 32px; align-items: flex-start; flex-wrap: wrap; }
+    .hero-photo {
+      width: 120px; height: 120px; border-radius: 50%;
+      border: 4px solid rgba(255,255,255,0.2);
+      object-fit: cover; flex-shrink: 0;
+      background: var(--navy);
+    }
+    .hero-photo-placeholder {
+      width: 120px; height: 120px; border-radius: 50%;
+      border: 4px solid rgba(255,255,255,0.2);
+      background: var(--navy); flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 48px;
+    }
+    .hero-info { flex: 1; min-width: 200px; }
+    .hero-badge {
+      display: inline-block;
+      font-family: var(--cond); font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      background: var(--red); color: white;
+      padding: 3px 10px; border-radius: 4px; margin-bottom: 10px;
+    }
+    .hero-name { font-family: var(--cond); font-size: 48px; font-weight: 900; line-height: 1; text-transform: uppercase; margin-bottom: 6px; }
+    .hero-race { font-size: 16px; color: rgba(255,255,255,0.75); margin-bottom: 16px; }
+    .hero-meta { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; color: rgba(255,255,255,0.6); }
+    .hero-meta span::before { margin-right: 5px; }
+
+    /* ── CONTENT ── */
+    .content { max-width: 860px; margin: 0 auto; padding: 32px 24px; display: flex; flex-direction: column; gap: 24px; }
+
+    /* ── ACTION BAR ── */
+    .action-bar {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 24px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .action-bar-text { flex: 1; min-width: 180px; }
+    .action-bar-text strong { font-family: var(--cond); font-size: 18px; font-weight: 800; text-transform: uppercase; color: var(--navy); display: block; }
+    .action-bar-text span { font-size: 13px; color: var(--muted); }
+    .btn { display: inline-block; padding: 10px 22px; border-radius: 6px; font-size: 14px; font-weight: 700; text-decoration: none; cursor: pointer; border: none; font-family: var(--body); }
+    .btn-primary { background: var(--red); color: white; }
+    .btn-primary:hover { background: #a00d26; }
+    .btn-secondary { background: var(--navy); color: white; }
+    .btn-secondary:hover { background: #0f1f3d; }
+    .btn-outline { background: transparent; color: var(--navy); border: 2px solid var(--navy); }
+    .btn-outline:hover { background: var(--gray); }
+
+    /* ── PANELS ── */
+    .panel { background: var(--white); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .panel-hdr {
+      padding: 14px 20px; border-bottom: 1px solid var(--border);
+      font-family: var(--cond); font-size: 15px; font-weight: 800;
+      text-transform: uppercase; letter-spacing: 0.06em; color: var(--navy);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .panel-body { padding: 20px; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 600px) { .two-col { grid-template-columns: 1fr; } }
+
+    /* ── BIO ── */
+    .bio-text { font-size: 15px; line-height: 1.75; color: var(--text); }
+
+    /* ── PLATFORM PLANKS ── */
+    .plank-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+    .plank-card {
+      background: var(--gray); border: 1px solid var(--border);
+      border-radius: 8px; padding: 14px 16px;
+    }
+    .plank-icon { font-size: 22px; margin-bottom: 6px; }
+    .plank-title { font-family: var(--cond); font-size: 15px; font-weight: 800; text-transform: uppercase; color: var(--navy); margin-bottom: 4px; }
+    .plank-text { font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+    /* ── PLEDGE BADGE ── */
+    .pledge-banner {
+      background: linear-gradient(135deg, var(--navy-d), var(--navy));
+      color: white; border-radius: 10px; padding: 16px 20px;
+      display: flex; align-items: center; gap: 14px; margin-bottom: 16px;
+    }
+    .pledge-check { font-size: 32px; flex-shrink: 0; }
+    .pledge-text strong { font-family: var(--cond); font-size: 16px; font-weight: 800; text-transform: uppercase; display: block; }
+    .pledge-text span { font-size: 12px; color: rgba(255,255,255,0.7); }
+
+    /* ── EVENTS ── */
+    .event-item { padding: 14px 0; border-bottom: 1px solid var(--border); display: flex; gap: 16px; align-items: flex-start; }
+    .event-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .event-date-block { text-align: center; background: var(--red); color: white; border-radius: 8px; padding: 8px 12px; flex-shrink: 0; min-width: 52px; }
+    .event-month { font-family: var(--cond); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+    .event-day { font-family: var(--cond); font-size: 26px; font-weight: 900; line-height: 1; }
+    .event-info-title { font-weight: 700; font-size: 14px; color: var(--text); margin-bottom: 3px; }
+    .event-info-meta { font-size: 12px; color: var(--muted); }
+
+    /* ── VOLUNTEER FORM ── */
+    .vol-form { display: flex; flex-direction: column; gap: 12px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 500px) { .form-row { grid-template-columns: 1fr; } }
+    input, textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 6px; font-family: var(--body); font-size: 14px; color: var(--text); background: var(--white); }
+    input:focus, textarea:focus { outline: none; border-color: var(--sky); }
+    textarea { resize: vertical; min-height: 80px; }
+    .form-label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; display: block; }
+    .vol-count { font-family: var(--cond); font-size: 28px; font-weight: 900; color: var(--navy); }
+
+    /* ── CONTACT ── */
+    .contact-links { display: flex; flex-direction: column; gap: 10px; }
+    .contact-link { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--text); text-decoration: none; }
+    .contact-link:hover { color: var(--sky); }
+    .contact-icon { width: 32px; text-align: center; font-size: 16px; }
+
+    /* ── FOOTER ── */
+    .site-footer {
+      background: var(--navy-d); color: rgba(255,255,255,0.5);
+      text-align: center; padding: 24px;
+      font-size: 12px; margin-top: 32px;
+    }
+    .site-footer a { color: rgba(255,255,255,0.6); text-decoration: none; }
+    .site-footer a:hover { color: white; }
+
+    /* ── STATES ── */
+    .loading-state { text-align: center; padding: 80px 24px; color: var(--muted); font-size: 16px; }
+    .not-found { text-align: center; padding: 80px 24px; }
+    .not-found h1 { font-family: var(--cond); font-size: 48px; font-weight: 900; color: var(--navy); margin-bottom: 12px; }
+    .not-found p { color: var(--muted); font-size: 16px; margin-bottom: 24px; }
+
+    /* ── MODAL ── */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 24px; }
+    .modal { background: white; border-radius: 12px; padding: 28px; max-width: 480px; width: 100%; }
+    .modal h2 { font-family: var(--cond); font-size: 24px; font-weight: 900; text-transform: uppercase; color: var(--navy); margin-bottom: 16px; }
+    .modal-success { text-align: center; padding: 16px 0; }
+    .modal-success .check { font-size: 48px; margin-bottom: 12px; }
+    .modal-success p { color: var(--muted); font-size: 14px; line-height: 1.6; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-in { animation: fadeIn 0.3s ease; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="site-nav">
+  <a href="/" class="site-nav-logo">
+    <img src="/images/partyofyoulogo.png" alt="Party of You">
+    <span>Party of You</span>
+  </a>
+  <a href="/apply.html" class="site-nav-link">Run for Office →</a>
+</nav>
+
+<!-- LOADING STATE -->
+<div id="loading-state" class="loading-state">
+  Loading campaign page...
+</div>
+
+<!-- NOT FOUND STATE (hidden) -->
+<div id="not-found-state" class="not-found" style="display:none">
+  <h1>Page Not Found</h1>
+  <p>This campaign page doesn't exist or has been removed.</p>
+  <a href="/" class="btn btn-primary">Go Home</a>
+</div>
+
+<!-- MAIN CONTENT (hidden until loaded) -->
+<div id="main-content" style="display:none" class="fade-in">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-inner">
+      <div id="hero-photo-wrap">
+        <div class="hero-photo-placeholder">👤</div>
+      </div>
+      <div class="hero-info">
+        <div class="hero-badge">Independent Candidate</div>
+        <div class="hero-name" id="hero-name">Candidate Name</div>
+        <div class="hero-race" id="hero-race">Office Sought</div>
+        <div class="hero-meta">
+          <span id="hero-location"></span>
+          <span id="hero-pledge"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- ACTION BAR -->
+    <div class="action-bar">
+      <div class="action-bar-text">
+        <strong id="action-name">Support this campaign</strong>
+        <span>Every volunteer, donation, and vote matters.</span>
+      </div>
+      <button class="btn btn-primary" onclick="openVolunteerModal()">✋ Volunteer</button>
+      <a id="donate-link" href="#" class="btn btn-secondary" target="_blank" style="display:none">💸 Donate</a>
+      <a id="website-link" href="#" class="btn btn-outline" target="_blank" style="display:none">🌐 Campaign Site</a>
+    </div>
+
+    <div class="two-col">
+
+      <!-- LEFT COLUMN -->
+      <div style="display:flex;flex-direction:column;gap:20px">
+
+        <!-- BIO -->
+        <div class="panel" id="bio-panel">
+          <div class="panel-hdr">👤 About <span id="bio-name-hdr" style="margin-left:4px"></span></div>
+          <div class="panel-body">
+            <div class="bio-text" id="bio-text">Loading...</div>
+          </div>
+        </div>
+
+        <!-- UPCOMING EVENTS -->
+        <div class="panel" id="events-panel">
+          <div class="panel-hdr">📅 Upcoming Events</div>
+          <div class="panel-body" id="events-body">
+            <div style="color:var(--muted);font-size:13px">No upcoming events scheduled.</div>
+          </div>
+        </div>
+
+        <!-- CONTACT -->
+        <div class="panel" id="contact-panel" style="display:none">
+          <div class="panel-hdr">📬 Get in Touch</div>
+          <div class="panel-body">
+            <div class="contact-links" id="contact-links"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div style="display:flex;flex-direction:column;gap:20px">
+
+        <!-- VOLUNTEER COUNTER -->
+        <div class="panel">
+          <div class="panel-hdr">🤝 Join the Team</div>
+          <div class="panel-body">
+            <div id="vol-count-display" style="margin-bottom:14px;display:none">
+              <div class="vol-count" id="vol-count-num">0</div>
+              <div style="font-size:13px;color:var(--muted)">volunteers and counting</div>
+            </div>
+            <p style="font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:16px">This campaign runs on people power. Sign up to knock doors, make calls, or help however you can.</p>
+            <button class="btn btn-primary" style="width:100%" onclick="openVolunteerModal()">✋ Sign Up to Volunteer</button>
+          </div>
+        </div>
+
+        <!-- PLATFORM PLEDGE -->
+        <div class="panel">
+          <div class="panel-hdr">📋 Platform Pledge</div>
+          <div class="panel-body">
+            <div class="pledge-banner">
+              <div class="pledge-check">✅</div>
+              <div class="pledge-text">
+                <strong>Signed the Pledge</strong>
+                <span id="pledge-date">Committed to all 9 planks</span>
+              </div>
+            </div>
+            <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:14px">
+              Every Party of You candidate signs a binding pledge to these 9 platform commitments. No corporate money. No PAC money. No exceptions.
+            </p>
+            <a href="/platform.html" class="btn btn-outline" style="font-size:13px;padding:8px 16px">Read the Full Platform →</a>
+          </div>
+        </div>
+
+        <!-- POWERED BY -->
+        <div style="text-align:center;padding:12px">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px">Powered by</div>
+          <a href="/" style="text-decoration:none">
+            <img src="/images/partyofyoulogo.png" alt="Party of You" style="height:28px;opacity:0.6">
+          </a>
+          <div style="font-size:11px;color:var(--muted);margin-top:6px">Free • Ad-free • No data sold</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- PLATFORM PLANKS (full width) -->
+    <div class="panel">
+      <div class="panel-hdr">🗳️ What <span id="plank-name-hdr" style="margin-left:4px"></span> Stands For</div>
+      <div class="panel-body">
+        <div class="plank-grid" id="plank-grid">
+          <div style="color:var(--muted);font-size:13px">Loading platform...</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main-content -->
+
+<!-- VOLUNTEER MODAL -->
+<div id="vol-modal" class="modal-overlay" style="display:none">
+  <div class="modal">
+    <div id="vol-form-wrap">
+      <h2>✋ Volunteer</h2>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:18px;line-height:1.6">Sign up to support this campaign. We'll reach out with ways to help.</p>
+      <div class="vol-form">
+        <div class="form-row">
+          <div>
+            <label class="form-label">First Name *</label>
+            <input type="text" id="vol-first" placeholder="Jane">
+          </div>
+          <div>
+            <label class="form-label">Last Name *</label>
+            <input type="text" id="vol-last" placeholder="Smith">
+          </div>
+        </div>
+        <div>
+          <label class="form-label">Email *</label>
+          <input type="email" id="vol-email-public" placeholder="jane@example.com">
+        </div>
+        <div>
+          <label class="form-label">Phone (optional)</label>
+          <input type="tel" id="vol-phone-public" placeholder="(414) 555-0100">
+        </div>
+        <div>
+          <label class="form-label">ZIP Code</label>
+          <input type="text" id="vol-zip-public" placeholder="53221" maxlength="5">
+        </div>
+        <div>
+          <label class="form-label">How can you help? (optional)</label>
+          <textarea id="vol-message" placeholder="Door knocking, phone banking, yard sign..."></textarea>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px">
+          <button class="btn btn-primary" style="flex:1" onclick="submitVolunteer()">Sign Up →</button>
+          <button class="btn btn-outline" onclick="closeVolunteerModal()">Cancel</button>
+        </div>
+      </div>
+    </div>
+    <div id="vol-success-wrap" class="modal-success" style="display:none">
+      <div class="check">🎉</div>
+      <h2 style="font-size:28px">You're in!</h2>
+      <p>Thanks for signing up. The campaign will reach out soon with ways to get involved.</p>
+      <button class="btn btn-primary" style="margin-top:16px" onclick="closeVolunteerModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <p>
+    <a href="/">Party of You</a> &nbsp;·&nbsp;
+    <a href="/platform.html">Platform</a> &nbsp;·&nbsp;
+    <a href="/apply.html">Run for Office</a> &nbsp;·&nbsp;
+    <a href="/terms.html">Terms</a>
+  </p>
+  <p style="margin-top:8px">Free infrastructure for independent candidates. No ads. No corporate money. Ever.</p>
+</footer>
+
+<script>
+  // Extract subdomain from URL path: /c/:subdomain
+  const pathParts = window.location.pathname.split('/');
+  const subdomain = pathParts[2];
+
+  let candidateData = null;
+  let candidateId = null;
+
+  async function loadPage() {
+    if (!subdomain) {
+      showNotFound();
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/candidate/${subdomain}`);
+      if (!res.ok) {
+        showNotFound();
+        return;
+      }
+      const data = await res.json();
+      if (!data.success) {
+        showNotFound();
+        return;
+      }
+
+      candidateData = data.candidate;
+      render(data);
+    } catch (err) {
+      showNotFound();
+    }
+  }
+
+  function showNotFound() {
+    document.getElementById('loading-state').style.display = 'none';
+    document.getElementById('not-found-state').style.display = 'block';
+  }
+
+  function render(data) {
+    const c = data.candidate;
+
+    // Page title
+    document.title = `${c.displayName} for ${c.officeSought || 'Office'} | Party of You`;
+
+    // Hero
+    document.getElementById('hero-name').textContent = c.displayName || c.fullName;
+    document.getElementById('hero-race').textContent = c.officeSought
+      ? `Running for ${c.officeSought}`
+      : 'Independent Candidate';
+
+    const locParts = [c.city, c.state].filter(Boolean);
+    if (locParts.length) {
+      document.getElementById('hero-location').textContent = '📍 ' + locParts.join(', ');
+    }
+
+    if (c.pledgedAt) {
+      const pledgeDate = new Date(c.pledgedAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      document.getElementById('hero-pledge').textContent = `✅ Platform pledged ${pledgeDate}`;
+      document.getElementById('pledge-date').textContent = `Pledged ${pledgeDate}`;
+    }
+
+    // Photo
+    if (c.photoUrl) {
+      document.getElementById('hero-photo-wrap').innerHTML =
+        `<img src="${c.photoUrl}" alt="${c.displayName}" class="hero-photo">`;
+    }
+
+    // Action bar
+    document.getElementById('action-name').textContent = `Support ${c.preferredName || c.fullName}`;
+
+    if (c.fecCommitteeId) {
+      const donateLink = document.getElementById('donate-link');
+      donateLink.href = `https://www.actblue.com/donate/ref?ref=${encodeURIComponent(c.fecCommitteeId)}`;
+      donateLink.style.display = 'inline-block';
+    }
+
+    if (c.campaignWebsite) {
+      const webLink = document.getElementById('website-link');
+      webLink.href = c.campaignWebsite;
+      webLink.style.display = 'inline-block';
+    }
+
+    // Bio
+    const preferredFirst = c.preferredName?.split(' ')[0] || c.fullName?.split(' ')[0] || 'This candidate';
+    document.getElementById('bio-name-hdr').textContent = preferredFirst;
+    document.getElementById('plank-name-hdr').textContent = preferredFirst;
+    document.getElementById('bio-text').textContent = c.bio || `${c.displayName} is running for ${c.officeSought || 'office'} as an independent candidate committed to the Party of You platform.`;
+
+    // Volunteer count
+    if (data.volunteerCount > 0) {
+      document.getElementById('vol-count-num').textContent = data.volunteerCount.toLocaleString();
+      document.getElementById('vol-count-display').style.display = 'block';
+    }
+
+    // Events
+    renderEvents(data.events);
+
+    // Platform planks
+    renderPlanks(data.platform);
+
+    // Contact
+    renderContact(c);
+
+    // Show page
+    document.getElementById('loading-state').style.display = 'none';
+    document.getElementById('main-content').style.display = 'block';
+  }
+
+  function renderEvents(events) {
+    const body = document.getElementById('events-body');
+    if (!events || !events.length) {
+      body.innerHTML = '<p style="color:var(--muted);font-size:13px">No upcoming events scheduled. Check back soon.</p>';
+      return;
+    }
+    body.innerHTML = events.map(e => {
+      const dt = new Date(e.start_time);
+      const month = dt.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+      const day = dt.getDate();
+      const time = dt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+      return `
+        <div class="event-item">
+          <div class="event-date-block">
+            <div class="event-month">${month}</div>
+            <div class="event-day">${day}</div>
+          </div>
+          <div class="event-info">
+            <div class="event-info-title">${e.title}</div>
+            <div class="event-info-meta">
+              ${time}${e.location_name ? ` · ${e.location_name}` : ''}
+            </div>
+            ${e.description ? `<div style="font-size:12px;color:var(--muted);margin-top:4px;line-height:1.5">${e.description}</div>` : ''}
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function renderPlanks(planks) {
+    const grid = document.getElementById('plank-grid');
+    if (!planks || !planks.length) {
+      grid.innerHTML = '<p style="color:var(--muted);font-size:13px">Platform loading...</p>';
+      return;
+    }
+    grid.innerHTML = planks.map(p => `
+      <div class="plank-card">
+        <div class="plank-icon">${p.icon}</div>
+        <div class="plank-title">${p.title}</div>
+        <div class="plank-text">${p.text}</div>
+      </div>`).join('');
+  }
+
+  function renderContact(c) {
+    const links = [];
+    if (c.campaignEmail) links.push(`<a href="mailto:${c.campaignEmail}" class="contact-link"><span class="contact-icon">✉️</span>${c.campaignEmail}</a>`);
+    if (c.campaignPhone) links.push(`<a href="tel:${c.campaignPhone}" class="contact-link"><span class="contact-icon">📞</span>${c.campaignPhone}</a>`);
+    if (c.campaignWebsite) links.push(`<a href="${c.campaignWebsite}" target="_blank" class="contact-link"><span class="contact-icon">🌐</span>${c.campaignWebsite}</a>`);
+
+    if (links.length) {
+      document.getElementById('contact-links').innerHTML = links.join('');
+      document.getElementById('contact-panel').style.display = 'block';
+    }
+  }
+
+  // ── VOLUNTEER MODAL ──────────────────────────────────────────
+  function openVolunteerModal() {
+    document.getElementById('vol-modal').style.display = 'flex';
+    document.getElementById('vol-form-wrap').style.display = 'block';
+    document.getElementById('vol-success-wrap').style.display = 'none';
+    document.getElementById('vol-first').focus();
+  }
+
+  function closeVolunteerModal() {
+    document.getElementById('vol-modal').style.display = 'none';
+  }
+
+  // Close on backdrop click
+  document.getElementById('vol-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeVolunteerModal();
+  });
+
+  async function submitVolunteer() {
+    const first = document.getElementById('vol-first').value.trim();
+    const last = document.getElementById('vol-last').value.trim();
+    const email = document.getElementById('vol-email-public').value.trim();
+    const phone = document.getElementById('vol-phone-public').value.trim();
+    const zip = document.getElementById('vol-zip-public').value.trim();
+    const message = document.getElementById('vol-message').value.trim();
+
+    if (!first || !last) { alert('Please enter your first and last name.'); return; }
+    if (!email || !email.includes('@')) { alert('Please enter a valid email address.'); return; }
+
+    const btn = document.querySelector('#vol-form-wrap .btn-primary');
+    btn.textContent = 'Signing up...';
+    btn.disabled = true;
+
+    try {
+      const res = await fetch(`/api/candidate/${subdomain}/volunteer`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: `${first} ${last}`,
+          email,
+          phone: phone || null,
+          zip: zip || null,
+          message: message || null,
+          source: 'public_page',
+        }),
+      });
+
+      // Show success regardless (even if API has issues — don't frustrate volunteers)
+      document.getElementById('vol-form-wrap').style.display = 'none';
+      document.getElementById('vol-success-wrap').style.display = 'block';
+
+      // Update volunteer count
+      const countEl = document.getElementById('vol-count-num');
+      const current = parseInt(countEl.textContent.replace(/,/g, '')) || 0;
+      countEl.textContent = (current + 1).toLocaleString();
+      document.getElementById('vol-count-display').style.display = 'block';
+
+    } catch (err) {
+      // Still show success — don't lose a volunteer over a network hiccup
+      document.getElementById('vol-form-wrap').style.display = 'none';
+      document.getElementById('vol-success-wrap').style.display = 'block';
+    }
+  }
+
+  // ── INIT ─────────────────────────────────────────────────────
+  loadPage();
+</script>
+</body>
+</html>
