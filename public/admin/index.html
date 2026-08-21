@@ -487,9 +487,30 @@ body { font-family: var(--body); background: var(--navy-d); color: var(--text); 
           </div>
         </div>
         <div class="panel">
-          <div class="panel-hdr"><h2>Cost Dashboard</h2></div>
-          <div class="panel-body" id="costs-panel">
-            <p style="font-size:13px;color:var(--muted)">Loading cost data...</p>
+          <div class="panel-hdr"><h2>🗳️ Election Calendar Scraper</h2></div>
+          <div class="panel-body">
+            <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Scrape live election dates and filing deadlines from USVoteFoundation.org. Runs ~2 minutes for all 50 states. Run weekly to keep data current.</p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+              <button class="btn-sm primary" onclick="runScraper('all')">Scrape All 50 States</button>
+              <select id="scraper-state-select" style="height:30px;padding:0 8px;background:rgba(255,255,255,0.07);border:1px solid var(--border);border-radius:5px;color:var(--white);font-size:12px">
+                <option value="">— Single State —</option>
+                <option>AL</option><option>AK</option><option>AZ</option><option>AR</option>
+                <option>CA</option><option>CO</option><option>CT</option><option>DE</option>
+                <option>FL</option><option>GA</option><option>HI</option><option>ID</option>
+                <option>IL</option><option>IN</option><option>IA</option><option>KS</option>
+                <option>KY</option><option>LA</option><option>ME</option><option>MD</option>
+                <option>MA</option><option>MI</option><option>MN</option><option>MS</option>
+                <option>MO</option><option>MT</option><option>NE</option><option>NV</option>
+                <option>NH</option><option>NJ</option><option>NM</option><option>NY</option>
+                <option>NC</option><option>ND</option><option>OH</option><option>OK</option>
+                <option>OR</option><option>PA</option><option>RI</option><option>SC</option>
+                <option>SD</option><option>TN</option><option>TX</option><option>UT</option>
+                <option>VT</option><option>VA</option><option>WA</option><option>WV</option>
+                <option>WI</option><option>WY</option>
+              </select>
+              <button class="btn-sm secondary" onclick="runScraper(document.getElementById('scraper-state-select').value)">Scrape Selected</button>
+            </div>
+            <div id="scraper-status" style="font-size:12px;color:var(--muted)"></div>
           </div>
         </div>
       </div>
@@ -940,6 +961,25 @@ async function loadOperations() {
       </div>
     `).join('')}
   `;
+}
+
+async function runScraper(state) {
+  if (!state) { alert('Please select a state or click "Scrape All 50 States"'); return; }
+  const statusEl = document.getElementById('scraper-status');
+  statusEl.textContent = `Starting scrape for: ${state}...`;
+  statusEl.style.color = 'var(--amber)';
+
+  try {
+    const data = await api('/admin/scrape/election-calendar', {
+      method: 'POST',
+      body: JSON.stringify({ state }),
+    });
+    statusEl.textContent = `✓ ${data.message}`;
+    statusEl.style.color = 'var(--green)';
+  } catch (e) {
+    statusEl.textContent = `✕ Error: ${e.message}`;
+    statusEl.style.color = '#ff8fa3';
+  }
 }
 
 async function flushCache() {
