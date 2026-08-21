@@ -88,13 +88,13 @@ app.use('/admin', (req, res, next) => {
 // Profile edit — requires candidate auth
 app.get('/profile-edit.html', (req, res) => {
   const token = req.cookies?.poy_token;
-  if (!token) return res.redirect('/apply.html');
+  if (!token) return res.redirect('/login.html?redirect=/profile-edit.html');
   try {
     const payload = verifyToken(token);
-    if (!payload || payload.role !== 'candidate') return res.redirect('/apply.html');
+    if (!payload || payload.role !== 'candidate') return res.redirect('/login.html');
     res.sendFile(path.join(__dirname, '../public/profile-edit.html'));
   } catch {
-    res.redirect('/apply.html');
+    res.redirect('/login.html?redirect=/profile-edit.html');
   }
 });
 

@@ -66,7 +66,7 @@ const apis = {
 
   votehub: {
     name: 'VoteHub Polling API',
-    baseUrl: 'https://votehub.com/polls/api',
+    baseUrl: 'https://api.votehub.com',
     key: process.env.VOTEHUB_API_KEY || null, // Currently open beta — no key required
     status: 'free',
     signupUrl: 'https://votehub.com/polls/api/',

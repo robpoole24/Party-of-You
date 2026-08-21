@@ -1,29 +1,25 @@
 /**
  * GEOGRAPHIC INTELLIGENCE SERVICE
- * 
- * The spine of the entire platform.
- * Takes an address, resolves it to every relevant political geography,
- * and returns structured district data that every other module reads from.
- * 
+ *
+ * Takes an address, resolves it to political geography.
+ *
  * Waterfall strategy:
- *   1. Google Civic API (primary — most complete)
- *   2. Census Geocoder (free fallback if Google fails or quota exceeded)
- *   3. Cached results in Redis (24-hour TTL to preserve quota)
+ *   1. Census Geocoder (free, reliable, no key required)
+ *   2. Address string parsing (state extraction fallback)
+ *   3. Redis cache (24-hour TTL)
+ *
+ * NOTE: Google Civic Information API (representatives endpoint) was
+ * deprecated/restricted and returns 404. Removed from waterfall.
+ * VoteHub polling API returns 403 — key needs renewal or replacement.
  */
 
 const axios = require('axios');
-const { apis } = require('../config/apis');
 
 // Cache TTL in seconds
 const CACHE_TTL = 60 * 60 * 24; // 24 hours
 
 /**
  * Master function: address → full political geography
- * Returns everything downstream modules need.
- * 
- * @param {string} address - Full street address
- * @param {object} cache   - Redis client (optional, graceful fallback)
- * @returns {object} GeographyResult
  */
 async function resolveAddress(address, cache = null) {
   const cacheKey = `geo:${address.toLowerCase().replace(/\s+/g, '-')}`;
@@ -34,26 +30,26 @@ async function resolveAddress(address, cache = null) {
       const cached = await cache.get(cacheKey);
       if (cached) return JSON.parse(cached);
     } catch (e) {
-      console.warn('Cache read failed, continuing without cache:', e.message);
+      console.warn('Cache read failed:', e.message);
     }
   }
 
-  // 2. Try Google Civic API
   let result = null;
+
+  // 2. Try Census Geocoder (primary)
   try {
-    result = await resolveViaGoogle(address);
+    result = await resolveViaCensus(address);
   } catch (e) {
-    console.warn('Google Civic failed, falling back to Census Geocoder:', e.message);
+    console.warn('Census geocoder failed:', e.message);
   }
 
-  // 3. Fallback to Census Geocoder
+  // 3. Fallback: parse state + city from address string
   if (!result) {
-    try {
-      result = await resolveViaCensus(address);
-    } catch (e) {
-      console.error('All geocoding sources failed:', e.message);
+    result = parseAddressFallback(address);
+    if (!result) {
       throw new Error(`Could not resolve address: ${address}`);
     }
+    console.log(`[Geo] Using address-string fallback for: ${address} → state: ${result.state}`);
   }
 
   // 4. Cache the result
@@ -66,6 +62,40 @@ async function resolveAddress(address, cache = null) {
   }
 
   return result;
+}
+
+/**
+ * Parse state and basic geography from raw address string
+ * Used when geocoding APIs are unavailable
+ */
+function parseAddressFallback(address) {
+  if (!address) return null;
+
+  // Extract state abbreviation (e.g. "WI" from "Milwaukee, WI 53221")
+  const stateMatch = address.match(/\b([A-Z]{2})\b/);
+  if (!stateMatch) return null;
+
+  const state = stateMatch[1];
+
+  // Extract ZIP code
+  const zipMatch = address.match(/\b(\d{5})\b/);
+  const zip = zipMatch?.[1];
+
+  // Extract city (word(s) before state abbreviation)
+  const cityMatch = address.match(/([A-Za-z\s]+),\s*[A-Z]{2}/);
+  const city = cityMatch?.[1]?.trim().split(',').pop()?.trim();
+
+  return {
+    source: 'address-parse',
+    normalizedAddress: address,
+    state,
+    zip,
+    city: city || null,
+    districts: {
+      congressional: null, // Can't determine without geocoding
+      stateLeg: {},
+    },
+  };
 }
 
 /**

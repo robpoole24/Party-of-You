@@ -34,6 +34,11 @@ const LEAN_CACHE_TTL = 60 * 60 * 24 * 7; // 7 days for partisan lean (changes sl
  * @param {object} cache     - Redis client
  * @returns {object} PollingBundle
  */
+/**
+ * Get all relevant polling data for a candidate's district.
+ * VoteHub API: https://api.votehub.com (fixed from wrong URL)
+ * No API key required — open beta, CC4.0 licensed.
+ */
 async function getPollingBundleForDistrict(geography, cache = null) {
   const { state, districts } = geography;
 
@@ -41,12 +46,10 @@ async function getPollingBundleForDistrict(geography, cache = null) {
     approvalPolls,
     issuePolls,
     genericBallot,
-    partisanLean,
   ] = await Promise.allSettled([
     getApprovalPolls(state, cache),
     getIssuePolls(state, cache),
     getGenericBallot(cache),
-    getPartisanLean(geography, cache),
   ]);
 
   return {
@@ -57,7 +60,6 @@ async function getPollingBundleForDistrict(geography, cache = null) {
       approvalPolls: approvalPolls.status === 'fulfilled' ? approvalPolls.value : [],
       issuePolls: issuePolls.status === 'fulfilled' ? issuePolls.value : [],
       genericBallot: genericBallot.status === 'fulfilled' ? genericBallot.value : null,
-      partisanLean: partisanLean.status === 'fulfilled' ? partisanLean.value : null,
     },
     sources: {
       votehub: 'https://votehub.com',
