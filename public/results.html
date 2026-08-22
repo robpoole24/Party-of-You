@@ -383,7 +383,7 @@ body { font-family: var(--body); color: var(--text); background: var(--gray); -w
 <script>
 // ── READ ADDRESS FROM URL ────────────────────────────────────────
 const params = new URLSearchParams(window.location.search);
-const address = params.get('address');
+let address = params.get('address');
 
 if (!address) {
   window.location.href = '/';
@@ -391,6 +391,71 @@ if (!address) {
 
 // Display the address immediately
 document.getElementById('addr-display').textContent = decodeURIComponent(address || '');
+
+// ── ADDRESS COMPLETENESS CHECK ───────────────────────────────────
+// Census geocoder needs city+state OR a zip code to resolve an address.
+// Detect incomplete addresses (street only) and prompt before hitting the API.
+function isAddressComplete(addr) {
+  if (!addr) return false;
+  // Has a 5-digit zip
+  if (/\b\d{5}\b/.test(addr)) return true;
+  // Has a 2-letter state abbreviation (uppercase)
+  if (/\b[A-Z]{2}\b/.test(addr)) return true;
+  // Has a state name written out (covers most common cases)
+  const stateNames = /\b(Alabama|Alaska|Arizona|Arkansas|California|Colorado|Connecticut|Delaware|Florida|Georgia|Hawaii|Idaho|Illinois|Indiana|Iowa|Kansas|Kentucky|Louisiana|Maine|Maryland|Massachusetts|Michigan|Minnesota|Mississippi|Missouri|Montana|Nebraska|Nevada|Hampshire|Jersey|Mexico|York|Carolina|Dakota|Ohio|Oklahoma|Oregon|Pennsylvania|Rhode|Tennessee|Texas|Utah|Vermont|Virginia|Washington|Wisconsin|Wyoming)\b/i;
+  if (stateNames.test(addr)) return true;
+  return false;
+}
+
+function showAddressPrompt() {
+  document.getElementById('races-title').textContent = 'Complete your address';
+  document.getElementById('races-container').innerHTML = `
+    <div class="error-state" style="text-align:left;max-width:480px">
+      <h3>Add your city &amp; state</h3>
+      <p style="margin-bottom:16px">We need your city and state (or ZIP code) to find races in your area. Just a street address isn't enough to identify your district.</p>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="display:grid;grid-template-columns:1fr 80px;gap:8px">
+          <input id="addr-city" type="text" placeholder="City (e.g. Milwaukee)"
+            style="padding:10px 12px;border:1px solid #dde3ef;border-radius:6px;font-size:14px;font-family:inherit">
+          <input id="addr-state" type="text" placeholder="WI" maxlength="2"
+            style="padding:10px 12px;border:1px solid #dde3ef;border-radius:6px;font-size:14px;font-family:inherit;text-transform:uppercase">
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span style="font-size:13px;color:#64748b">or</span>
+          <input id="addr-zip" type="text" placeholder="ZIP code (e.g. 53221)" maxlength="5"
+            style="padding:10px 12px;border:1px solid #dde3ef;border-radius:6px;font-size:14px;font-family:inherit;width:200px">
+        </div>
+        <button onclick="retryWithFullAddress()"
+          style="background:#c8102e;color:white;border:none;border-radius:6px;padding:12px 20px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;align-self:flex-start">
+          Find My Races →
+        </button>
+      </div>
+    </div>`;
+
+  // Auto-focus city field
+  setTimeout(() => document.getElementById('addr-city')?.focus(), 100);
+}
+
+function retryWithFullAddress() {
+  const city = document.getElementById('addr-city')?.value.trim();
+  const state = document.getElementById('addr-state')?.value.trim().toUpperCase();
+  const zip = document.getElementById('addr-zip')?.value.trim();
+
+  let fullAddress = address;
+  if (zip && /^\d{5}$/.test(zip)) {
+    fullAddress = `${address}, ${zip}`;
+  } else if (city && state && /^[A-Z]{2}$/.test(state)) {
+    fullAddress = `${address}, ${city}, ${state}`;
+  } else {
+    alert('Please enter a city and state (e.g. Milwaukee, WI) or a 5-digit ZIP code.');
+    return;
+  }
+
+  // Update URL and reload with complete address
+  const newParams = new URLSearchParams(window.location.search);
+  newParams.set('address', fullAddress);
+  window.location.href = `/results.html?${newParams.toString()}`;
+}
 
 // ── FETCH RACE DATA ──────────────────────────────────────────────
 async function loadResults() {
@@ -672,8 +737,12 @@ function showRaceError(msg) {
 
 // ── INIT ─────────────────────────────────────────────────────────
 if (address) {
-  loadResults();
-  loadIntelligence();
+  if (!isAddressComplete(address)) {
+    showAddressPrompt();
+  } else {
+    loadResults();
+    loadIntelligence();
+  }
 }
 </script>
 
