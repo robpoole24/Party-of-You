@@ -62,13 +62,22 @@ function parseStateCalendar(markdown, stateAbbr, stateName) {
   const elections = [];
   const lines = markdown.split('\n');
 
+  // Helper: get next non-blank line after index i
+  function nextValue(i) {
+    for (let j = i + 1; j < Math.min(i + 4, lines.length); j++) {
+      const v = lines[j].trim();
+      if (v) return v;
+    }
+    return '';
+  }
+
   let currentElection = null;
   let currentSection = null;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
 
-    // Detect election header: "## Tue Aug 11, 2026 - Wisconsin Congressional, State and Gubernatorial Primary Election"
+    // Detect election header: "## Tue Aug 11, 2026 - Wisconsin Congressional..."
     const electionMatch = line.match(/^##\s+((?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s+\w+\s+\d+,\s+\d+)\s+-\s+(.+)$/i);
     if (electionMatch) {
       if (currentElection) elections.push(currentElection);
@@ -105,69 +114,68 @@ function parseStateCalendar(markdown, stateAbbr, stateName) {
     if (line.includes('Absentee Ballot Request Deadline')) { currentSection = 'absenteeRequest'; continue; }
     if (line.includes('Absentee Ballot Return Deadline')) { currentSection = 'absenteeReturn'; continue; }
     if (line.includes('Early Voting Available')) { currentSection = 'earlyVoting'; continue; }
+    // Stop processing domestic section when we hit overseas/military
+    if (line.includes('Overseas') || line.includes('Military')) { currentSection = null; continue; }
 
     if (!currentSection || !line) continue;
 
-    // Parse deadline items
+    // Parse deadline items — use nextValue() to skip blank lines between label and date
     if (currentSection === 'registration') {
-      const postmarkMatch = line.match(/\*\*Postmarked by\*\*\s*(.*)/);
-      if (postmarkMatch) {
-        const nextLine = lines[i+1]?.trim();
-        currentElection.registrationDeadlines.postmark = parseDate(nextLine || postmarkMatch[1]);
+      if (/\*\*Postmarked by\*\*/i.test(line)) {
+        const val = line.replace(/.*\*\*Postmarked by\*\*\s*/i, '') || nextValue(i);
+        currentElection.registrationDeadlines.postmark = parseDate(val) || parseDate(nextValue(i));
       }
-      const onlineMatch = line.match(/\*\*Online by\*\*\s*(.*)/);
-      if (onlineMatch) {
-        const nextLine = lines[i+1]?.trim();
-        const dateStr = (nextLine || onlineMatch[1]).replace(/\s*\d+:\d+\w+/g, '');
-        currentElection.registrationDeadlines.online = parseDate(dateStr);
+      if (/\*\*Online by\*\*/i.test(line)) {
+        const inline = line.replace(/.*\*\*Online by\*\*\s*/i, '').replace(/\s*\d+:\d+\w*/g, '').trim();
+        const next   = nextValue(i).replace(/\s*\d+:\d+\w*/g, '').trim();
+        currentElection.registrationDeadlines.online = parseDate(inline) || parseDate(next);
       }
-      const inPersonMatch = line.match(/\*\*In-Person\s+(?:Request\s+)?by\*\*\s*(.*)/i);
-      if (inPersonMatch) {
-        const nextLine = lines[i+1]?.trim();
-        const dateStr = (nextLine || inPersonMatch[1]).replace(/\s*\d+:\d+\w+/g, '');
-        currentElection.registrationDeadlines.inPerson = parseDate(dateStr);
+      if (/\*\*In-Person(?:\s+Request)?\s+by\*\*/i.test(line)) {
+        const inline = line.replace(/.*\*\*In-Person[^*]*\*\*\s*/i, '').replace(/\s*\d+:\d+\w*/g, '').trim();
+        const next   = nextValue(i).replace(/\s*\d+:\d+\w*/g, '').trim();
+        currentElection.registrationDeadlines.inPerson = parseDate(inline) || parseDate(next);
       }
-      const electionDayMatch = line.match(/\*\*Election Day Registration/);
-      if (electionDayMatch) {
+      if (/\*\*Election Day Registration/i.test(line)) {
         currentElection.registrationDeadlines.electionDay = true;
       }
     }
 
     if (currentSection === 'absenteeRequest') {
-      const emailMatch = line.match(/\*\*Email.*?by\*\*\s*(.*)/i);
-      if (emailMatch) {
-        const nextLine = lines[i+1]?.trim();
-        currentElection.absenteeRequestDeadline.online = parseDate(nextLine || emailMatch[1]);
+      // Matches: "Email by", "Online by", "Fax by", "Email, Online or Fax by"
+      if (/\*\*(?:Email|Online|Fax)[^*]*by\*\*/i.test(line)) {
+        const inline = line.replace(/.*\*\*[^*]+by\*\*\s*/i, '').trim();
+        const next   = nextValue(i).trim();
+        currentElection.absenteeRequestDeadline.online = parseDate(inline) || parseDate(next);
       }
-      const postMatch = line.match(/\*\*Post\s+Received\s+by\*\*\s*(.*)/i);
-      if (postMatch) {
-        const nextLine = lines[i+1]?.trim();
-        currentElection.absenteeRequestDeadline.postReceived = parseDate(nextLine || postMatch[1]);
+      if (/\*\*Post(?:\s+Received)?\s+by\*\*/i.test(line)) {
+        const inline = line.replace(/.*\*\*Post[^*]*by\*\*\s*/i, '').replace(/\s*\d+:\d+\w*/g, '').trim();
+        const next   = nextValue(i).replace(/\s*\d+:\d+\w*/g, '').trim();
+        currentElection.absenteeRequestDeadline.postReceived = parseDate(inline) || parseDate(next);
       }
     }
 
     if (currentSection === 'absenteeReturn') {
-      const receivedMatch = line.match(/\*\*Received by\*\*\s*(.*)/i);
-      if (receivedMatch) {
-        const nextLine = lines[i+1]?.trim();
-        const dateStr = (nextLine || receivedMatch[1]).replace(/\s*\d+:\d+\w+/g, '');
-        currentElection.absenteeReturnDeadline = parseDate(dateStr);
+      if (/\*\*Received by\*\*/i.test(line)) {
+        const inline = line.replace(/.*\*\*Received by\*\*\s*/i, '').replace(/\s*\d+:\d+\w*/g, '').trim();
+        const next   = nextValue(i).replace(/\s*\d+:\d+\w*/g, '').trim();
+        currentElection.absenteeReturnDeadline = parseDate(inline) || parseDate(next);
       }
     }
 
     if (currentSection === 'earlyVoting') {
-      const fromMatch = line.match(/From\s+([\w\s,]+)\s+to\s+([\w\s,]+)/i);
+      // "From Tue Jul 28, 2026 to Sun Aug 9, 2026"
+      const fromMatch = line.match(/From\s+([\w\s,]+?)\s+to\s+([\w\s,]+?)(?:\s*$)/i);
       if (fromMatch) {
         currentElection.earlyVoting = {
-          start: parseDate(fromMatch[1]),
-          end: parseDate(fromMatch[2]),
+          start: parseDate(fromMatch[1].trim()),
+          end:   parseDate(fromMatch[2].trim()),
         };
       }
     }
   }
 
   if (currentElection) elections.push(currentElection);
-  return elections.filter(e => e.electionDate); // Only return elections with parseable dates
+  return elections.filter(e => e.electionDate);
 }
 
 // Fetch and parse one state
