@@ -227,6 +227,16 @@ async function scrapeState(stateAbbr, db = null) {
     .replace(/\s{3,}/g, '\n\n')
     .trim();
 
+  // DEBUG: find where "Aug" or day-of-week text appears in raw HTML
+  const datePattern = /(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s+\w+\s+\d+,\s+\d{4}/g;
+  const dateMatches = [];
+  let dm;
+  while ((dm = datePattern.exec(html)) !== null && dateMatches.length < 5) {
+    const ctx = html.substring(Math.max(0, dm.index - 80), dm.index + 80).replace(/\n/g,' ');
+    dateMatches.push(`[idx:${dm.index}] ...${ctx}...`);
+  }
+  console.log(`[Scraper] ${stateAbbr}: date contexts in raw HTML:`, dateMatches.join('\n'));
+
   const stateName = slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
   // DEBUG: show markdown around election headers
