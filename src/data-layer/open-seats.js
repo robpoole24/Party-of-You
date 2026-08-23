@@ -227,10 +227,11 @@ async function getSenateRaces(state) {
 async function getStateRaces(state, districts) {
   const races = [];
 
-  // State Senate district
-  if (districts.stateSenate) {
+  // geographic.js returns districts.stateSenate and districts.stateHouse directly
+  const stateSenateDistrict = districts?.stateSenate;
+  if (stateSenateDistrict) {
     try {
-      const race = await getStateLegRace(state, 'upper', districts.stateSenate);
+      const race = await getStateLegRace(state, 'upper', stateSenateDistrict);
       if (race) races.push(race);
     } catch (e) {
       console.warn(`Failed to fetch State Senate race:`, e.message);
@@ -238,9 +239,10 @@ async function getStateRaces(state, districts) {
   }
 
   // State House/Assembly district
-  if (districts.stateHouse) {
+  const stateHouseDistrict = districts?.stateHouse;
+  if (stateHouseDistrict) {
     try {
-      const race = await getStateLegRace(state, 'lower', districts.stateHouse);
+      const race = await getStateLegRace(state, 'lower', stateHouseDistrict);
       if (race) races.push(race);
     } catch (e) {
       console.warn(`Failed to fetch State House race:`, e.message);
@@ -257,21 +259,58 @@ async function getStateRaces(state, districts) {
  * Get a specific state legislative race from OpenStates
  */
 async function getStateLegRace(state, chamber, districtNumber) {
+  // Census returns district numbers padded (e.g. "0004") — OpenStates wants plain integers
+  const districtNum = parseInt(districtNumber, 10);
+
+  // OpenStates v3 API: correct param is `ocd_id`, not `current_role__division_id`
+  // chamber values: 'upper' (senate) or 'lower' (house/assembly)
+  const ocdId = `ocd-division/country:us/state:${state.toLowerCase()}/sld${chamber === 'upper' ? 'u' : 'l'}:${districtNum}`;
+
   const params = {
     apikey: apis.openstates.key,
     jurisdiction: `ocd-jurisdiction/country:us/state:${state.toLowerCase()}/government`,
     current_role__org_classification: chamber,
-    current_role__division_id: `ocd-division/country:us/state:${state.toLowerCase()}/sld${chamber === 'upper' ? 'u' : 'l'}:${districtNumber}`,
+    ocd_id: ocdId,
+    per_page: 5,
   };
 
-  const response = await axios.get(
-    `${apis.openstates.baseUrl}/people`,
-    { params, timeout: 10000 }
-  );
+  let legislators = [];
+  try {
+    const response = await axios.get(
+      `${apis.openstates.baseUrl}/people`,
+      { params, timeout: 10000 }
+    );
+    legislators = response.data?.results || [];
+  } catch (e) {
+    // If ocd_id param fails (API version mismatch), retry without it
+    // and filter client-side — better to show race without incumbent than 422
+    if (e.response?.status === 422 || e.response?.status === 400) {
+      console.warn(`[OpenStates] ocd_id param failed for ${state} ${chamber} ${districtNum}, retrying without it`);
+      try {
+        const fallbackParams = {
+          apikey: apis.openstates.key,
+          jurisdiction: `ocd-jurisdiction/country:us/state:${state.toLowerCase()}/government`,
+          current_role__org_classification: chamber,
+          per_page: 50,
+        };
+        const fallbackResponse = await axios.get(
+          `${apis.openstates.baseUrl}/people`,
+          { params: fallbackParams, timeout: 10000 }
+        );
+        const all = fallbackResponse.data?.results || [];
+        // Filter to matching district
+        legislators = all.filter(p =>
+          parseInt(p.current_role?.district, 10) === districtNum
+        );
+      } catch (e2) {
+        console.warn(`[OpenStates] Fallback also failed for ${state} ${chamber} ${districtNum}:`, e2.message);
+      }
+    } else {
+      throw e;
+    }
+  }
 
-  const legislators = response.data?.results || [];
   const incumbent = legislators[0] || null;
-
   const chamberName = getChamberName(state, chamber);
 
   return buildRaceObject({

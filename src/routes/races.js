@@ -81,8 +81,9 @@ function buildFederalRaces(state, districts, calendar) {
 function buildStateRaces(state, districts, calendar) {
   const races = [];
 
-  // State Senate
-  const stateSenateDistrict = districts?.stateLeg?.stateSenate;
+  // geographic.js returns districts.stateSenate and districts.stateHouse directly
+  // (no stateLeg wrapper — that was an old schema)
+  const stateSenateDistrict = districts?.stateSenate;
   if (stateSenateDistrict) {
     races.push({
       id: `state-senate-${state}-${stateSenateDistrict}`,
@@ -102,7 +103,7 @@ function buildStateRaces(state, districts, calendar) {
   }
 
   // State House
-  const stateHouseDistrict = districts?.stateLeg?.stateHouse;
+  const stateHouseDistrict = districts?.stateHouse;
   if (stateHouseDistrict) {
     races.push({
       id: `state-house-${state}-${stateHouseDistrict}`,
@@ -124,24 +125,96 @@ function buildStateRaces(state, districts, calendar) {
   return races;
 }
 
-function buildLocalRaces(state, calendar) {
-  // Local races placeholder — will be replaced with BallotReady data
-  return [{
-    id: `local-${state}-general`,
-    office: 'Local Office (County Board, City Council, School Board)',
-    level: 'Local',
-    type: 'local',
-    state,
-    district: null,
-    electionDate: GENERAL_ELECTION_DATE,
-    primaryDate: calendar?.primary || null,
-    filingDeadline: null,
-    isOpenSeat: false,
-    incumbent: null,
-    filingStatus: 'unknown',
-    notes: 'Contact your county or city clerk for local race filing requirements and deadlines. Local race data will be enhanced when BallotReady integration is complete.',
-    isPlaceholder: true,
-  }];
+function buildLocalRaces(state, calendar, city, county) {
+  // County clerk lookup URLs by state — free, no API required
+  const countyClerkUrls = {
+    WI: 'https://myvote.wi.gov/en-us/FindMyClerk',
+    MN: 'https://www.sos.state.mn.us/elections-voting/find-county-auditor/',
+    IL: 'https://www.elections.il.gov/ElectionOperations/ElectionAuthorities.aspx',
+    MI: 'https://mvic.sos.state.mi.us/Clerk',
+    OH: 'https://www.ohiosos.gov/elections/voters/county-boards-of-elections/',
+    IN: 'https://indianavoters.in.gov/CountyContact',
+    IA: 'https://sos.iowa.gov/elections/auditors/auditorslist.html',
+    MO: 'https://www.sos.mo.gov/elections/goVoteMissouri/localElections.asp',
+    PA: 'https://www.vote.pa.gov/Resources/Pages/Contact-Your-Election-Officials.aspx',
+    NY: 'https://www.elections.ny.gov/CountyBoards.html',
+    TX: 'https://www.sos.texas.gov/elections/voter/county.shtml',
+    CA: 'https://www.sos.ca.gov/elections/voting-resources/county-elections-offices',
+    FL: 'https://dos.myflorida.com/elections/for-voters/voter-registration/county-supervisors-of-elections/',
+    GA: 'https://sos.ga.gov/page/county-elections-officials',
+    AZ: 'https://azsos.gov/county-election-info',
+    CO: 'https://www.sos.state.co.us/pubs/elections/Resources/countyClerks.html',
+    WA: 'https://www.sos.wa.gov/elections/countyauditors.aspx',
+    OR: 'https://sos.oregon.gov/elections/Pages/countyofficials.aspx',
+    NC: 'https://www.ncsbe.gov/about-ncsbe/county-boards-elections',
+    VA: 'https://www.elections.virginia.gov/casting-a-ballot/registrars/',
+  };
+
+  const clerkUrl = countyClerkUrls[state] || 'https://www.usa.gov/local-governments';
+  const ballotpediaUrl = `https://ballotpedia.org/${state}_local_elections,_2026`;
+
+  return [
+    {
+      id: `local-${state}-county-board`,
+      office: 'County Board / Board of Supervisors',
+      level: 'Local',
+      type: 'county',
+      state,
+      district: county || null,
+      electionDate: GENERAL_ELECTION_DATE,
+      primaryDate: calendar?.primary || null,
+      filingDeadline: null,
+      isOpenSeat: false,
+      incumbent: null,
+      filingStatus: 'unknown',
+      isPlaceholder: true,
+      dataNote: 'County board seat data requires BallotReady integration. Filing requirements and incumbent data available from your county clerk.',
+      resources: [
+        { label: '📋 Find your county clerk', url: clerkUrl },
+        { label: '🗳️ Ballotpedia local elections', url: ballotpediaUrl },
+      ],
+    },
+    {
+      id: `local-${state}-city-council`,
+      office: 'City Council / Alderperson',
+      level: 'Local',
+      type: 'city',
+      state,
+      district: city || null,
+      electionDate: GENERAL_ELECTION_DATE,
+      primaryDate: calendar?.primary || null,
+      filingDeadline: null,
+      isOpenSeat: false,
+      incumbent: null,
+      filingStatus: 'unknown',
+      isPlaceholder: true,
+      dataNote: 'City council seat data requires BallotReady integration. Check your city clerk for ward maps and filing deadlines.',
+      resources: [
+        { label: '📋 Find your county clerk', url: clerkUrl },
+        { label: '🗳️ Ballotpedia local elections', url: ballotpediaUrl },
+      ],
+    },
+    {
+      id: `local-${state}-school-board`,
+      office: 'School Board',
+      level: 'Local',
+      type: 'school_board',
+      state,
+      district: county || null,
+      electionDate: GENERAL_ELECTION_DATE,
+      primaryDate: calendar?.primary || null,
+      filingDeadline: null,
+      isOpenSeat: false,
+      incumbent: null,
+      filingStatus: 'unknown',
+      isPlaceholder: true,
+      dataNote: 'School board races are among the most winnable entry-level offices. Contact your county clerk or school district for filing requirements.',
+      resources: [
+        { label: '📋 Find your county clerk', url: clerkUrl },
+        { label: '🏫 Find your school district', url: `https://nces.ed.gov/ccd/schoolsearch/` },
+      ],
+    },
+  ];
 }
 
 // ── DB CALENDAR LOOKUP ────────────────────────────────────────────
@@ -224,7 +297,7 @@ router.get('/', async (req, res) => {
 
     const federal = buildFederalRaces(state, districts, calendar);
     const stateRaces = buildStateRaces(state, districts, calendar);
-    const local = buildLocalRaces(state, calendar);
+    const local = buildLocalRaces(state, calendar, geography.city, geography.county);
 
     // Apply level filter if provided
     let filtered = { federal, state: stateRaces, local };
