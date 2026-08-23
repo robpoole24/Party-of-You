@@ -513,6 +513,47 @@ body { font-family: var(--body); background: var(--navy-d); color: var(--text); 
             <div id="scraper-status" style="font-size:12px;color:var(--muted)"></div>
           </div>
         </div>
+
+        <div class="panel">
+          <div class="panel-hdr"><h2>🧑‍🤝‍🧑 Candidate Scraper</h2></div>
+          <div class="panel-body">
+            <p style="font-size:13px;color:var(--muted);margin-bottom:4px">Scrape declared candidates from PBS Wisconsin, Ballotpedia, and Wikipedia into the <code>election_candidates</code> table. Results power the race cards in the candidate dashboard.</p>
+            <p style="font-size:11px;color:var(--muted);margin-bottom:14px">Start with <strong>PBS Wisconsin</strong> (fastest, WI only). Then run <strong>Ballotpedia → WI</strong> to cross-reference. Run <strong>Ballotpedia → All States</strong> for all 50 states (~5 min).</p>
+
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
+              <select id="cand-source-select" style="height:30px;padding:0 8px;background:#ffffff;border:1px solid var(--border);border-radius:5px;color:#111;font-size:12px;width:160px">
+                <option value="pbs-wi">PBS Wisconsin</option>
+                <option value="ballotpedia">Ballotpedia</option>
+                <option value="wikipedia">Wikipedia</option>
+                <option value="all">All Sources</option>
+              </select>
+              <select id="cand-state-select" style="height:30px;padding:0 8px;background:#ffffff;border:1px solid var(--border);border-radius:5px;color:#111;font-size:12px;width:130px">
+                <option value="all">All States</option>
+                <option value="WI" selected>WI</option>
+                <option value="AL">AL</option><option value="AK">AK</option><option value="AZ">AZ</option><option value="AR">AR</option>
+                <option value="CA">CA</option><option value="CO">CO</option><option value="CT">CT</option><option value="DE">DE</option>
+                <option value="FL">FL</option><option value="GA">GA</option><option value="HI">HI</option><option value="ID">ID</option>
+                <option value="IL">IL</option><option value="IN">IN</option><option value="IA">IA</option><option value="KS">KS</option>
+                <option value="KY">KY</option><option value="LA">LA</option><option value="ME">ME</option><option value="MD">MD</option>
+                <option value="MA">MA</option><option value="MI">MI</option><option value="MN">MN</option><option value="MS">MS</option>
+                <option value="MO">MO</option><option value="MT">MT</option><option value="NE">NE</option><option value="NV">NV</option>
+                <option value="NH">NH</option><option value="NJ">NJ</option><option value="NM">NM</option><option value="NY">NY</option>
+                <option value="NC">NC</option><option value="ND">ND</option><option value="OH">OH</option><option value="OK">OK</option>
+                <option value="OR">OR</option><option value="PA">PA</option><option value="RI">RI</option><option value="SC">SC</option>
+                <option value="SD">SD</option><option value="TN">TN</option><option value="TX">TX</option><option value="UT">UT</option>
+                <option value="VT">VT</option><option value="VA">VA</option><option value="WA">WA</option><option value="WV">WV</option>
+                <option value="WY">WY</option>
+              </select>
+              <button class="btn-sm primary" onclick="runCandidateScraper()">Run Scraper →</button>
+            </div>
+
+            <div style="font-size:11px;color:var(--muted);margin-bottom:10px">
+              ⚠ PBS Wisconsin scrapes WI only regardless of state selection. State selector applies to Ballotpedia and Wikipedia.
+            </div>
+            <div id="cand-scraper-status" style="font-size:12px;color:var(--muted)"></div>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -981,6 +1022,34 @@ async function runScraper(state) {
     const data = await res.json();
     statusEl.textContent = `✓ ${data.message}`;
     statusEl.style.color = 'var(--green)';
+  } catch (e) {
+    statusEl.textContent = `✕ Error: ${e.message}`;
+    statusEl.style.color = '#ff8fa3';
+  }
+}
+
+async function runCandidateScraper() {
+  const source = document.getElementById('cand-source-select').value;
+  const state  = document.getElementById('cand-state-select').value;
+  const statusEl = document.getElementById('cand-scraper-status');
+
+  statusEl.textContent = `Starting ${source} scrape for: ${state === 'all' ? 'all states' : state}...`;
+  statusEl.style.color = 'var(--amber)';
+
+  try {
+    const res = await fetch('/api/admin/scrape/candidates', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ source, state }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      statusEl.textContent = `✓ ${data.message}`;
+      statusEl.style.color = 'var(--green)';
+    } else {
+      statusEl.textContent = `✕ ${data.error || 'Scrape failed'}`;
+      statusEl.style.color = '#ff8fa3';
+    }
   } catch (e) {
     statusEl.textContent = `✕ Error: ${e.message}`;
     statusEl.style.color = '#ff8fa3';
