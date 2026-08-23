@@ -272,6 +272,97 @@ body { font-family: var(--body); background: var(--gray); color: var(--text); -w
   .victory-banner { grid-template-columns: 1fr; }
 }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ── WEBSITE BUILDER ── */
+.builder-tab {
+  padding: 10px 18px; font-family: var(--body); font-size: 13px; font-weight: 600;
+  border: none; border-bottom: 3px solid transparent; background: none;
+  color: var(--muted); cursor: pointer; white-space: nowrap;
+}
+.builder-tab:hover { color: var(--text); }
+.builder-tab.active { color: var(--navy); border-bottom-color: var(--red); }
+.builder-tab-content { animation: fadeIn 0.2s ease; }
+.field-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); display: block; margin-bottom: 5px; }
+
+/* Template cards */
+.template-card {
+  border: 2px solid var(--border); border-radius: 10px; padding: 12px;
+  cursor: pointer; transition: border-color 0.15s, transform 0.1s;
+}
+.template-card:hover { border-color: var(--sky); transform: translateY(-2px); }
+.template-card.active { border-color: var(--red); }
+.tpl-preview {
+  height: 100px; border-radius: 6px; margin-bottom: 10px; overflow: hidden;
+  position: relative; background: #e8edf5;
+}
+.tpl-nav-bar { height: 14px; background: #1a2d5a; width: 100%; }
+.tpl-nav-bar.centered { background: #1a2d5a; }
+.tpl-nav-bar.fixed-look { background: #0d0d0d; }
+.tpl-hero-block { height: 42px; margin: 6px; border-radius: 4px; background: #c8102e; }
+.tpl-hero-block.minimal { background: #2b7fc1; height: 38px; }
+.tpl-hero-block.warm { background: #b45309; height: 46px; }
+.tpl-hero-block.stark { background: #111; height: 44px; margin: 0; border-radius: 0; }
+.tpl-content-rows { padding: 0 6px; display: flex; flex-direction: column; gap: 4px; }
+.tpl-row { height: 8px; background: #c5cfe0; border-radius: 2px; }
+.tpl-row.short { width: 60%; }
+.tpl-sidebar-nav { position: absolute; left: 0; top: 0; bottom: 0; width: 28px; background: #15803d; }
+.tpl-main-area { margin-left: 28px; }
+.grassroots-preview .tpl-hero-block { background: #15803d; }
+.forward-preview { background: #1e293b; }
+.forward-preview .tpl-nav-bar { background: #0f172a; }
+.forward-preview .tpl-row { background: #334155; }
+.people-preview .tpl-nav-bar { background: #1a2d5a; }
+.independent-preview { background: #f8f8f8; }
+.independent-preview .tpl-row { background: #ddd; }
+.tpl-label { font-family: var(--cond); font-size: 14px; font-weight: 800; text-transform: uppercase; color: var(--navy); }
+.tpl-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+/* Font options */
+.font-option {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+  border: 1px solid var(--border); border-radius: 6px; cursor: pointer;
+}
+.font-option:has(input:checked) { border-color: var(--red); background: rgba(200,16,46,0.04); }
+.font-option input { accent-color: var(--red); }
+.font-preview { flex: 1; line-height: 1; }
+.font-name { font-size: 11px; color: var(--muted); white-space: nowrap; }
+
+/* Block editor */
+.block-item {
+  border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px;
+  margin-bottom: 8px; background: var(--white);
+  display: flex; align-items: center; gap: 10px;
+}
+.block-drag-handle { cursor: grab; color: var(--muted); font-size: 16px; flex-shrink: 0; }
+.block-item-type { font-family: var(--cond); font-size: 13px; font-weight: 800; text-transform: uppercase; color: var(--navy); flex: 1; }
+.block-type-btn {
+  border: 1px solid var(--border); border-radius: 8px; padding: 12px 10px;
+  text-align: center; cursor: pointer; background: var(--white); font-family: var(--body);
+  transition: border-color 0.15s, background 0.15s;
+}
+.block-type-btn:hover { border-color: var(--sky); background: rgba(43,127,193,0.05); }
+.block-type-btn .bt-icon { font-size: 22px; margin-bottom: 4px; }
+.block-type-btn .bt-label { font-size: 12px; font-weight: 600; color: var(--text); }
+
+/* Issue cards */
+.issue-card {
+  background: var(--white); border: 1px solid var(--border); border-radius: 10px; overflow: hidden;
+}
+.issue-card-hdr {
+  padding: 12px 16px; display: flex; align-items: center; gap: 10px;
+  border-bottom: 1px solid var(--border); background: var(--gray);
+}
+
+/* Page list items */
+.page-item {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+  border-radius: 6px; cursor: pointer; margin-bottom: 4px;
+}
+.page-item:hover { background: var(--gray); }
+.page-item.active { background: rgba(200,16,46,0.07); border-left: 3px solid var(--red); }
+.page-item-name { font-size: 14px; font-weight: 600; flex: 1; color: var(--text); }
+.page-toggle { cursor: pointer; }
+
 </style>
 </head>
 <body>
@@ -907,95 +998,432 @@ body { font-family: var(--body); background: var(--gray); color: var(--text); -w
 
       <!-- ── WEBSITE ── -->
       <div class="section" id="sec-website">
-        <div style="font-family:var(--cond);font-size:28px;font-weight:900;text-transform:uppercase;color:var(--navy);margin-bottom:24px">My Campaign Website</div>
-        <div class="panel-grid wide">
-          <div class="panel">
-            <div class="panel-hdr"><h2><span class="ph-icon">🌐</span> Your Public Site</h2></div>
+
+        <!-- ── HEADER ── -->
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;flex-wrap:wrap;gap:12px">
+          <div>
+            <div style="font-family:var(--cond);font-size:28px;font-weight:900;text-transform:uppercase;color:var(--navy);margin-bottom:4px">My Campaign Website</div>
+            <div style="font-size:13px;color:var(--muted)">Build, customize, and publish your campaign site — free.</div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <a href="#" id="ws-view-link" target="_blank" class="topbar-btn secondary" style="font-size:12px">👁 Preview Site →</a>
+            <button onclick="publishSite()" id="ws-publish-btn" class="topbar-btn primary" style="font-size:12px">🚀 Publish Changes</button>
+          </div>
+        </div>
+
+        <!-- ── YOUR URL ── -->
+        <div style="background:var(--navy-d);border-radius:10px;padding:18px 22px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px">
+          <div>
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:rgba(255,255,255,0.5);margin-bottom:4px">Your Campaign URL</div>
+            <div style="font-family:var(--cond);font-size:22px;font-weight:800;color:white" id="ws-url-display">partyofyou.org/c/<span id="ws-slug-display">yourname</span></div>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+            <button onclick="copyUrl()" style="background:rgba(255,255,255,0.1);color:white;border:1px solid rgba(255,255,255,0.2);border-radius:6px;padding:7px 14px;font-size:12px;cursor:pointer;font-family:var(--body)" id="copy-url-btn">📋 Copy URL</button>
+            <button onclick="showDomainGuide()" style="background:var(--sky);color:white;border:none;border-radius:6px;padding:7px 14px;font-size:12px;cursor:pointer;font-family:var(--body);font-weight:600">🌐 Get Your Own Domain →</button>
+          </div>
+        </div>
+
+        <!-- ── DOMAIN GUIDE (hidden by default) ── -->
+        <div id="domain-guide" style="display:none;background:var(--white);border:2px solid var(--sky);border-radius:10px;padding:20px 24px;margin-bottom:20px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">
+            <div style="font-family:var(--cond);font-size:18px;font-weight:900;text-transform:uppercase;color:var(--navy)">🌐 Getting Your Own Domain</div>
+            <button onclick="document.getElementById('domain-guide').style.display='none'" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--muted)">×</button>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;font-size:13px;line-height:1.7">
+            <div>
+              <div style="font-weight:700;color:var(--navy);margin-bottom:8px">Why Cloudflare?</div>
+              <ul style="color:var(--muted);padding-left:16px;display:flex;flex-direction:column;gap:4px">
+                <li><strong style="color:var(--text)">At-cost pricing</strong> — most .com domains are $8–11/year. No markup.</li>
+                <li><strong style="color:var(--text)">Free SSL</strong> — automatic HTTPS security for your campaign site.</li>
+                <li><strong style="color:var(--text)">Free DDoS protection</strong> — keeps your site up during traffic spikes.</li>
+                <li><strong style="color:var(--text)">Easy DNS setup</strong> — point your domain here in under 5 minutes.</li>
+              </ul>
+            </div>
+            <div>
+              <div style="font-weight:700;color:var(--navy);margin-bottom:8px">Setup Steps</div>
+              <ol style="color:var(--muted);padding-left:16px;display:flex;flex-direction:column;gap:4px">
+                <li>Go to <a href="https://cloudflare.com" target="_blank" style="color:var(--sky)">cloudflare.com</a> → Register → Buy a domain</li>
+                <li>Search for <strong style="color:var(--text)">yourname2026.com</strong> or similar</li>
+                <li>After purchase, go to <strong style="color:var(--text)">DNS → Add Record</strong></li>
+                <li>Add a <strong style="color:var(--text)">CNAME record</strong>: name <code>@</code>, target <code>partyofyou.org</code></li>
+                <li>Email <a href="mailto:robpoole24@gmail.com" style="color:var(--sky)">support</a> with your domain — we'll connect it within 24 hours</li>
+              </ol>
+            </div>
+          </div>
+          <div style="margin-top:14px;padding:10px 14px;background:rgba(43,127,193,0.07);border-radius:6px;font-size:12px;color:var(--sky)">
+            💡 Good campaign domain patterns: <strong>JaneSmithForCouncil.com</strong> · <strong>SmithWI2026.com</strong> · <strong>ElectJaneSmith.com</strong>
+          </div>
+        </div>
+
+        <!-- ── BUILDER TABS ── -->
+        <div style="display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:20px" id="builder-tabs">
+          <button class="builder-tab active" onclick="switchBuilderTab('design')" id="tab-design">🎨 Template & Design</button>
+          <button class="builder-tab" onclick="switchBuilderTab('pages')" id="tab-pages">📄 Pages & Blocks</button>
+          <button class="builder-tab" onclick="switchBuilderTab('issues')" id="tab-issues">📋 My Issues</button>
+          <button class="builder-tab" onclick="switchBuilderTab('donate')" id="tab-donate">💸 Donation Setup</button>
+          <button class="builder-tab" onclick="switchBuilderTab('integrations')" id="tab-integrations">⚙️ Integrations</button>
+        </div>
+
+        <!-- ══ TAB: TEMPLATE & DESIGN ══ -->
+        <div id="btab-design" class="builder-tab-content">
+
+          <!-- Template picker -->
+          <div class="panel" style="margin-bottom:20px">
+            <div class="panel-hdr"><h2><span class="ph-icon">🎨</span> Choose Your Template</h2></div>
             <div class="panel-body">
-              <div style="background:var(--gray);border-radius:8px;padding:24px;text-align:center;margin-bottom:16px">
-                <div style="font-size:32px;margin-bottom:8px">🌐</div>
-                <div style="font-family:var(--cond);font-size:16px;font-weight:800;text-transform:uppercase;color:var(--navy)">Your campaign page</div>
-                <div style="font-size:13px;color:var(--muted);margin-top:4px">partyofyou.org/c/<span id="ws-slug-display">yourname</span></div>
-                <div style="display:flex;gap:10px;justify-content:center;margin-top:14px">
-                  <a href="#" id="ws-view-link" target="_blank" class="topbar-btn primary" style="font-size:12px">View Live Site →</a>
-                  <a href="/profile-edit.html" class="topbar-btn secondary" style="font-size:12px">Edit Profile</a>
+              <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px" id="template-grid">
+
+                <div class="template-card active" data-template="hometown" onclick="selectTemplate('hometown')">
+                  <div class="tpl-preview hometown-preview">
+                    <div class="tpl-nav-bar"></div>
+                    <div class="tpl-hero-block"></div>
+                    <div class="tpl-content-rows">
+                      <div class="tpl-row"></div><div class="tpl-row short"></div>
+                    </div>
+                  </div>
+                  <div class="tpl-label">Hometown</div>
+                  <div class="tpl-sub">Traditional · Red/White/Navy</div>
                 </div>
-              </div>
-              <div style="font-size:13px;color:var(--muted);line-height:1.7">
-                Your campaign page is automatically generated from your profile. Update your bio, photo, and positions from the Edit Profile page. Your page includes your platform planks, contact info, volunteer signup, and event listings.
+
+                <div class="template-card" data-template="grassroots" onclick="selectTemplate('grassroots')">
+                  <div class="tpl-preview grassroots-preview">
+                    <div class="tpl-sidebar-nav"></div>
+                    <div class="tpl-main-area">
+                      <div class="tpl-hero-block"></div>
+                      <div class="tpl-row"></div>
+                    </div>
+                  </div>
+                  <div class="tpl-label">Grassroots</div>
+                  <div class="tpl-sub">Bold · Deep Green/White</div>
+                </div>
+
+                <div class="template-card" data-template="forward" onclick="selectTemplate('forward')">
+                  <div class="tpl-preview forward-preview">
+                    <div class="tpl-nav-bar centered"></div>
+                    <div class="tpl-hero-block minimal"></div>
+                    <div class="tpl-content-rows">
+                      <div class="tpl-row"></div><div class="tpl-row"></div>
+                    </div>
+                  </div>
+                  <div class="tpl-label">Forward</div>
+                  <div class="tpl-sub">Clean · Charcoal/Sky Blue</div>
+                </div>
+
+                <div class="template-card" data-template="people_first" onclick="selectTemplate('people_first')">
+                  <div class="tpl-preview people-preview">
+                    <div class="tpl-nav-bar"></div>
+                    <div class="tpl-hero-block warm"></div>
+                    <div class="tpl-content-rows">
+                      <div class="tpl-row"></div>
+                    </div>
+                  </div>
+                  <div class="tpl-label">People First</div>
+                  <div class="tpl-sub">Warm · Amber/Navy</div>
+                </div>
+
+                <div class="template-card" data-template="independent" onclick="selectTemplate('independent')">
+                  <div class="tpl-preview independent-preview">
+                    <div class="tpl-nav-bar fixed-look"></div>
+                    <div class="tpl-hero-block stark"></div>
+                    <div class="tpl-content-rows">
+                      <div class="tpl-row"></div><div class="tpl-row short"></div>
+                    </div>
+                  </div>
+                  <div class="tpl-label">Independent</div>
+                  <div class="tpl-sub">Stark · Black/White/Accent</div>
+                </div>
+
               </div>
             </div>
           </div>
-          <div class="panel">
-            <div class="panel-hdr"><h2><span class="ph-icon">⚙️</span> Integrations</h2></div>
-            <div class="panel-body" style="display:flex;flex-direction:column;gap:10px">
-              <!-- Email -->
-              <div style="padding:14px;border:1px solid var(--border);border-radius:8px">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-                  <div style="font-size:14px;font-weight:600;color:var(--text)">📧 Email Marketing</div>
+
+          <!-- Accent color & font -->
+          <div class="panel-grid">
+            <div class="panel">
+              <div class="panel-hdr"><h2><span class="ph-icon">🎨</span> Accent Color</h2></div>
+              <div class="panel-body">
+                <div style="font-size:13px;color:var(--muted);margin-bottom:14px">Override the template's default accent color with your campaign colors.</div>
+                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
+                  <input type="color" id="accent-color-picker" value="#c8102e"
+                    style="width:44px;height:44px;border:none;border-radius:6px;cursor:pointer;padding:2px"
+                    onchange="updateAccentPreview(this.value)">
+                  <input type="text" id="accent-color-hex" value="#c8102e" placeholder="#c8102e" maxlength="7"
+                    style="width:100px;height:36px;padding:0 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:monospace"
+                    oninput="syncColorPicker(this.value)">
+                  <div id="accent-color-preview" style="flex:1;height:36px;border-radius:6px;background:#c8102e;min-width:60px"></div>
+                </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                  <button onclick="setAccent('#c8102e')" style="width:28px;height:28px;border-radius:50%;background:#c8102e;border:2px solid transparent;cursor:pointer" title="Campaign Red"></button>
+                  <button onclick="setAccent('#1a2d5a')" style="width:28px;height:28px;border-radius:50%;background:#1a2d5a;border:2px solid transparent;cursor:pointer" title="Navy"></button>
+                  <button onclick="setAccent('#2b7fc1')" style="width:28px;height:28px;border-radius:50%;background:#2b7fc1;border:2px solid transparent;cursor:pointer" title="Sky Blue"></button>
+                  <button onclick="setAccent('#15803d')" style="width:28px;height:28px;border-radius:50%;background:#15803d;border:2px solid transparent;cursor:pointer" title="Green"></button>
+                  <button onclick="setAccent('#7c3aed')" style="width:28px;height:28px;border-radius:50%;background:#7c3aed;border:2px solid transparent;cursor:pointer" title="Purple"></button>
+                  <button onclick="setAccent('#b45309')" style="width:28px;height:28px;border-radius:50%;background:#b45309;border:2px solid transparent;cursor:pointer" title="Amber"></button>
+                  <button onclick="setAccent('#0f172a')" style="width:28px;height:28px;border-radius:50%;background:#0f172a;border:2px solid transparent;cursor:pointer" title="Near Black"></button>
+                </div>
+              </div>
+            </div>
+            <div class="panel">
+              <div class="panel-hdr"><h2><span class="ph-icon">🔤</span> Font Style</h2></div>
+              <div class="panel-body">
+                <div style="font-size:13px;color:var(--muted);margin-bottom:14px">Choose a heading style that fits your campaign's personality.</div>
+                <div style="display:flex;flex-direction:column;gap:10px">
+                  <label class="font-option" data-font="Barlow Condensed">
+                    <input type="radio" name="font-heading" value="Barlow Condensed" checked>
+                    <div class="font-preview" style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:20px">Bold & Direct</div>
+                    <div class="font-name">Barlow Condensed — default</div>
+                  </label>
+                  <label class="font-option" data-font="Oswald">
+                    <input type="radio" name="font-heading" value="Oswald">
+                    <div class="font-preview" style="font-family:'Oswald',sans-serif;font-weight:700;font-size:20px">Strong & Tall</div>
+                    <div class="font-name">Oswald — authoritative</div>
+                  </label>
+                  <label class="font-option" data-font="Playfair Display">
+                    <input type="radio" name="font-heading" value="Playfair Display">
+                    <div class="font-preview" style="font-family:'Playfair Display',serif;font-weight:700;font-size:20px">Civic & Classic</div>
+                    <div class="font-name">Playfair Display — traditional</div>
+                  </label>
+                  <label class="font-option" data-font="Inter">
+                    <input type="radio" name="font-heading" value="Inter">
+                    <div class="font-preview" style="font-family:'Inter',sans-serif;font-weight:700;font-size:20px">Modern & Clean</div>
+                    <div class="font-name">Inter — contemporary</div>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Site tagline & social -->
+          <div class="panel" style="margin-top:20px">
+            <div class="panel-hdr"><h2><span class="ph-icon">✍️</span> Site Title & Social Links</h2></div>
+            <div class="panel-body">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+                <div>
+                  <label class="field-label">Site Title</label>
+                  <input type="text" id="site-title" placeholder="Jane Smith for City Council" style="width:100%;height:40px;padding:0 12px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:var(--body)">
+                </div>
+                <div>
+                  <label class="field-label">Campaign Tagline</label>
+                  <input type="text" id="site-tagline" placeholder="Fighting for working families in District 4" style="width:100%;height:40px;padding:0 12px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:var(--body)">
+                </div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                <div>
+                  <label class="field-label">Twitter / X</label>
+                  <input type="text" id="social-twitter" placeholder="@yourhandle" style="width:100%;height:40px;padding:0 12px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:var(--body)">
+                </div>
+                <div>
+                  <label class="field-label">Facebook</label>
+                  <input type="text" id="social-facebook" placeholder="facebook.com/yourpage" style="width:100%;height:40px;padding:0 12px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:var(--body)">
+                </div>
+                <div>
+                  <label class="field-label">Instagram</label>
+                  <input type="text" id="social-instagram" placeholder="@yourhandle" style="width:100%;height:40px;padding:0 12px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:var(--body)">
+                </div>
+                <div>
+                  <label class="field-label">YouTube</label>
+                  <input type="text" id="social-youtube" placeholder="youtube.com/@yourchannel" style="width:100%;height:40px;padding:0 12px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:var(--body)">
+                </div>
+              </div>
+              <div style="margin-top:16px;text-align:right">
+                <button onclick="saveDesignSettings()" class="topbar-btn primary">Save Design Settings</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ TAB: PAGES & BLOCKS ══ -->
+        <div id="btab-pages" class="builder-tab-content" style="display:none">
+          <div class="panel-grid wide">
+
+            <!-- Page list -->
+            <div class="panel">
+              <div class="panel-hdr">
+                <h2><span class="ph-icon">📄</span> Pages</h2>
+              </div>
+              <div id="pages-list" style="padding:8px">
+                <!-- populated by JS -->
+              </div>
+            </div>
+
+            <!-- Block editor for selected page -->
+            <div class="panel">
+              <div class="panel-hdr">
+                <h2><span class="ph-icon">🧱</span> Blocks — <span id="editing-page-name" style="color:var(--sky)">Select a page</span></h2>
+                <button id="add-block-btn" onclick="showAddBlock()" class="topbar-btn primary" style="font-size:11px;padding:5px 12px;display:none">+ Add Block</button>
+              </div>
+              <div id="blocks-editor" style="padding:16px;min-height:200px">
+                <div style="text-align:center;padding:40px;color:var(--muted);font-size:13px">
+                  Select a page on the left to edit its blocks.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Add Block modal -->
+          <div id="add-block-panel" style="display:none;background:var(--white);border:2px solid var(--navy);border-radius:10px;padding:20px;margin-top:16px">
+            <div style="font-family:var(--cond);font-size:16px;font-weight:800;text-transform:uppercase;color:var(--navy);margin-bottom:14px">Choose a Block Type</div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px" id="block-type-grid">
+              <!-- populated by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ TAB: MY ISSUES ══ -->
+        <div id="btab-issues" class="builder-tab-content" style="display:none">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+            <div style="font-size:13px;color:var(--muted)">Define your positions. These feed into your Issues page blocks and can be imported from your platform pledge.</div>
+            <div style="display:flex;gap:8px">
+              <button onclick="importPledgeIssues()" class="topbar-btn secondary" style="font-size:12px">⬇ Import from Pledge</button>
+              <button onclick="addNewIssue()" class="topbar-btn primary" style="font-size:12px">+ Add Issue</button>
+            </div>
+          </div>
+          <div id="issues-list" style="display:flex;flex-direction:column;gap:12px">
+            <div style="text-align:center;padding:40px;color:var(--muted);font-size:13px">Loading your issues...</div>
+          </div>
+        </div>
+
+        <!-- ══ TAB: DONATION SETUP ══ -->
+        <div id="btab-donate" class="builder-tab-content" style="display:none">
+          <div class="panel" style="margin-bottom:20px">
+            <div class="panel-hdr"><h2><span class="ph-icon">💸</span> Donation Methods</h2></div>
+            <div class="panel-body">
+              <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:18px;max-width:640px">
+                Set up the payment methods you want to offer donors. We support Stripe, PayPal, and Venmo — all transparent platforms where donors know exactly what they're paying for. Enable whichever ones you use and add your links below.
+              </div>
+              <div style="display:flex;flex-direction:column;gap:14px">
+
+                <!-- Stripe -->
+                <div style="border:1px solid var(--border);border-radius:8px;padding:16px">
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                    <div style="display:flex;align-items:center;gap:10px">
+                      <div style="font-weight:700;font-size:14px">💳 Stripe</div>
+                      <span class="badge badge-green">Recommended</span>
+                    </div>
+                    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px">
+                      <input type="checkbox" id="enable-stripe" onchange="toggleDonateField('stripe')"> Enable
+                    </label>
+                  </div>
+                  <div id="stripe-fields" style="display:none;display:flex;flex-direction:column;gap:10px">
+                    <div>
+                      <label class="field-label">Stripe Payment Link URL</label>
+                      <input type="url" id="donate-stripe-url" placeholder="https://buy.stripe.com/yourlink"
+                        style="width:100%;height:38px;padding:0 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--body)">
+                      <div style="font-size:11px;color:var(--muted);margin-top:4px">Create a Payment Link in your <a href="https://dashboard.stripe.com/payment-links" target="_blank" style="color:var(--sky)">Stripe Dashboard</a>. Set the amount to "Customer chooses."</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- PayPal -->
+                <div style="border:1px solid var(--border);border-radius:8px;padding:16px">
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                    <div style="font-weight:700;font-size:14px">🅿️ PayPal</div>
+                    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px">
+                      <input type="checkbox" id="enable-paypal" onchange="toggleDonateField('paypal')"> Enable
+                    </label>
+                  </div>
+                  <div id="paypal-fields" style="display:none">
+                    <label class="field-label">PayPal.me Link</label>
+                    <input type="url" id="donate-paypal-url" placeholder="https://paypal.me/yourname"
+                      style="width:100%;height:38px;padding:0 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--body)">
+                  </div>
+                </div>
+
+                <!-- Venmo -->
+                <div style="border:1px solid var(--border);border-radius:8px;padding:16px">
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                    <div style="font-weight:700;font-size:14px">💜 Venmo</div>
+                    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px">
+                      <input type="checkbox" id="enable-venmo" onchange="toggleDonateField('venmo')"> Enable
+                    </label>
+                  </div>
+                  <div id="venmo-fields" style="display:none">
+                    <label class="field-label">Venmo Handle</label>
+                    <input type="text" id="donate-venmo" placeholder="@YourCampaign"
+                      style="width:100%;height:38px;padding:0 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--body)">
+                  </div>
+                </div>
+
+                <!-- Cash/Check -->
+                <div style="border:1px solid var(--border);border-radius:8px;padding:16px">
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                    <div style="font-weight:700;font-size:14px">✉️ Check / Cash Mail-In</div>
+                    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px">
+                      <input type="checkbox" id="enable-cash" onchange="toggleDonateField('cash')"> Enable
+                    </label>
+                  </div>
+                  <div id="cash-fields" style="display:none">
+                    <label class="field-label">Mailing Address for Checks</label>
+                    <textarea id="donate-cash-address" rows="3" placeholder="Make checks payable to: Friends of Jane Smith&#10;PO Box 1234&#10;Milwaukee, WI 53201"
+                      style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--body);resize:vertical"></textarea>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- FEC Notice -->
+              <div style="margin-top:18px;padding:14px;background:rgba(180,83,9,0.07);border:1px solid rgba(180,83,9,0.2);border-radius:8px">
+                <div style="font-size:12px;font-weight:700;color:var(--amber);margin-bottom:6px">⚖️ Required FEC Disclaimer</div>
+                <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Federal and most state campaigns are required to include a disclaimer on all fundraising materials. We'll add this automatically to your Donate page.</div>
+                <input type="text" id="donate-fec-notice" placeholder="Paid for by Friends of Jane Smith. Not authorized by any candidate or candidate's committee."
+                  style="width:100%;height:38px;padding:0 12px;border:1px solid rgba(180,83,9,0.3);border-radius:6px;font-size:13px;font-family:var(--body)">
+              </div>
+
+              <div style="margin-top:16px;text-align:right">
+                <button onclick="saveDonateSettings()" class="topbar-btn primary">Save Donation Settings</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ TAB: INTEGRATIONS ══ -->
+        <div id="btab-integrations" class="builder-tab-content" style="display:none">
+          <div class="panel-grid">
+            <div class="panel">
+              <div class="panel-hdr"><h2><span class="ph-icon">📧</span> Email Marketing</h2></div>
+              <div class="panel-body" style="display:flex;flex-direction:column;gap:12px">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <span style="font-size:13px;color:var(--muted)">Listmonk — unlimited sends, free</span>
                   <span class="badge badge-green">Connected</span>
                 </div>
-                <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Unlimited sends, zero cost. Manage your subscriber list and campaigns.</div>
-                <button onclick="showSection('email', document.querySelector('[onclick*=email]'))" class="topbar-btn primary" style="font-size:11px;padding:6px 14px">Open Email Dashboard →</button>
+                <button onclick="showSection('email', document.querySelector('[onclick*=email]'))" class="topbar-btn primary" style="font-size:12px">Open Email Dashboard →</button>
               </div>
-              <!-- Twilio -->
-              <div style="padding:14px;border:1px solid var(--border);border-radius:8px">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-                  <div style="font-size:14px;font-weight:600;color:var(--text)">📱 Text Messaging</div>
+            </div>
+            <div class="panel">
+              <div class="panel-hdr"><h2><span class="ph-icon">📱</span> Text Messaging</h2></div>
+              <div class="panel-body">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+                  <span style="font-size:13px;color:var(--muted)">Twilio — ~$0.0075/text</span>
                   <span class="badge badge-gray">Not Set Up</span>
                 </div>
-                <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Connect your Twilio account to send targeted texts. ~$0.0075/message. Free trial available at twilio.com.</div>
-                <button onclick="setupTwilio()" class="topbar-btn secondary" style="font-size:11px;padding:6px 14px">Set Up Twilio →</button>
+                <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Free trial at <a href="https://twilio.com" target="_blank" style="color:var(--sky)">twilio.com</a>. Connect your account to send targeted texts to your voter list.</div>
+                <button onclick="setupTwilio()" class="topbar-btn secondary" style="font-size:12px">Set Up Twilio →</button>
               </div>
-              <!-- Storage -->
-              <div style="padding:14px;border:1px solid var(--border);border-radius:8px">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-                  <div style="font-size:14px;font-weight:600;color:var(--text)">☁️ File Storage</div>
-                  <span class="badge badge-green">Active</span>
+            </div>
+            <div class="panel">
+              <div class="panel-hdr"><h2><span class="ph-icon">🗃️</span> Voter File</h2></div>
+              <div class="panel-body">
+                <p style="font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.6">State voter files are public record. Free or low-cost for registered candidates.</p>
+                <a href="/voter-file-guide.html" class="topbar-btn primary" style="display:inline-block;font-size:12px">View State-by-State Guide →</a>
+              </div>
+            </div>
+            <div class="panel">
+              <div class="panel-hdr"><h2><span class="ph-icon">🖨️</span> Union Print Shops</h2></div>
+              <div class="panel-body">
+                <div style="display:flex;flex-direction:column;gap:8px">
+                  <a href="https://unionprinting.com" target="_blank" style="display:flex;justify-content:space-between;padding:8px 12px;background:var(--gray);border-radius:6px;text-decoration:none;color:var(--text);font-size:12px"><span>🖨️ UnionPrinting.com</span><span style="color:var(--sky)">National →</span></a>
+                  <a href="https://www.psfprint.com" target="_blank" style="display:flex;justify-content:space-between;padding:8px 12px;background:var(--gray);border-radius:6px;text-decoration:none;color:var(--text);font-size:12px"><span>🖨️ PSFprint.com</span><span style="color:var(--sky)">National →</span></a>
+                  <a href="https://www.unionlabel.org/affiliate_search.php" target="_blank" style="display:flex;justify-content:space-between;padding:8px 12px;background:var(--gray);border-radius:6px;text-decoration:none;color:var(--text);font-size:12px"><span>🔍 Find Local Union Printers</span><span style="color:var(--sky)">UFCW →</span></a>
                 </div>
-                <div style="font-size:12px;color:var(--muted)">Cloudflare R2 — 10GB free forever. Used for photos, PDFs, and campaign materials.</div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Voter File & Resources -->
-        <div class="panel-grid" style="margin-top:0">
-          <div class="panel">
-            <div class="panel-hdr"><h2><span class="ph-icon">🗃️</span> Get Your Voter File</h2></div>
-            <div class="panel-body">
-              <p style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.6">State voter files are public record. Most states provide them free or for a small fee to registered candidates.</p>
-              <a href="/voter-file-guide.html" class="topbar-btn primary" style="display:inline-block;margin-bottom:14px">View State-by-State Guide →</a>
-              <div style="font-size:12px;color:var(--muted);line-height:1.8">
-                <strong style="color:var(--text)">Wisconsin (your state):</strong> Free via the Wisconsin Elections Commission WisVote system.
-                Requires committee registration. Request at <a href="https://elections.wi.gov" target="_blank" style="color:var(--sky)">elections.wi.gov</a>.
-              </div>
-            </div>
-          </div>
-          <div class="panel">
-            <div class="panel-hdr"><h2><span class="ph-icon">🖨️</span> Union Print Shops</h2></div>
-            <div class="panel-body">
-              <p style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.6">Support union workers with your campaign materials. Look for the union bug on all print jobs.</p>
-              <div style="display:flex;flex-direction:column;gap:8px">
-                <a href="https://unionprinting.com" target="_blank" style="display:flex;justify-content:space-between;padding:10px 12px;background:var(--gray);border-radius:6px;text-decoration:none;color:var(--text);font-size:13px">
-                  <span>🖨️ UnionPrinting.com</span><span style="color:var(--sky)">National →</span>
-                </a>
-                <a href="https://www.psfprint.com" target="_blank" style="display:flex;justify-content:space-between;padding:10px 12px;background:var(--gray);border-radius:6px;text-decoration:none;color:var(--text);font-size:13px">
-                  <span>🖨️ PSFprint.com</span><span style="color:var(--sky)">National →</span>
-                </a>
-                <a href="https://www.progressiveprinters.com" target="_blank" style="display:flex;justify-content:space-between;padding:10px 12px;background:var(--gray);border-radius:6px;text-decoration:none;color:var(--text);font-size:13px">
-                  <span>🖨️ Progressive Printers</span><span style="color:var(--sky)">National →</span>
-                </a>
-                <a href="https://www.unionlabel.org/affiliate_search.php" target="_blank" style="display:flex;justify-content:space-between;padding:10px 12px;background:var(--gray);border-radius:6px;text-decoration:none;color:var(--text);font-size:13px">
-                  <span>🔍 Find Local Union Printers</span><span style="color:var(--sky)">UFCW Directory →</span>
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
 
-      <!-- ── EMAIL MARKETING ── -->
+
+            <!-- ── EMAIL MARKETING ── -->
       <div class="section" id="sec-email">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px">
           <div>
@@ -2934,13 +3362,380 @@ function showSection(name, btn) {
     content: () => {},
     events: loadEvents,
     volunteers: loadVolunteers,
-    website: () => {},
+    website: loadSiteBuilder,
     community: () => {},
     upgrades: loadUpgrades,
   };
   loaders[name]?.();
   window.scrollTo({ top: 0 });
 }
+
+// ── WEBSITE BUILDER ───────────────────────────────────────────
+
+const BLOCK_TYPES = [
+  { type: 'hero',         icon: '🦸', label: 'Hero Banner' },
+  { type: 'bio',          icon: '👤', label: 'About / Bio' },
+  { type: 'issues',       icon: '📋', label: 'Issues' },
+  { type: 'donate',       icon: '💸', label: 'Donate' },
+  { type: 'events',       icon: '📅', label: 'Events' },
+  { type: 'volunteer',    icon: '✋', label: 'Volunteer' },
+  { type: 'endorsements', icon: '⭐', label: 'Endorsements' },
+  { type: 'gallery',      icon: '🖼️', label: 'Photo Gallery' },
+  { type: 'contact',      icon: '📬', label: 'Contact' },
+  { type: 'text',         icon: '📝', label: 'Text / HTML' },
+  { type: 'divider',      icon: '➖', label: 'Divider' },
+];
+
+const DEFAULT_PAGES = [
+  { slug: 'home',      title: 'Home',      page_type: 'home',      is_enabled: true,  sort_order: 0 },
+  { slug: 'about',     title: 'About Me',  page_type: 'about',     is_enabled: true,  sort_order: 1 },
+  { slug: 'issues',    title: 'Issues',    page_type: 'issues',    is_enabled: true,  sort_order: 2 },
+  { slug: 'donate',    title: 'Donate',    page_type: 'donate',    is_enabled: true,  sort_order: 3 },
+  { slug: 'events',    title: 'Events',    page_type: 'events',    is_enabled: false, sort_order: 4 },
+  { slug: 'volunteer', title: 'Volunteer', page_type: 'volunteer', is_enabled: false, sort_order: 5 },
+  { slug: 'contact',   title: 'Contact',   page_type: 'contact',   is_enabled: true,  sort_order: 6 },
+];
+
+const PLEDGE_ISSUES = [
+  { title: 'Living Wage for All', icon: '💰', summary: 'A minimum wage that covers the actual cost of living.', bullet_points: ['Index minimum wage to local cost of living', 'Automatic inflation adjustments', 'Enforce wage theft protections'] },
+  { title: 'Healthcare as a Right', icon: '🏥', summary: 'Universal access — no one goes broke getting sick.', bullet_points: ['Support universal healthcare coverage', 'End surprise billing', 'Protect pre-existing condition coverage'] },
+  { title: 'Affordable Housing', icon: '🏠', summary: 'Housing is a human need, not an investment vehicle.', bullet_points: ['Expand affordable housing stock', 'Strengthen tenant protections', 'Reform zoning to allow more housing types'] },
+  { title: 'Clean Elections', icon: '🗳️', summary: 'No corporate money. Full transparency.', bullet_points: ['Reject all corporate and PAC money', 'Full public financial disclosure', 'Support ranked choice voting'] },
+  { title: 'Environmental Justice', icon: '🌱', summary: 'Clean air and water for every community.', bullet_points: ['Prioritize frontline communities facing pollution', 'Enforce environmental regulations', 'Invest in clean energy jobs'] },
+  { title: 'Quality Public Education', icon: '📚', summary: 'Fully funded schools, debt-free pathways.', bullet_points: ['Fully fund public schools equitably', 'Universal pre-K', 'Debt-free higher education pathways'] },
+  { title: "Workers' Rights", icon: '✊', summary: 'The right to organize and share in prosperity.', bullet_points: ['Support right to organize', 'Protect overtime and workplace safety', 'End forced arbitration'] },
+  { title: 'Accountable Public Safety', icon: '⚖️', summary: 'Community-rooted safety with civilian oversight.', bullet_points: ['Establish civilian oversight boards', 'Transparent use-of-force policies', 'Invest in root causes of crime'] },
+  { title: 'Corporate Accountability', icon: '🏛️', summary: 'Corporations must answer to communities.', bullet_points: ['Strengthen antitrust enforcement', 'Close corporate tax loopholes', 'Support worker representation on boards'] },
+];
+
+let builderSiteData = null;
+let builderPages = [];
+let builderBlocks = {};
+let selectedPageId = null;
+let builderIssues = [];
+
+// ── Tab switching ──
+function switchBuilderTab(tab) {
+  document.querySelectorAll('.builder-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.builder-tab-content').forEach(c => c.style.display = 'none');
+  document.getElementById(`tab-${tab}`)?.classList.add('active');
+  document.getElementById(`btab-${tab}`).style.display = 'block';
+
+  if (tab === 'pages' && builderPages.length === 0) initPages();
+  if (tab === 'issues' && builderIssues.length === 0) loadIssues();
+  if (tab === 'donate') loadDonateSettings();
+}
+
+// ── Load site data from API ──
+async function loadSiteBuilder() {
+  try {
+    const res = await fetch('/api/site/settings');
+    if (res.ok) {
+      builderSiteData = await res.json();
+      applyDesignToUI(builderSiteData);
+    }
+  } catch (e) { /* start fresh */ }
+}
+
+function applyDesignToUI(data) {
+  if (!data) return;
+  if (data.template) selectTemplate(data.template, false);
+  if (data.accent_color) setAccent(data.accent_color, false);
+  if (data.site_title) set('site-title', data.site_title);
+  if (data.site_tagline) set('site-tagline', data.site_tagline);
+  if (data.social_twitter) set('social-twitter', data.social_twitter);
+  if (data.social_facebook) set('social-facebook', data.social_facebook);
+  if (data.social_instagram) set('social-instagram', data.social_instagram);
+  if (data.social_youtube) set('social-youtube', data.social_youtube);
+}
+
+// ── Template picker ──
+function selectTemplate(name, save = true) {
+  document.querySelectorAll('.template-card').forEach(c => {
+    c.classList.toggle('active', c.dataset.template === name);
+  });
+  if (save && builderSiteData !== null) saveDesignSettings(true);
+}
+
+// ── Accent color ──
+function setAccent(hex, save = true) {
+  document.getElementById('accent-color-picker').value = hex;
+  document.getElementById('accent-color-hex').value = hex;
+  document.getElementById('accent-color-preview').style.background = hex;
+  if (save) saveDesignSettings(true);
+}
+function updateAccentPreview(hex) {
+  document.getElementById('accent-color-hex').value = hex;
+  document.getElementById('accent-color-preview').style.background = hex;
+}
+function syncColorPicker(hex) {
+  if (/^#[0-9a-fA-F]{6}$/.test(hex)) {
+    document.getElementById('accent-color-picker').value = hex;
+    document.getElementById('accent-color-preview').style.background = hex;
+  }
+}
+
+// ── Save design settings ──
+async function saveDesignSettings(silent = false) {
+  const template = document.querySelector('.template-card.active')?.dataset.template || 'hometown';
+  const accent = document.getElementById('accent-color-hex').value;
+  const font = document.querySelector('input[name="font-heading"]:checked')?.value || 'Barlow Condensed';
+
+  const payload = {
+    template,
+    accent_color: accent,
+    font_heading: font,
+    site_title: document.getElementById('site-title')?.value,
+    site_tagline: document.getElementById('site-tagline')?.value,
+    social_twitter: document.getElementById('social-twitter')?.value,
+    social_facebook: document.getElementById('social-facebook')?.value,
+    social_instagram: document.getElementById('social-instagram')?.value,
+    social_youtube: document.getElementById('social-youtube')?.value,
+  };
+
+  try {
+    await fetch('/api/site/settings', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!silent) showToast('Design settings saved ✓');
+  } catch (e) {
+    if (!silent) showToast('Save failed — check connection', true);
+  }
+}
+
+// ── Donate settings ──
+function toggleDonateField(method) {
+  const el = document.getElementById(`${method}-fields`);
+  const checked = document.getElementById(`enable-${method}`).checked;
+  if (el) el.style.display = checked ? 'block' : 'none';
+}
+function loadDonateSettings() {
+  if (!builderSiteData) return;
+  const d = builderSiteData;
+  if (d.donate_stripe_url) { document.getElementById('enable-stripe').checked = true; toggleDonateField('stripe'); set('donate-stripe-url', d.donate_stripe_url); }
+  if (d.donate_paypal_url) { document.getElementById('enable-paypal').checked = true; toggleDonateField('paypal'); set('donate-paypal-url', d.donate_paypal_url); }
+  if (d.donate_venmo) { document.getElementById('enable-venmo').checked = true; toggleDonateField('venmo'); set('donate-venmo', d.donate_venmo); }
+  if (d.donate_cash_address) { document.getElementById('enable-cash').checked = true; toggleDonateField('cash'); set('donate-cash-address', d.donate_cash_address); }
+  if (d.donate_fec_notice) set('donate-fec-notice', d.donate_fec_notice);
+}
+async function saveDonateSettings() {
+  const payload = {
+    donate_stripe_url: document.getElementById('enable-stripe').checked ? document.getElementById('donate-stripe-url').value : null,
+    donate_paypal_url: document.getElementById('enable-paypal').checked ? document.getElementById('donate-paypal-url').value : null,
+    donate_venmo: document.getElementById('enable-venmo').checked ? document.getElementById('donate-venmo').value : null,
+    donate_cash_address: document.getElementById('enable-cash').checked ? document.getElementById('donate-cash-address').value : null,
+    donate_fec_notice: document.getElementById('donate-fec-notice').value,
+  };
+  try {
+    await fetch('/api/site/settings', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    showToast('Donation settings saved ✓');
+  } catch (e) { showToast('Save failed', true); }
+}
+
+// ── Pages ──
+function initPages() {
+  builderPages = DEFAULT_PAGES.map((p, i) => ({ ...p, id: `page-${i}`, blocks: [] }));
+  renderPageList();
+}
+function renderPageList() {
+  const list = document.getElementById('pages-list');
+  list.innerHTML = builderPages.map(p => `
+    <div class="page-item ${p.id === selectedPageId ? 'active' : ''}" onclick="selectPage('${p.id}')">
+      <span style="font-size:16px">${pageIcon(p.page_type)}</span>
+      <span class="page-item-name">${p.title}</span>
+      <label class="page-toggle" onclick="event.stopPropagation()">
+        <input type="checkbox" ${p.is_enabled ? 'checked' : ''} onchange="togglePage('${p.id}', this.checked)"
+          style="accent-color:var(--red)">
+      </label>
+    </div>`).join('');
+}
+function pageIcon(type) {
+  const icons = { home:'🏠', about:'👤', issues:'📋', donate:'💸', events:'📅', volunteer:'✋', contact:'📬', custom:'📄' };
+  return icons[type] || '📄';
+}
+function togglePage(id, enabled) {
+  const p = builderPages.find(p => p.id === id);
+  if (p) p.is_enabled = enabled;
+}
+function selectPage(id) {
+  selectedPageId = id;
+  renderPageList();
+  const page = builderPages.find(p => p.id === id);
+  if (!page) return;
+  document.getElementById('editing-page-name').textContent = page.title;
+  document.getElementById('add-block-btn').style.display = 'inline-block';
+  renderBlockList(page);
+}
+
+// ── Blocks ──
+function renderBlockList(page) {
+  const editor = document.getElementById('blocks-editor');
+  const blocks = builderBlocks[page.id] || [];
+  if (!blocks.length) {
+    editor.innerHTML = `
+      <div style="text-align:center;padding:32px;color:var(--muted);font-size:13px;border:2px dashed var(--border);border-radius:8px">
+        No blocks yet. Click <strong>+ Add Block</strong> to start building the <strong>${page.title}</strong> page.
+      </div>`;
+    return;
+  }
+  editor.innerHTML = blocks.map((b, i) => `
+    <div class="block-item" draggable="true" data-block-idx="${i}">
+      <span class="block-drag-handle">⠿</span>
+      <span style="font-size:18px">${BLOCK_TYPES.find(t=>t.type===b.type)?.icon || '📦'}</span>
+      <span class="block-item-type">${BLOCK_TYPES.find(t=>t.type===b.type)?.label || b.type}</span>
+      <button onclick="editBlock('${page.id}',${i})" style="background:none;border:1px solid var(--border);border-radius:4px;padding:4px 10px;font-size:11px;cursor:pointer;color:var(--text)">Edit</button>
+      <button onclick="removeBlock('${page.id}',${i})" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:16px;padding:0 4px">×</button>
+    </div>`).join('');
+}
+function showAddBlock() {
+  const panel = document.getElementById('add-block-panel');
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+  document.getElementById('block-type-grid').innerHTML = BLOCK_TYPES.map(t => `
+    <button class="block-type-btn" onclick="addBlock('${t.type}')">
+      <div class="bt-icon">${t.icon}</div>
+      <div class="bt-label">${t.label}</div>
+    </button>`).join('');
+}
+function addBlock(type) {
+  if (!selectedPageId) return;
+  if (!builderBlocks[selectedPageId]) builderBlocks[selectedPageId] = [];
+  builderBlocks[selectedPageId].push({ type, content: {}, sort_order: builderBlocks[selectedPageId].length });
+  document.getElementById('add-block-panel').style.display = 'none';
+  const page = builderPages.find(p => p.id === selectedPageId);
+  renderBlockList(page);
+  showToast(`${BLOCK_TYPES.find(t=>t.type===type)?.label} block added`);
+}
+function removeBlock(pageId, idx) {
+  builderBlocks[pageId].splice(idx, 1);
+  const page = builderPages.find(p => p.id === pageId);
+  renderBlockList(page);
+}
+function editBlock(pageId, idx) {
+  showToast('Block content editor coming in next session ✓');
+}
+
+// ── Issues ──
+async function loadIssues() {
+  const list = document.getElementById('issues-list');
+  try {
+    const res = await fetch('/api/site/issues');
+    if (res.ok) {
+      builderIssues = await res.json();
+    } else {
+      builderIssues = [];
+    }
+  } catch (e) { builderIssues = []; }
+  renderIssueList();
+}
+function renderIssueList() {
+  const list = document.getElementById('issues-list');
+  if (!builderIssues.length) {
+    list.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted);font-size:13px;border:2px dashed var(--border);border-radius:10px">
+      No issues yet. Click <strong>+ Add Issue</strong> to create your first position, or <strong>Import from Pledge</strong> to use your platform commitments as a starting point.
+    </div>`;
+    return;
+  }
+  list.innerHTML = builderIssues.map((issue, i) => `
+    <div class="issue-card">
+      <div class="issue-card-hdr">
+        <span style="font-size:20px">${issue.icon || '📋'}</span>
+        <div style="flex:1">
+          <div style="font-family:var(--cond);font-size:15px;font-weight:800;text-transform:uppercase;color:var(--navy)">${issue.title}</div>
+          ${issue.source === 'pledge' ? '<span style="font-size:10px;color:var(--sky);font-weight:700;text-transform:uppercase;letter-spacing:0.06em">From Pledge</span>' : ''}
+        </div>
+        <button onclick="removeIssue(${i})" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:18px">×</button>
+      </div>
+      <div style="padding:12px 16px">
+        <div style="margin-bottom:10px">
+          <label class="field-label">Summary</label>
+          <input type="text" value="${issue.summary || ''}" onchange="updateIssue(${i},'summary',this.value)"
+            style="width:100%;height:36px;padding:0 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--body)">
+        </div>
+        <div>
+          <label class="field-label">Key Points (one per line)</label>
+          <textarea rows="3" onchange="updateIssue(${i},'bullet_points',this.value.split('\\n').filter(Boolean))"
+            style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--body);resize:vertical"
+          >${(issue.bullet_points || []).join('\n')}</textarea>
+        </div>
+      </div>
+    </div>`).join('');
+}
+function updateIssue(idx, field, value) {
+  if (builderIssues[idx]) builderIssues[idx][field] = value;
+}
+function removeIssue(idx) {
+  builderIssues.splice(idx, 1);
+  renderIssueList();
+}
+function addNewIssue() {
+  builderIssues.push({ title: 'New Issue', icon: '📋', summary: '', bullet_points: [], source: 'custom' });
+  renderIssueList();
+  document.getElementById('issues-list').lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+async function importPledgeIssues() {
+  const existing = new Set(builderIssues.filter(i => i.source === 'pledge').map(i => i.title));
+  const toAdd = PLEDGE_ISSUES.filter(p => !existing.has(p.title));
+  if (!toAdd.length) { showToast('All pledge issues already imported'); return; }
+  toAdd.forEach(p => builderIssues.push({ ...p, source: 'pledge' }));
+  renderIssueList();
+  showToast(`${toAdd.length} pledge issues imported ✓`);
+}
+async function saveIssues() {
+  try {
+    await fetch('/api/site/issues', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(builderIssues),
+    });
+    showToast('Issues saved ✓');
+  } catch (e) { showToast('Save failed', true); }
+}
+
+// ── Publish ──
+async function publishSite() {
+  try {
+    const res = await fetch('/api/site/publish', { method: 'POST' });
+    if (res.ok) showToast('Site published! ✓ Changes are live.');
+    else showToast('Publish failed — check settings', true);
+  } catch (e) { showToast('Publish failed', true); }
+}
+
+// ── URL helpers ──
+function copyUrl() {
+  const slug = document.getElementById('ws-slug-display')?.textContent;
+  const url = `https://partyofyou.org/c/${slug}`;
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = document.getElementById('copy-url-btn');
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => btn.textContent = '📋 Copy URL', 2000);
+  });
+}
+function showDomainGuide() {
+  const guide = document.getElementById('domain-guide');
+  guide.style.display = guide.style.display === 'none' ? 'block' : 'none';
+}
+
+// ── Toast notification ──
+function showToast(msg, isError = false) {
+  let toast = document.getElementById('builder-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'builder-toast';
+    toast.style.cssText = 'position:fixed;bottom:24px;right:24px;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:600;z-index:9999;transition:opacity 0.3s;font-family:var(--body)';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.style.background = isError ? '#c8102e' : '#15803d';
+  toast.style.color = 'white';
+  toast.style.opacity = '1';
+  clearTimeout(toast._timeout);
+  toast._timeout = setTimeout(() => toast.style.opacity = '0', 3000);
+}
+
+// Init when website section is shown
+const _origShowSection = window.showSection;
 
 // ── COLLECTIVE UPGRADES ───────────────────────────────────────
 async function loadUpgrades() {

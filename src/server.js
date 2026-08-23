@@ -320,6 +320,9 @@ app.use('/api/intelligence', require('./routes/intelligence'));
 // Public candidate pages API
 app.use('/api/candidate', require('./routes/candidate-page'));
 
+// Website builder API (requires candidate auth)
+app.use('/api/site', requireCandidate, require('./routes/site'));
+
 // Public volunteer signup — no auth required, called from /c/:subdomain pages
 app.post('/api/candidate/:subdomain/volunteer', async (req, res) => {
   const { subdomain } = req.params;
