@@ -204,9 +204,17 @@ async function scrapeState(stateAbbr, db = null) {
   // DEBUG: log first 500 chars of response to diagnose parsing issues
   console.log(`[Scraper] ${stateAbbr}: HTTP ${res.status}, body length: ${html.length}, first 200 chars: ${html.substring(0, 200).replace(/\n/g, '\\n')}`);
 
-  // Convert HTML to parseable text
-  // Extract the main content area by finding election date headers
-  const markdown = html
+  // Pre-process: collapse the accordion election headers which span multiple lines
+  // <h2 class="election-name...">Tue Aug 11, 2026\n-\nWisconsin Primary</h2>
+  // → <h2>Tue Aug 11, 2026 - Wisconsin Primary</h2>
+  const cleanedHtml = html
+    .replace(/<h2[^>]*class="[^"]*election-name[^"]*"[^>]*>([\s\S]*?)<\/h2>/gi, (match, inner) => {
+      const collapsed = inner.replace(/\s+/g, ' ').trim();
+      return `<h2>${collapsed}</h2>`;
+    });
+
+  // Convert HTML to parseable markdown
+  const markdown = cleanedHtml
     // Convert h2 tags
     .replace(/<h2[^>]*>(.*?)<\/h2>/gis, '\n## $1\n')
     .replace(/<h3[^>]*>(.*?)<\/h3>/gis, '\n### $1\n')
@@ -214,6 +222,8 @@ async function scrapeState(stateAbbr, db = null) {
     // Convert strong/b to markdown bold
     .replace(/<strong>(.*?)<\/strong>/gis, '**$1**')
     .replace(/<b>(.*?)<\/b>/gis, '**$1**')
+    // Convert br to newline so date appears on its own line after label
+    .replace(/<br\s*\/?>/gi, '\n')
     // Convert li items
     .replace(/<li[^>]*>(.*?)<\/li>/gis, '- $1\n')
     // Strip remaining tags
