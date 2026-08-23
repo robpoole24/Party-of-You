@@ -1,0 +1,20 @@
+[deploy]
+  healthcheckPath = "/"
+  healthcheckTimeout = 30
+
+[network]
+  allowedEgressHosts = [
+    "www.usvotefoundation.org",
+    "api.census.gov",
+    "v3.openstates.org",
+    "api.open.fec.gov",
+    "civicinfo.googleapis.com",
+    "maps.googleapis.com",
+    "fonts.googleapis.com",
+    "fonts.gstatic.com",
+    "api.votehub.com",
+    "listmonk-production-7168.up.railway.app",
+    "api.unsplash.com",
+    "res.cloudinary.com",
+    "api.cloudinary.com"
+  ]
