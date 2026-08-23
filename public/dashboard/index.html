@@ -1303,10 +1303,18 @@ body { font-family: var(--body); background: var(--gray); color: var(--text); -w
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
             <div style="font-size:13px;color:var(--muted)">Define your positions. These feed into your Issues page blocks and can be imported from your platform pledge.</div>
             <div style="display:flex;gap:8px">
-              <button onclick="importPledgeIssues()" class="topbar-btn secondary" style="font-size:12px">⬇ Import from Pledge</button>
+              <button onclick="togglePledgePicker()" class="topbar-btn secondary" style="font-size:12px" id="pledge-picker-btn">📋 Add from Pledge</button>
               <button onclick="addNewIssue()" class="topbar-btn primary" style="font-size:12px">+ Add Issue</button>
             </div>
           </div>
+
+          <!-- Pledge picker panel -->
+          <div id="pledge-picker-panel" style="display:none;background:var(--white);border:2px solid var(--navy);border-radius:10px;padding:18px 20px;margin-bottom:16px">
+            <div style="font-family:var(--cond);font-size:14px;font-weight:800;text-transform:uppercase;color:var(--navy);margin-bottom:12px">Platform Pledge — Add or Remove Issues</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Click <strong>+</strong> to add a pledge item to your issues list. Click <strong>−</strong> to remove it. You can edit the wording after adding.</div>
+            <div id="pledge-picker-grid" style="display:flex;flex-direction:column;gap:8px"></div>
+          </div>
+
           <div id="issues-list" style="display:flex;flex-direction:column;gap:12px">
             <div style="text-align:center;padding:40px;color:var(--muted);font-size:13px">Loading your issues...</div>
           </div>
@@ -4432,7 +4440,7 @@ function renderIssueList() {
   const list = document.getElementById('issues-list');
   if (!builderIssues.length) {
     list.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted);font-size:13px;border:2px dashed var(--border);border-radius:10px">
-      No issues yet. Click <strong>+ Add Issue</strong> to create your first position, or <strong>Import from Pledge</strong> to use your platform commitments as a starting point.
+      No issues yet. Click <strong>+ Add Issue</strong> to create your first position, or <strong>Add from Pledge</strong> to use your platform commitments as a starting point.
     </div>`;
     return;
   }
@@ -4467,19 +4475,67 @@ function updateIssue(idx, field, value) {
 function removeIssue(idx) {
   builderIssues.splice(idx, 1);
   renderIssueList();
+  // Refresh pledge picker if open so +/- states stay in sync
+  const panel = document.getElementById('pledge-picker-panel');
+  if (panel && panel.style.display !== 'none') renderPledgePicker();
 }
 function addNewIssue() {
   builderIssues.push({ title: 'New Issue', icon: '📋', summary: '', bullet_points: [], source: 'custom' });
   renderIssueList();
   document.getElementById('issues-list').lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
-async function importPledgeIssues() {
-  const existing = new Set(builderIssues.filter(i => i.source === 'pledge').map(i => i.title));
-  const toAdd = PLEDGE_ISSUES.filter(p => !existing.has(p.title));
-  if (!toAdd.length) { showToast('All pledge issues already imported'); return; }
-  toAdd.forEach(p => builderIssues.push({ ...p, source: 'pledge' }));
+function togglePledgePicker() {
+  const panel = document.getElementById('pledge-picker-panel');
+  const isOpen = panel.style.display !== 'none';
+  panel.style.display = isOpen ? 'none' : 'block';
+  if (!isOpen) renderPledgePicker();
+}
+
+function renderPledgePicker() {
+  const grid = document.getElementById('pledge-picker-grid');
+  const addedTitles = new Set(builderIssues.filter(i => i.source === 'pledge').map(i => i.title));
+
+  grid.innerHTML = PLEDGE_ISSUES.map((p, i) => {
+    const isAdded = addedTitles.has(p.title);
+    return `
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border:1px solid var(--border);border-radius:8px;background:${isAdded?'rgba(21,128,61,0.05)':'var(--white)'}" id="pledge-row-${i}">
+        <span style="font-size:20px;flex-shrink:0">${p.icon}</span>
+        <div style="flex:1">
+          <div style="font-family:var(--cond);font-size:14px;font-weight:800;text-transform:uppercase;color:var(--navy)">${p.title}</div>
+          <div style="font-size:12px;color:var(--muted)">${p.summary}</div>
+        </div>
+        ${isAdded
+          ? `<button onclick="removePledgeIssue(${i})"
+               style="background:none;border:2px solid var(--red);color:var(--red);border-radius:6px;width:32px;height:32px;font-size:18px;cursor:pointer;font-weight:700;flex-shrink:0;line-height:1"
+               title="Remove from my issues">−</button>`
+          : `<button onclick="addPledgeIssue(${i})"
+               style="background:var(--green);border:none;color:white;border-radius:6px;width:32px;height:32px;font-size:18px;cursor:pointer;font-weight:700;flex-shrink:0;line-height:1"
+               title="Add to my issues">+</button>`
+        }
+      </div>`;
+  }).join('');
+}
+
+function addPledgeIssue(pledgeIdx) {
+  const p = PLEDGE_ISSUES[pledgeIdx];
+  if (!p) return;
+  // Don't add if already present
+  if (builderIssues.some(i => i.source === 'pledge' && i.title === p.title)) return;
+  builderIssues.push({ ...p, source: 'pledge' });
   renderIssueList();
-  showToast(`${toAdd.length} pledge issues imported ✓`);
+  renderPledgePicker(); // refresh +/- states
+  showToast(`${p.title} added ✓`);
+}
+
+function removePledgeIssue(pledgeIdx) {
+  const p = PLEDGE_ISSUES[pledgeIdx];
+  if (!p) return;
+  const idx = builderIssues.findIndex(i => i.source === 'pledge' && i.title === p.title);
+  if (idx === -1) return;
+  builderIssues.splice(idx, 1);
+  renderIssueList();
+  renderPledgePicker(); // refresh +/- states
+  showToast(`${p.title} removed`);
 }
 async function saveIssues() {
   try {
