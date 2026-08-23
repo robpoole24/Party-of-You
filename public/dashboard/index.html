@@ -3801,7 +3801,618 @@ function removeBlock(pageId, idx) {
   renderBlockList(page);
 }
 function editBlock(pageId, idx) {
-  showToast('Block content editor coming in next session ✓');
+  // Close any open editor first
+  document.querySelectorAll('.block-editor-panel').forEach(p => p.remove());
+
+  const block = builderBlocks[pageId]?.[idx];
+  if (!block) return;
+
+  const panel = document.createElement('div');
+  panel.className = 'block-editor-panel';
+  panel.style.cssText = 'background:var(--gray);border:2px solid var(--navy);border-radius:10px;padding:20px;margin-top:8px;animation:fadeIn 0.2s ease';
+  panel.innerHTML = buildBlockEditorHTML(block, pageId, idx);
+
+  // Insert after the block item
+  const blockItems = document.querySelectorAll('.block-item');
+  const blockItem = blockItems[idx];
+  if (blockItem) {
+    blockItem.after(panel);
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+}
+
+function buildBlockEditorHTML(block, pageId, idx) {
+  const c = block.content || {};
+  const typeInfo = BLOCK_TYPES.find(t => t.type === block.type);
+
+  const header = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-family:var(--cond);font-size:16px;font-weight:900;text-transform:uppercase;color:var(--navy)">
+        ${typeInfo?.icon} Edit ${typeInfo?.label} Block
+      </div>
+      <div style="display:flex;gap:8px">
+        <button onclick="saveBlock('${pageId}',${idx})" class="topbar-btn primary" style="font-size:12px">Save Block</button>
+        <button onclick="this.closest('.block-editor-panel').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted)">×</button>
+      </div>
+    </div>`;
+
+  const fields = buildBlockFields(block.type, c, pageId, idx);
+  return header + fields;
+}
+
+function buildBlockFields(type, c, pageId, idx) {
+  const pid = `be-${pageId}-${idx}`;
+
+  switch (type) {
+
+    case 'hero': return `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div style="grid-column:1/-1">
+          <label class="field-label">Main Heading</label>
+          <input type="text" id="${pid}-heading" value="${esc(c.heading)}"
+            placeholder="Vote Jane Smith for City Council"
+            style="${fieldStyle()}">
+        </div>
+        <div style="grid-column:1/-1">
+          <label class="field-label">Subheading / Tagline</label>
+          <input type="text" id="${pid}-subheading" value="${esc(c.subheading)}"
+            placeholder="Fighting for working families in District 4"
+            style="${fieldStyle()}">
+        </div>
+        <div>
+          <label class="field-label">Primary Button Label</label>
+          <input type="text" id="${pid}-cta_primary_label" value="${esc(c.cta_primary_label)}"
+            placeholder="Volunteer" style="${fieldStyle()}">
+        </div>
+        <div>
+          <label class="field-label">Primary Button URL</label>
+          <input type="url" id="${pid}-cta_primary_url" value="${esc(c.cta_primary_url)}"
+            placeholder="/volunteer" style="${fieldStyle()}">
+        </div>
+        <div>
+          <label class="field-label">Secondary Button Label</label>
+          <input type="text" id="${pid}-cta_secondary_label" value="${esc(c.cta_secondary_label)}"
+            placeholder="Donate" style="${fieldStyle()}">
+        </div>
+        <div>
+          <label class="field-label">Secondary Button URL</label>
+          <input type="url" id="${pid}-cta_secondary_url" value="${esc(c.cta_secondary_url)}"
+            placeholder="/donate" style="${fieldStyle()}">
+        </div>
+        <div>
+          <label class="field-label">Background Style</label>
+          <select id="${pid}-background_type" style="${fieldStyle()}">
+            <option value="color" ${c.background_type==='color'?'selected':''}>Solid Color</option>
+            <option value="gradient" ${c.background_type==='gradient'?'selected':''}>Gradient</option>
+            <option value="photo" ${c.background_type==='photo'?'selected':''}>Photo (from Media Library)</option>
+          </select>
+        </div>
+        <div>
+          <label class="field-label">Background Photo URL</label>
+          ${mediaPickerBtn(pid, 'photo_url', c.photo_url)}
+        </div>
+      </div>`;
+
+    case 'bio': return `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div style="grid-column:1/-1">
+          <label class="field-label">Section Heading</label>
+          <input type="text" id="${pid}-heading" value="${esc(c.heading)}"
+            placeholder="About Jane" style="${fieldStyle()}">
+        </div>
+        <div>
+          <label class="field-label">Photo</label>
+          ${mediaPickerBtn(pid, 'photo_url', c.photo_url)}
+        </div>
+        <div>
+          <label class="field-label">Photo Position</label>
+          <select id="${pid}-photo_position" style="${fieldStyle()}">
+            <option value="left" ${c.photo_position==='left'||!c.photo_position?'selected':''}>Left</option>
+            <option value="right" ${c.photo_position==='right'?'selected':''}>Right</option>
+            <option value="top" ${c.photo_position==='top'?'selected':''}>Top / Centered</option>
+          </select>
+        </div>
+        <div style="grid-column:1/-1">
+          <label class="field-label">Bio Text</label>
+          <textarea id="${pid}-body_html" rows="6" placeholder="Write your bio here. Tell voters who you are, why you're running, and what you stand for."
+            style="${fieldStyle()} resize:vertical">${esc(c.body_html)}</textarea>
+        </div>
+        <div style="grid-column:1/-1">
+          <label class="field-label">Qualifications (one per line — e.g. "10 years as a public school teacher")</label>
+          <textarea id="${pid}-qualifications" rows="4"
+            placeholder="10 years as a public school teacher&#10;Former PTA president&#10;Small business owner since 2015"
+            style="${fieldStyle()} resize:vertical">${(c.qualifications||[]).map(q=>q.label||q).join('\n')}</textarea>
+        </div>
+      </div>`;
+
+    case 'issues': return `
+      <div style="display:grid;gap:14px">
+        <div>
+          <label class="field-label">Section Heading</label>
+          <input type="text" id="${pid}-heading" value="${esc(c.heading)}"
+            placeholder="Where I Stand" style="${fieldStyle()}">
+        </div>
+        <div>
+          <label class="field-label">Display Layout</label>
+          <select id="${pid}-layout" style="${fieldStyle()}">
+            <option value="sections" ${c.layout==='sections'||!c.layout?'selected':''}>Sections (stacked, full detail)</option>
+            <option value="accordion" ${c.layout==='accordion'?'selected':''}>Accordion (expandable)</option>
+            <option value="tabs" ${c.layout==='tabs'?'selected':''}>Tabs</option>
+          </select>
+        </div>
+        <div>
+          <label class="field-label">Issues to Show</label>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Check the issues to include. Manage issue content in the <strong>My Issues</strong> tab.</div>
+          <div id="${pid}-issue-checks" style="display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;padding:10px;border:1px solid var(--border);border-radius:6px;background:var(--white)">
+            ${builderIssues.length
+              ? builderIssues.map((issue, i) => `
+                  <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+                    <input type="checkbox" value="${i}" ${(c.issue_ids||[]).includes(i)?'checked':''}
+                      style="accent-color:var(--red)">
+                    <span>${issue.icon || '📋'} ${issue.title}</span>
+                  </label>`).join('')
+              : '<div style="color:var(--muted);font-size:13px">No issues yet — add them in the My Issues tab first.</div>'
+            }
+          </div>
+        </div>
+      </div>`;
+
+    case 'donate': return `
+      <div style="display:grid;gap:14px">
+        <div>
+          <label class="field-label">Section Heading</label>
+          <input type="text" id="${pid}-heading" value="${esc(c.heading)}"
+            placeholder="Support the Campaign" style="${fieldStyle()}">
+        </div>
+        <div>
+          <label class="field-label">Subheading</label>
+          <input type="text" id="${pid}-subheading" value="${esc(c.subheading)}"
+            placeholder="Every dollar helps us reach more voters." style="${fieldStyle()}">
+        </div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap">
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+            <input type="checkbox" id="${pid}-show_stripe" ${c.show_stripe!==false?'checked':''} style="accent-color:var(--red)"> Show Stripe
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+            <input type="checkbox" id="${pid}-show_paypal" ${c.show_paypal!==false?'checked':''} style="accent-color:var(--red)"> Show PayPal
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+            <input type="checkbox" id="${pid}-show_venmo" ${c.show_venmo!==false?'checked':''} style="accent-color:var(--red)"> Show Venmo
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+            <input type="checkbox" id="${pid}-show_cash" ${c.show_cash!==false?'checked':''} style="accent-color:var(--red)"> Show Check/Mail
+          </label>
+        </div>
+        <div>
+          <label class="field-label">Custom Message (optional)</label>
+          <textarea id="${pid}-custom_message" rows="3"
+            placeholder="Contributions are not tax-deductible. Max individual contribution: $250."
+            style="${fieldStyle()} resize:vertical">${esc(c.custom_message)}</textarea>
+        </div>
+        <div style="font-size:12px;color:var(--muted);padding:8px 12px;background:rgba(180,83,9,0.06);border-radius:6px">
+          ⚖️ Payment method links are set in the <strong>Donation Setup</strong> tab.
+        </div>
+      </div>`;
+
+    case 'events': return `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div style="grid-column:1/-1">
+          <label class="field-label">Section Heading</label>
+          <input type="text" id="${pid}-heading" value="${esc(c.heading)}"
+            placeholder="Upcoming Events" style="${fieldStyle()}">
+        </div>
+        <div>
+          <label class="field-label">Max Events to Show</label>
+          <select id="${pid}-max_events" style="${fieldStyle()}">
+            <option value="3" ${c.max_events===3?'selected':''}>3</option>
+            <option value="5" ${!c.max_events||c.max_events===5?'selected':''}>5</option>
+            <option value="10" ${c.max_events===10?'selected':''}>10</option>
+          </select>
+        </div>
+        <div>
+          <label class="field-label">Show Past Events?</label>
+          <select id="${pid}-show_past" style="${fieldStyle()}">
+            <option value="false" ${!c.show_past?'selected':''}>No — upcoming only</option>
+            <option value="true" ${c.show_past?'selected':''}>Yes — include past events</option>
+          </select>
+        </div>
+        <div style="grid-column:1/-1;font-size:12px;color:var(--muted);padding:8px 12px;background:var(--white);border-radius:6px">
+          📅 Events are pulled live from your <strong>Events</strong> tab. Add events there and they'll appear here automatically.
+        </div>
+      </div>`;
+
+    case 'volunteer': return `
+      <div style="display:grid;gap:14px">
+        <div>
+          <label class="field-label">Section Heading</label>
+          <input type="text" id="${pid}-heading" value="${esc(c.heading)}"
+            placeholder="Join the Team" style="${fieldStyle()}">
+        </div>
+        <div>
+          <label class="field-label">Subheading</label>
+          <input type="text" id="${pid}-subheading" value="${esc(c.subheading)}"
+            placeholder="This campaign runs on people power. Sign up to help." style="${fieldStyle()}">
+        </div>
+        <div>
+          <label class="field-label">Form Fields to Show</label>
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            ${['name','email','phone','zip','message'].map(f => `
+              <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+                <input type="checkbox" id="${pid}-field-${f}"
+                  ${(c.fields||['name','email','phone','zip']).includes(f)?'checked':''}
+                  ${f==='name'||f==='email'?'disabled checked':''} style="accent-color:var(--red)">
+                ${f.charAt(0).toUpperCase()+f.slice(1)} ${f==='name'||f==='email'?'<span style="color:var(--muted);font-size:10px">(required)</span>':''}
+              </label>`).join('')}
+          </div>
+        </div>
+      </div>`;
+
+    case 'endorsements': return `
+      <div style="display:grid;gap:14px">
+        <div>
+          <label class="field-label">Section Heading</label>
+          <input type="text" id="${pid}-heading" value="${esc(c.heading)}"
+            placeholder="Who's With Us" style="${fieldStyle()}">
+        </div>
+        <div>
+          <label class="field-label">Endorsements (one per block)</label>
+          <div id="${pid}-endorsements-list" style="display:flex;flex-direction:column;gap:10px">
+            ${(c.endorsements||[{name:'',title:'',quote:''}]).map((e,i) => `
+              <div style="background:var(--white);border:1px solid var(--border);border-radius:8px;padding:12px;display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:start" id="${pid}-end-${i}">
+                <input type="text" placeholder="Name" value="${esc(e.name)}"
+                  oninput="updateEndorsement('${pid}',${i},'name',this.value)"
+                  style="${fieldStyle()} margin:0">
+                <input type="text" placeholder="Title / Organization" value="${esc(e.title)}"
+                  oninput="updateEndorsement('${pid}',${i},'title',this.value)"
+                  style="${fieldStyle()} margin:0">
+                <button onclick="removeEndorsement('${pid}',${i})" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:18px;padding:0 4px">×</button>
+                <textarea placeholder="Quote" rows="2" oninput="updateEndorsement('${pid}',${i},'quote',this.value)"
+                  style="${fieldStyle()} resize:vertical;grid-column:1/3;margin:0">${esc(e.quote)}</textarea>
+              </div>`).join('')}
+          </div>
+          <button onclick="addEndorsement('${pid}')" style="margin-top:8px;background:none;border:1px dashed var(--border);border-radius:6px;padding:8px 16px;font-size:12px;cursor:pointer;color:var(--muted);width:100%;font-family:var(--body)">+ Add Endorsement</button>
+        </div>
+      </div>`;
+
+    case 'gallery': return `
+      <div style="display:grid;gap:14px">
+        <div>
+          <label class="field-label">Section Heading</label>
+          <input type="text" id="${pid}-heading" value="${esc(c.heading)}"
+            placeholder="On the Campaign Trail" style="${fieldStyle()}">
+        </div>
+        <div>
+          <label class="field-label">Columns</label>
+          <select id="${pid}-columns" style="${fieldStyle()}">
+            <option value="2" ${c.columns===2?'selected':''}>2 columns</option>
+            <option value="3" ${!c.columns||c.columns===3?'selected':''}>3 columns</option>
+            <option value="4" ${c.columns===4?'selected':''}>4 columns</option>
+          </select>
+        </div>
+        <div>
+          <label class="field-label">Photos</label>
+          <div id="${pid}-gallery-list" style="display:flex;flex-direction:column;gap:8px">
+            ${(c.photos||[]).map((p,i) => `
+              <div style="display:flex;gap:8px;align-items:center">
+                <img src="${p.url}" style="width:60px;height:40px;object-fit:cover;border-radius:4px;border:1px solid var(--border)">
+                <input type="text" value="${esc(p.caption)}" placeholder="Caption (optional)"
+                  oninput="updateGalleryCaption('${pid}',${i},this.value)"
+                  style="${fieldStyle()} flex:1;margin:0">
+                <button onclick="removeGalleryPhoto('${pid}',${i})" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:18px">×</button>
+              </div>`).join('')}
+          </div>
+          <button onclick="openMediaPickerForGallery('${pid}')"
+            style="margin-top:8px;background:var(--navy);color:white;border:none;border-radius:6px;padding:8px 16px;font-size:12px;cursor:pointer;font-family:var(--body)">
+            + Add from Media Library
+          </button>
+        </div>
+      </div>`;
+
+    case 'contact': return `
+      <div style="display:grid;gap:14px">
+        <div>
+          <label class="field-label">Section Heading</label>
+          <input type="text" id="${pid}-heading" value="${esc(c.heading)}"
+            placeholder="Get in Touch" style="${fieldStyle()}">
+        </div>
+        <div>
+          <label class="field-label">Intro Text (optional)</label>
+          <textarea id="${pid}-body" rows="3" placeholder="Have a question? Want to get involved? Reach out."
+            style="${fieldStyle()} resize:vertical">${esc(c.body)}</textarea>
+        </div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap">
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+            <input type="checkbox" id="${pid}-show_email" ${c.show_email!==false?'checked':''} style="accent-color:var(--red)"> Email
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+            <input type="checkbox" id="${pid}-show_phone" ${c.show_phone!==false?'checked':''} style="accent-color:var(--red)"> Phone
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+            <input type="checkbox" id="${pid}-show_address" ${c.show_address?'checked':''} style="accent-color:var(--red)"> Mailing Address
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+            <input type="checkbox" id="${pid}-show_socials" ${c.show_socials!==false?'checked':''} style="accent-color:var(--red)"> Social Links
+          </label>
+        </div>
+        <div style="font-size:12px;color:var(--muted);padding:8px 12px;background:var(--white);border-radius:6px">
+          📬 Contact details are pulled from your profile. Update them in <strong>Edit Profile</strong>.
+        </div>
+      </div>`;
+
+    case 'text': return `
+      <div style="display:grid;gap:14px">
+        <div>
+          <label class="field-label">Content</label>
+          <textarea id="${pid}-body_html" rows="10"
+            placeholder="Write your content here. Basic HTML is supported: &lt;b&gt;bold&lt;/b&gt;, &lt;a href=&quot;&quot;&gt;links&lt;/a&gt;, &lt;ul&gt;&lt;li&gt;lists&lt;/li&gt;&lt;/ul&gt;"
+            style="${fieldStyle()} resize:vertical;font-family:monospace;font-size:13px">${esc(c.body_html)}</textarea>
+        </div>
+        <div>
+          <label class="field-label">Max Width</label>
+          <select id="${pid}-max_width" style="${fieldStyle()}">
+            <option value="narrow" ${c.max_width==='narrow'?'selected':''}>Narrow (readable — good for text)</option>
+            <option value="wide" ${!c.max_width||c.max_width==='wide'?'selected':''}>Wide (full column)</option>
+            <option value="full" ${c.max_width==='full'?'selected':''}>Full bleed</option>
+          </select>
+        </div>
+      </div>`;
+
+    case 'divider': return `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div>
+          <label class="field-label">Style</label>
+          <select id="${pid}-style" style="${fieldStyle()}">
+            <option value="line" ${!c.style||c.style==='line'?'selected':''}>Line</option>
+            <option value="space" ${c.style==='space'?'selected':''}>Whitespace only</option>
+            <option value="stars" ${c.style==='stars'?'selected':''}>★ ★ ★</option>
+          </select>
+        </div>
+        <div>
+          <label class="field-label">Height (px)</label>
+          <input type="number" id="${pid}-height_px" value="${c.height_px||40}" min="10" max="200"
+            style="${fieldStyle()}">
+        </div>
+      </div>`;
+
+    default: return `<div style="color:var(--muted);font-size:13px">No editor available for block type: ${type}</div>`;
+  }
+}
+
+// ── Block field helpers ──
+function fieldStyle() {
+  return 'width:100%;height:38px;padding:0 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--body);background:var(--white);';
+}
+function esc(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function mediaPickerBtn(pid, field, currentUrl) {
+  return `
+    <div style="display:flex;gap:6px;align-items:center">
+      <input type="url" id="${pid}-${field}" value="${esc(currentUrl)}" placeholder="https://... or pick from library"
+        style="${fieldStyle()} flex:1">
+      <button onclick="openMediaPickerForField('${pid}-${field}')"
+        style="background:var(--navy);color:white;border:none;border-radius:6px;padding:0 12px;height:38px;font-size:12px;cursor:pointer;white-space:nowrap;font-family:var(--body)">
+        📷 Library
+      </button>
+    </div>`;
+}
+
+// ── Save block content ──
+function saveBlock(pageId, idx) {
+  const block = builderBlocks[pageId]?.[idx];
+  if (!block) return;
+  const pid = `be-${pageId}-${idx}`;
+  block.content = readBlockFields(block.type, pid, block.content);
+  showToast('Block saved ✓');
+  // Close editor panel
+  document.querySelector('.block-editor-panel')?.remove();
+  // Re-render list to reflect saved state
+  const page = builderPages.find(p => p.id === pageId);
+  if (page) renderBlockList(page);
+  // Auto-save to API
+  saveBlocksToAPI(pageId);
+}
+
+function readBlockFields(type, pid, existing = {}) {
+  const val = (id) => document.getElementById(id)?.value ?? null;
+  const checked = (id) => document.getElementById(id)?.checked ?? false;
+
+  switch (type) {
+    case 'hero': return {
+      heading: val(`${pid}-heading`),
+      subheading: val(`${pid}-subheading`),
+      cta_primary_label: val(`${pid}-cta_primary_label`),
+      cta_primary_url: val(`${pid}-cta_primary_url`),
+      cta_secondary_label: val(`${pid}-cta_secondary_label`),
+      cta_secondary_url: val(`${pid}-cta_secondary_url`),
+      background_type: val(`${pid}-background_type`),
+      photo_url: val(`${pid}-photo_url`),
+    };
+    case 'bio': return {
+      heading: val(`${pid}-heading`),
+      photo_url: val(`${pid}-photo_url`),
+      photo_position: val(`${pid}-photo_position`),
+      body_html: val(`${pid}-body_html`),
+      qualifications: (val(`${pid}-qualifications`) || '').split('\n').filter(Boolean).map(l => ({ label: l })),
+    };
+    case 'issues': {
+      const checks = document.querySelectorAll(`#${pid}-issue-checks input[type=checkbox]:checked`);
+      return {
+        heading: val(`${pid}-heading`),
+        layout: val(`${pid}-layout`),
+        issue_ids: [...checks].map(c => parseInt(c.value)),
+      };
+    }
+    case 'donate': return {
+      heading: val(`${pid}-heading`),
+      subheading: val(`${pid}-subheading`),
+      show_stripe: checked(`${pid}-show_stripe`),
+      show_paypal: checked(`${pid}-show_paypal`),
+      show_venmo: checked(`${pid}-show_venmo`),
+      show_cash: checked(`${pid}-show_cash`),
+      custom_message: val(`${pid}-custom_message`),
+    };
+    case 'events': return {
+      heading: val(`${pid}-heading`),
+      max_events: parseInt(val(`${pid}-max_events`) || 5),
+      show_past: val(`${pid}-show_past`) === 'true',
+    };
+    case 'volunteer': return {
+      heading: val(`${pid}-heading`),
+      subheading: val(`${pid}-subheading`),
+      fields: ['name','email','phone','zip','message'].filter(f =>
+        f === 'name' || f === 'email' || checked(`${pid}-field-${f}`)
+      ),
+    };
+    case 'endorsements': return {
+      heading: val(`${pid}-heading`),
+      endorsements: existing.endorsements || [],
+    };
+    case 'gallery': return {
+      heading: val(`${pid}-heading`),
+      columns: parseInt(val(`${pid}-columns`) || 3),
+      photos: existing.photos || [],
+    };
+    case 'contact': return {
+      heading: val(`${pid}-heading`),
+      body: val(`${pid}-body`),
+      show_email: checked(`${pid}-show_email`),
+      show_phone: checked(`${pid}-show_phone`),
+      show_address: checked(`${pid}-show_address`),
+      show_socials: checked(`${pid}-show_socials`),
+    };
+    case 'text': return {
+      body_html: val(`${pid}-body_html`),
+      max_width: val(`${pid}-max_width`),
+    };
+    case 'divider': return {
+      style: val(`${pid}-style`),
+      height_px: parseInt(val(`${pid}-height_px`) || 40),
+    };
+    default: return existing;
+  }
+}
+
+// ── Endorsement helpers ──
+function updateEndorsement(pid, idx, field, value) {
+  const page = builderPages.find(p => selectedPageId === p.id);
+  if (!page) return;
+  const block = builderBlocks[selectedPageId]?.find(b => b.type === 'endorsements');
+  if (!block) return;
+  if (!block.content.endorsements) block.content.endorsements = [];
+  if (!block.content.endorsements[idx]) block.content.endorsements[idx] = {};
+  block.content.endorsements[idx][field] = value;
+}
+function addEndorsement(pid) {
+  const block = builderBlocks[selectedPageId]?.find(b => b.type === 'endorsements');
+  if (!block) return;
+  if (!block.content.endorsements) block.content.endorsements = [];
+  block.content.endorsements.push({ name: '', title: '', quote: '' });
+  // Re-render the editor
+  const panel = document.querySelector('.block-editor-panel');
+  if (panel) {
+    const idx = builderBlocks[selectedPageId].indexOf(block);
+    editBlock(selectedPageId, idx);
+  }
+}
+function removeEndorsement(pid, idx) {
+  const block = builderBlocks[selectedPageId]?.find(b => b.type === 'endorsements');
+  if (!block?.content?.endorsements) return;
+  block.content.endorsements.splice(idx, 1);
+  const panel = document.querySelector('.block-editor-panel');
+  if (panel) {
+    const blockIdx = builderBlocks[selectedPageId].indexOf(block);
+    editBlock(selectedPageId, blockIdx);
+  }
+}
+
+// ── Gallery helpers ──
+function updateGalleryCaption(pid, idx, value) {
+  const block = builderBlocks[selectedPageId]?.find(b => b.type === 'gallery');
+  if (block?.content?.photos?.[idx]) block.content.photos[idx].caption = value;
+}
+function removeGalleryPhoto(pid, idx) {
+  const block = builderBlocks[selectedPageId]?.find(b => b.type === 'gallery');
+  if (!block?.content?.photos) return;
+  block.content.photos.splice(idx, 1);
+  const blockIdx = builderBlocks[selectedPageId].indexOf(block);
+  editBlock(selectedPageId, blockIdx);
+}
+function openMediaPickerForGallery(pid) {
+  openMediaPicker((url, altText) => {
+    const block = builderBlocks[selectedPageId]?.find(b => b.type === 'gallery');
+    if (!block) return;
+    if (!block.content.photos) block.content.photos = [];
+    block.content.photos.push({ url, caption: altText || '' });
+    const blockIdx = builderBlocks[selectedPageId].indexOf(block);
+    editBlock(selectedPageId, blockIdx);
+  });
+}
+
+// ── Media picker for image fields ──
+let _mediaPickerCallback = null;
+function openMediaPickerForField(fieldId) {
+  openMediaPicker((url) => {
+    const el = document.getElementById(fieldId);
+    if (el) el.value = url;
+  });
+}
+function openMediaPicker(callback) {
+  _mediaPickerCallback = callback;
+  // Build picker modal inline
+  let modal = document.getElementById('media-picker-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'media-picker-modal';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:10000;display:flex;align-items:center;justify-content:center;padding:24px';
+    modal.innerHTML = `
+      <div style="background:white;border-radius:12px;padding:24px;max-width:700px;width:100%;max-height:80vh;overflow-y:auto">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <div style="font-family:var(--cond);font-size:18px;font-weight:900;text-transform:uppercase;color:var(--navy)">📷 Choose from Media Library</div>
+          <button onclick="document.getElementById('media-picker-modal').style.display='none'"
+            style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted)">×</button>
+        </div>
+        <div id="media-picker-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px">
+          ${mediaItems.length
+            ? mediaItems.map(item => `
+              <div onclick="selectFromMediaPicker('${item.cloudinary_url}','${esc(item.alt_text)}')"
+                style="border-radius:8px;overflow:hidden;cursor:pointer;border:2px solid transparent;transition:border-color 0.15s"
+                onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='transparent'">
+                <img src="${item.cloudinary_thumb_url || item.cloudinary_url}" alt="${esc(item.alt_text)}"
+                  style="width:100%;aspect-ratio:16/10;object-fit:cover">
+                <div style="padding:4px 6px;font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                  ${item.photographer_name ? `📷 ${item.photographer_name}` : item.original_filename || 'Uploaded'}
+                </div>
+              </div>`).join('')
+            : '<div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--muted);font-size:13px">No images in library yet. Add some in the Media Library tab.</div>'
+          }
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
+  } else {
+    modal.style.display = 'flex';
+  }
+}
+function selectFromMediaPicker(url, altText) {
+  if (_mediaPickerCallback) _mediaPickerCallback(url, altText);
+  document.getElementById('media-picker-modal').style.display = 'none';
+}
+
+// ── Save blocks to API ──
+async function saveBlocksToAPI(pageId) {
+  const blocks = builderBlocks[pageId] || [];
+  // We need the DB page ID — for now store mapping when pages load from API
+  // This is a no-op stub until pages are loaded from DB with real IDs
+  // Full implementation connects when public site renderer is built
+  try {
+    await fetch(`/api/site/blocks`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ page_key: pageId, blocks }),
+    });
+  } catch (e) { /* non-fatal */ }
 }
 
 // ── Issues ──

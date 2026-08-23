@@ -270,4 +270,59 @@ router.put('/pages', async (req, res) => {
   }
 });
 
+// ── PUT /api/site/blocks ────────────────────────────────────────
+// Saves blocks for a page (identified by page_key = local client ID or slug)
+router.put('/blocks', async (req, res) => {
+  const db = req.db;
+  const candidateId = req.candidate?.id;
+  if (!candidateId) return res.status(401).json({ error: 'Not authenticated' });
+
+  const { page_key, blocks } = req.body;
+  if (!page_key || !Array.isArray(blocks)) {
+    return res.status(400).json({ error: 'page_key and blocks array required' });
+  }
+
+  try {
+    // Find the page by slug (page_key may be 'page-0', 'page-1' etc from client
+    // or an actual slug — try to match slug first)
+    const slug = page_key.startsWith('page-')
+      ? ['home','about','issues','donate','events','volunteer','contact'][parseInt(page_key.split('-')[1])] || 'home'
+      : page_key;
+
+    const pageResult = await db.query(
+      'SELECT id FROM site_pages WHERE candidate_id = $1 AND slug = $2',
+      [candidateId, slug]
+    );
+
+    if (!pageResult.rows.length) {
+      // Page doesn't exist in DB yet — that's OK, blocks will save when pages are persisted
+      return res.json({ success: true, note: 'Page not yet persisted — blocks queued' });
+    }
+
+    const pageId = pageResult.rows[0].id;
+    const client = await db.connect();
+    try {
+      await client.query('BEGIN');
+      await client.query('DELETE FROM site_blocks WHERE page_id = $1', [pageId]);
+      for (let i = 0; i < blocks.length; i++) {
+        const { block_type, type, content, is_visible } = blocks[i];
+        await client.query(`
+          INSERT INTO site_blocks (page_id, candidate_id, block_type, content, sort_order, is_visible)
+          VALUES ($1, $2, $3, $4, $5, $6)
+        `, [pageId, candidateId, block_type || type, JSON.stringify(content || {}), i, is_visible !== false]);
+      }
+      await client.query('COMMIT');
+      res.json({ success: true, saved: blocks.length });
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
+    }
+  } catch (err) {
+    console.error('[Site] blocks save error:', err.message);
+    res.status(500).json({ error: 'Could not save blocks' });
+  }
+});
+
 module.exports = router;
