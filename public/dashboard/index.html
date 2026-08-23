@@ -2339,6 +2339,8 @@ body { font-family: var(--body); background: var(--gray); color: var(--text); -w
 </div>
 
 <script>
+// Global DOM helper
+const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
 // ── STATE ─────────────────────────────────────────────────────
 let candidateData = null;
 let intelligenceData = null;
@@ -2357,15 +2359,34 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // ── LOAD DATA ─────────────────────────────────────────────────
 async function loadCandidateData() {
-  try {
-    const res = await fetch('/api/dashboard/profile');
-    if (res.ok) {
-      candidateData = await res.json();
-    } else {
-      candidateData = getDemoCandidate();
+  // Retry up to 3 times — Railway cold starts can cause the first request to fail
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const res = await fetch('/api/dashboard/profile');
+      if (res.ok) {
+        candidateData = await res.json();
+        break;
+      }
+      // Non-ok response (401, 500 etc) — don't retry auth failures
+      if (res.status === 401 || res.status === 403) {
+        window.location.href = '/login.html';
+        return;
+      }
+      // Other errors — wait and retry
+      if (attempt < 3) await new Promise(r => setTimeout(r, 1000 * attempt));
+    } catch (e) {
+      if (attempt < 3) await new Promise(r => setTimeout(r, 1000 * attempt));
     }
-  } catch {
-    candidateData = getDemoCandidate();
+  }
+
+  // If still no data after retries, show empty state — NOT fake demo data
+  if (!candidateData) {
+    console.warn('[Dashboard] Could not load candidate profile after 3 attempts');
+    candidateData = {
+      full_name: '', preferred_name: '', office_sought: '',
+      state: '', city: '', address: '', zip: '',
+      subdomain: '', onboarding_step: 1,
+    };
   }
 
   renderCandidateInfo();
@@ -2475,10 +2496,10 @@ function getDemoCandidate() {
   return {
     full_name: 'Your Name Here',
     office_sought: 'Your Race',
-    state: 'WI',
-    city: 'Milwaukee',
-    address: '1234 Main St',
-    zip: '53221',
+    state: '',
+    city: '',
+    address: '',
+    zip: '',
     onboarding_step: 5,
     subdomain: 'yourname',
   };
@@ -3823,7 +3844,7 @@ function showSection(name, btn) {
   const loaders = {
     overview: () => {},
     district: () => {},
-    voters: () => { renderDistrictCharts(); },
+    voters: () => { setTimeout(renderDistrictCharts, 50); },
     tracker: renderChecklist,
     email: loadEmail,
     outreach: () => {},
