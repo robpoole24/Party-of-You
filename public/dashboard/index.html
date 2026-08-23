@@ -3931,7 +3931,7 @@ const _origShowSection = window.showSection;
 let mediaItems = [];
 let mediaCount = 0;
 let unsplashResults = [];
-let unsplashPage = 1;
+let unsplashCurrentPage = 1;
 let unsplashTotalPages = 1;
 let unsplashCurrentQuery = '';
 let selectedUnsplashIds = new Set();
@@ -4019,15 +4019,15 @@ async function unsplashSearch(query) {
   const q = query || document.getElementById('unsplash-query').value.trim();
   if (!q) return;
   unsplashCurrentQuery = q;
-  unsplashPage = 1;
+  unsplashCurrentPage = 1;
   document.getElementById('unsplash-query').value = q;
   await doUnsplashSearch(q, 1);
 }
 
 async function unsplashPage(dir) {
-  const newPage = unsplashPage + dir;
+  const newPage = unsplashCurrentPage + dir;
   if (newPage < 1 || newPage > unsplashTotalPages) return;
-  unsplashPage = newPage;
+  unsplashCurrentPage = newPage;
   await doUnsplashSearch(unsplashCurrentQuery, newPage);
 }
 
