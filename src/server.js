@@ -323,6 +323,9 @@ app.use('/api/candidate', require('./routes/candidate-page'));
 // Website builder API (requires candidate auth)
 app.use('/api/site', requireCandidate, require('./routes/site'));
 
+// Media library API (requires candidate auth)
+app.use('/api/media', requireCandidate, require('./routes/media'));
+
 // Public volunteer signup — no auth required, called from /c/:subdomain pages
 app.post('/api/candidate/:subdomain/volunteer', async (req, res) => {
   const { subdomain } = req.params;

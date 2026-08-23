@@ -363,6 +363,34 @@ body { font-family: var(--body); background: var(--gray); color: var(--text); -w
 .page-item-name { font-size: 14px; font-weight: 600; flex: 1; color: var(--text); }
 .page-toggle { cursor: pointer; }
 
+/* ── MEDIA LIBRARY ── */
+.media-thumb {
+  position: relative; border-radius: 8px; overflow: hidden;
+  aspect-ratio: 16/10; background: var(--border); cursor: pointer;
+  border: 2px solid transparent; transition: border-color 0.15s;
+}
+.media-thumb:hover { border-color: var(--sky); }
+.media-thumb.selected { border-color: var(--red); }
+.media-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.media-thumb-check {
+  position: absolute; top: 6px; left: 6px;
+  width: 20px; height: 20px; border-radius: 4px;
+  background: white; border: 2px solid rgba(0,0,0,0.3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px;
+}
+.media-thumb.selected .media-thumb-check { background: var(--red); border-color: var(--red); color: white; }
+.media-card { border-radius: 8px; overflow: hidden; border: 1px solid var(--border); background: var(--white); }
+.media-card-img { aspect-ratio: 16/10; overflow: hidden; }
+.media-card-img img { width: 100%; height: 100%; object-fit: cover; }
+.media-card-foot { padding: 8px 10px; font-size: 11px; color: var(--muted); display: flex; justify-content: space-between; align-items: center; }
+.quick-topic-btn {
+  font-size: 11px; padding: 4px 10px; border: 1px solid var(--border);
+  border-radius: 20px; background: var(--white); cursor: pointer; font-family: var(--body);
+  color: var(--text); white-space: nowrap;
+}
+.quick-topic-btn:hover { border-color: var(--sky); color: var(--sky); }
+
 </style>
 </head>
 <body>
@@ -1060,6 +1088,7 @@ body { font-family: var(--body); background: var(--gray); color: var(--text); -w
           <button class="builder-tab active" onclick="switchBuilderTab('design')" id="tab-design">🎨 Template & Design</button>
           <button class="builder-tab" onclick="switchBuilderTab('pages')" id="tab-pages">📄 Pages & Blocks</button>
           <button class="builder-tab" onclick="switchBuilderTab('issues')" id="tab-issues">📋 My Issues</button>
+          <button class="builder-tab" onclick="switchBuilderTab('media')" id="tab-media">🖼️ Media Library</button>
           <button class="builder-tab" onclick="switchBuilderTab('donate')" id="tab-donate">💸 Donation Setup</button>
           <button class="builder-tab" onclick="switchBuilderTab('integrations')" id="tab-integrations">⚙️ Integrations</button>
         </div>
@@ -1280,6 +1309,164 @@ body { font-family: var(--body); background: var(--gray); color: var(--text); -w
           </div>
           <div id="issues-list" style="display:flex;flex-direction:column;gap:12px">
             <div style="text-align:center;padding:40px;color:var(--muted);font-size:13px">Loading your issues...</div>
+          </div>
+        </div>
+
+        <!-- ══ TAB: MEDIA LIBRARY ══ -->
+        <div id="btab-media" class="builder-tab-content" style="display:none">
+
+          <!-- Usage counter -->
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+            <div>
+              <span id="media-count-display" style="font-family:var(--cond);font-size:20px;font-weight:900;color:var(--navy)">0</span>
+              <span style="font-size:13px;color:var(--muted)"> / 50 images used</span>
+              <div id="media-limit-bar" style="width:200px;height:4px;background:var(--border);border-radius:2px;margin-top:4px;display:inline-block;vertical-align:middle;margin-left:10px">
+                <div id="media-limit-fill" style="height:100%;width:0%;background:var(--sky);border-radius:2px;transition:width 0.3s"></div>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button onclick="showMediaUpload()" class="topbar-btn secondary" style="font-size:12px">⬆ Upload Image</button>
+              <button onclick="showUnsplashSearch()" class="topbar-btn primary" style="font-size:12px">🔍 Search Unsplash</button>
+            </div>
+          </div>
+
+          <!-- Unsplash search panel -->
+          <div id="unsplash-panel" style="display:none;background:var(--white);border:2px solid var(--navy);border-radius:10px;padding:20px;margin-bottom:20px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+              <div style="font-family:var(--cond);font-size:16px;font-weight:800;text-transform:uppercase;color:var(--navy)">🔍 Search Unsplash</div>
+              <button onclick="document.getElementById('unsplash-panel').style.display='none'" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--muted)">×</button>
+            </div>
+            <!-- Quick topic buttons -->
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+              <span style="font-size:11px;color:var(--muted);align-self:center">Quick topics:</span>
+              <button onclick="unsplashSearch('american flag')" class="quick-topic-btn">🇺🇸 American Flag</button>
+              <button onclick="unsplashSearch('community town hall')" class="quick-topic-btn">🏛 Town Hall</button>
+              <button onclick="unsplashSearch('neighborhood main street')" class="quick-topic-btn">🏘 Main Street</button>
+              <button onclick="unsplashSearch('voting ballot democracy')" class="quick-topic-btn">🗳 Democracy</button>
+              <button onclick="unsplashSearch('working people labor')" class="quick-topic-btn">✊ Workers</button>
+              <button onclick="unsplashSearch('city council meeting')" class="quick-topic-btn">📋 Council Meeting</button>
+              <button onclick="unsplashSearch('patriotic americana')" class="quick-topic-btn">🦅 Patriotic</button>
+              <button onclick="unsplashSearch('diverse community people')" class="quick-topic-btn">🤝 Community</button>
+              <button onclick="unsplashSearch('campaign rally crowd')" class="quick-topic-btn">📢 Rally</button>
+            </div>
+            <div style="display:flex;gap:8px;margin-bottom:14px">
+              <input type="text" id="unsplash-query" placeholder="Search for photos..." onkeydown="if(event.key==='Enter')unsplashSearch()"
+                style="flex:1;height:40px;padding:0 12px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:var(--body)">
+              <button onclick="unsplashSearch()" class="topbar-btn primary">Search</button>
+            </div>
+            <div id="unsplash-results" style="display:none">
+              <div id="unsplash-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-bottom:12px"></div>
+              <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+                <div style="font-size:12px;color:var(--muted)">
+                  Photos by <a href="https://unsplash.com?utm_source=party_of_you&utm_medium=referral" target="_blank" style="color:var(--sky)">Unsplash</a>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <button id="unsplash-prev" onclick="unsplashPage(-1)" class="topbar-btn secondary" style="font-size:11px;padding:5px 12px;display:none">← Prev</button>
+                  <span id="unsplash-page-info" style="font-size:12px;color:var(--muted)"></span>
+                  <button id="unsplash-next" onclick="unsplashPage(1)" class="topbar-btn secondary" style="font-size:11px;padding:5px 12px;display:none">Next →</button>
+                </div>
+                <button id="save-selected-btn" onclick="saveSelectedUnsplash()" class="topbar-btn primary" style="font-size:12px;display:none">Save Selected to Library →</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Image upload panel -->
+          <div id="image-upload-panel" style="display:none;background:var(--white);border:2px solid var(--navy);border-radius:10px;padding:20px;margin-bottom:20px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+              <div style="font-family:var(--cond);font-size:16px;font-weight:800;text-transform:uppercase;color:var(--navy)">⬆ Upload Your Own Image</div>
+              <button onclick="document.getElementById('image-upload-panel').style.display='none'" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--muted)">×</button>
+            </div>
+            <div style="border:2px dashed var(--border);border-radius:8px;padding:32px;text-align:center;margin-bottom:12px" id="upload-dropzone"
+              ondragover="event.preventDefault();this.style.borderColor='var(--sky)'"
+              ondragleave="this.style.borderColor='var(--border)'"
+              ondrop="handleImageDrop(event)">
+              <div style="font-size:32px;margin-bottom:8px">🖼️</div>
+              <div style="font-size:14px;color:var(--muted);margin-bottom:10px">Drag & drop an image here, or</div>
+              <label style="cursor:pointer">
+                <span class="topbar-btn primary" style="font-size:12px">Choose File</span>
+                <input type="file" id="image-file-input" accept="image/*" style="display:none" onchange="handleImageSelect(this)">
+              </label>
+              <div style="font-size:11px;color:var(--muted);margin-top:8px">JPG, PNG, WebP — max 10MB</div>
+            </div>
+            <div id="upload-preview" style="display:none;margin-bottom:12px">
+              <img id="upload-preview-img" style="max-height:200px;border-radius:6px;max-width:100%">
+              <input type="text" id="upload-alt-text" placeholder="Describe this image (for accessibility)" style="width:100%;height:36px;padding:0 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--body);margin-top:8px">
+            </div>
+            <button id="upload-submit-btn" onclick="submitImageUpload()" class="topbar-btn primary" style="display:none;font-size:12px">Upload to Library →</button>
+          </div>
+
+          <!-- Media grid -->
+          <div id="media-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px">
+            <div style="text-align:center;padding:60px 20px;color:var(--muted);font-size:13px;grid-column:1/-1">Loading media library...</div>
+          </div>
+
+          <!-- Custom Pages section -->
+          <div style="margin-top:32px">
+            <div style="font-family:var(--cond);font-size:18px;font-weight:900;text-transform:uppercase;color:var(--navy);margin-bottom:4px">Custom Page Uploads</div>
+            <div style="font-size:13px;color:var(--muted);margin-bottom:16px">Upload your own HTML files to replace any page. The uploaded file is served exactly as-is at your campaign URL.</div>
+
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+              <div style="font-size:12px;color:var(--muted)">Max 2MB per file · HTML only · Inline scripts allowed</div>
+              <button onclick="showCustomPageUpload()" class="topbar-btn primary" style="font-size:12px">⬆ Upload Custom Page</button>
+            </div>
+
+            <!-- Custom page upload form -->
+            <div id="custom-page-upload-form" style="display:none;background:var(--white);border:2px solid var(--navy);border-radius:10px;padding:20px;margin-bottom:16px">
+              <div style="font-family:var(--cond);font-size:14px;font-weight:800;text-transform:uppercase;color:var(--navy);margin-bottom:14px">Upload Custom HTML Page</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+                <div>
+                  <label class="field-label">Which page does this replace? *</label>
+                  <select id="custom-page-slug" style="width:100%;height:38px;padding:0 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--body)">
+                    <option value="">— Select a page —</option>
+                    <option value="home">Home</option>
+                    <option value="about">About Me</option>
+                    <option value="issues">Issues</option>
+                    <option value="donate">Donate</option>
+                    <option value="events">Events</option>
+                    <option value="volunteer">Volunteer</option>
+                    <option value="contact">Contact</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="field-label">HTML File *</label>
+                  <input type="file" id="custom-page-file" accept=".html,text/html"
+                    style="width:100%;height:38px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--body)">
+                </div>
+              </div>
+              <!-- Extra fields for donate page -->
+              <div id="donate-page-extra" style="display:none;border:1px solid rgba(180,83,9,0.3);border-radius:8px;padding:14px;margin-bottom:12px;background:rgba(180,83,9,0.04)">
+                <div style="font-size:12px;font-weight:700;color:var(--amber);margin-bottom:10px">⚖️ Donation Tracking Setup</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+                  <div>
+                    <label class="field-label">Payment Processor</label>
+                    <select id="custom-processor" style="width:100%;height:36px;padding:0 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--body)">
+                      <option value="">— Select —</option>
+                      <option value="stripe">Stripe</option>
+                      <option value="paypal">PayPal</option>
+                      <option value="venmo">Venmo</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="field-label">Account Email / Handle</label>
+                    <input type="text" id="custom-processor-account" placeholder="email@example.com or @handle"
+                      style="width:100%;height:36px;padding:0 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--body)">
+                  </div>
+                </div>
+                <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+                  <input type="checkbox" id="custom-wants-webhook" style="accent-color:var(--red)">
+                  I want to set up automatic donation logging (we'll contact you with webhook instructions)
+                </label>
+              </div>
+              <div style="display:flex;gap:8px">
+                <button onclick="submitCustomPage()" class="topbar-btn primary" style="font-size:12px">Upload Page →</button>
+                <button onclick="document.getElementById('custom-page-upload-form').style.display='none'" class="topbar-btn secondary" style="font-size:12px">Cancel</button>
+              </div>
+            </div>
+
+            <div id="custom-pages-list" style="display:flex;flex-direction:column;gap:8px">
+              <div style="text-align:center;padding:24px;color:var(--muted);font-size:13px">No custom pages uploaded yet.</div>
+            </div>
           </div>
         </div>
 
@@ -3423,6 +3610,7 @@ function switchBuilderTab(tab) {
 
   if (tab === 'pages' && builderPages.length === 0) initPages();
   if (tab === 'issues' && builderIssues.length === 0) loadIssues();
+  if (tab === 'media' && !mediaItems.length) loadMediaLibrary();
   if (tab === 'donate') loadDonateSettings();
 }
 
@@ -3736,6 +3924,349 @@ function showToast(msg, isError = false) {
 
 // Init when website section is shown
 const _origShowSection = window.showSection;
+
+
+// ── MEDIA LIBRARY ─────────────────────────────────────────────
+
+let mediaItems = [];
+let mediaCount = 0;
+let unsplashResults = [];
+let unsplashPage = 1;
+let unsplashTotalPages = 1;
+let unsplashCurrentQuery = '';
+let selectedUnsplashIds = new Set();
+let imageUploadFile = null;
+
+async function loadMediaLibrary() {
+  try {
+    const res = await fetch('/api/media');
+    if (!res.ok) return;
+    const data = await res.json();
+    mediaItems = data.items || [];
+    mediaCount = data.count || 0;
+    updateMediaCounter(data.count, data.limit);
+    renderMediaGrid();
+  } catch (e) {
+    console.warn('[Media] load error:', e.message);
+  }
+  loadCustomPages();
+}
+
+function updateMediaCounter(count, limit) {
+  const el = document.getElementById('media-count-display');
+  const fill = document.getElementById('media-limit-fill');
+  if (el) el.textContent = count;
+  if (fill) {
+    const pct = Math.min((count / limit) * 100, 100);
+    fill.style.width = pct + '%';
+    fill.style.background = pct >= 90 ? 'var(--red)' : pct >= 70 ? 'var(--amber)' : 'var(--sky)';
+  }
+}
+
+function renderMediaGrid() {
+  const grid = document.getElementById('media-grid');
+  if (!grid) return;
+  if (!mediaItems.length) {
+    grid.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--muted);font-size:13px;grid-column:1/-1;border:2px dashed var(--border);border-radius:10px">
+      No images yet. Search Unsplash or upload your own photos.
+    </div>`;
+    return;
+  }
+  grid.innerHTML = mediaItems.map(item => `
+    <div class="media-card">
+      <div class="media-card-img">
+        <img src="${item.cloudinary_thumb_url || item.cloudinary_url}" alt="${item.alt_text || ''}" loading="lazy">
+      </div>
+      <div class="media-card-foot">
+        <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:110px">
+          ${item.source === 'unsplash'
+            ? `<a href="${item.unsplash_url}" target="_blank" style="color:var(--sky);text-decoration:none" title="Photo by ${item.photographer_name}">📷 ${item.photographer_name}</a>`
+            : `📁 ${item.original_filename || 'Uploaded'}`}
+        </span>
+        <button onclick="deleteMediaItem('${item.id}')" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:14px;padding:0" title="Remove">🗑</button>
+      </div>
+    </div>`).join('');
+}
+
+async function deleteMediaItem(id) {
+  if (!confirm('Remove this image from your library?')) return;
+  try {
+    const res = await fetch(`/api/media/${id}`, { method: 'DELETE' });
+    if (res.ok) {
+      mediaItems = mediaItems.filter(i => i.id !== id);
+      mediaCount = Math.max(0, mediaCount - 1);
+      updateMediaCounter(mediaCount, 50);
+      renderMediaGrid();
+      showToast('Image removed');
+    }
+  } catch (e) { showToast('Delete failed', true); }
+}
+
+// ── Unsplash search ──
+function showUnsplashSearch() {
+  const p = document.getElementById('unsplash-panel');
+  p.style.display = p.style.display === 'none' ? 'block' : 'none';
+  document.getElementById('image-upload-panel').style.display = 'none';
+  if (p.style.display === 'block') document.getElementById('unsplash-query').focus();
+}
+function showMediaUpload() {
+  const p = document.getElementById('image-upload-panel');
+  p.style.display = p.style.display === 'none' ? 'block' : 'none';
+  document.getElementById('unsplash-panel').style.display = 'none';
+}
+
+async function unsplashSearch(query) {
+  const q = query || document.getElementById('unsplash-query').value.trim();
+  if (!q) return;
+  unsplashCurrentQuery = q;
+  unsplashPage = 1;
+  document.getElementById('unsplash-query').value = q;
+  await doUnsplashSearch(q, 1);
+}
+
+async function unsplashPage(dir) {
+  const newPage = unsplashPage + dir;
+  if (newPage < 1 || newPage > unsplashTotalPages) return;
+  unsplashPage = newPage;
+  await doUnsplashSearch(unsplashCurrentQuery, newPage);
+}
+
+async function doUnsplashSearch(q, page) {
+  const grid = document.getElementById('unsplash-grid');
+  const results = document.getElementById('unsplash-results');
+  results.style.display = 'block';
+  grid.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-size:13px;grid-column:1/-1">Searching...</div>';
+  selectedUnsplashIds.clear();
+
+  try {
+    const res = await fetch(`/api/media/search?q=${encodeURIComponent(q)}&page=${page}`);
+    if (!res.ok) throw new Error('Search failed');
+    const data = await res.json();
+    unsplashResults = data.results || [];
+    unsplashTotalPages = data.total_pages || 1;
+
+    const pageInfo = document.getElementById('unsplash-page-info');
+    if (pageInfo) pageInfo.textContent = `Page ${page} of ${data.total_pages} (${data.total?.toLocaleString()} results)`;
+
+    document.getElementById('unsplash-prev').style.display = page > 1 ? 'inline-block' : 'none';
+    document.getElementById('unsplash-next').style.display = page < data.total_pages ? 'inline-block' : 'none';
+
+    if (!unsplashResults.length) {
+      grid.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-size:13px;grid-column:1/-1">No results found. Try a different search.</div>';
+      return;
+    }
+
+    grid.innerHTML = unsplashResults.map(photo => `
+      <div class="media-thumb ${selectedUnsplashIds.has(photo.id) ? 'selected' : ''}"
+        onclick="toggleUnsplashSelect('${photo.id}')" id="uthumb-${photo.id}">
+        <img src="${photo.thumb}" alt="${photo.alt || ''}" loading="lazy" style="width:100%;height:100%;object-fit:cover">
+        <div class="media-thumb-check">${selectedUnsplashIds.has(photo.id) ? '✓' : ''}</div>
+        <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.6));padding:6px 8px">
+          <a href="${photo.photographer_url}" target="_blank" onclick="event.stopPropagation()"
+            style="font-size:10px;color:rgba(255,255,255,0.8);text-decoration:none">📷 ${photo.photographer_name}</a>
+        </div>
+      </div>`).join('');
+  } catch (e) {
+    grid.innerHTML = `<div style="text-align:center;padding:24px;color:var(--muted);font-size:13px;grid-column:1/-1">Search failed: ${e.message}</div>`;
+  }
+}
+
+function toggleUnsplashSelect(id) {
+  const thumb = document.getElementById(`uthumb-${id}`);
+  if (selectedUnsplashIds.has(id)) {
+    selectedUnsplashIds.delete(id);
+    thumb?.classList.remove('selected');
+    thumb?.querySelector('.media-thumb-check') && (thumb.querySelector('.media-thumb-check').textContent = '');
+  } else {
+    selectedUnsplashIds.add(id);
+    thumb?.classList.add('selected');
+    thumb?.querySelector('.media-thumb-check') && (thumb.querySelector('.media-thumb-check').textContent = '✓');
+  }
+  const btn = document.getElementById('save-selected-btn');
+  if (btn) btn.style.display = selectedUnsplashIds.size > 0 ? 'inline-block' : 'none';
+}
+
+async function saveSelectedUnsplash() {
+  if (!selectedUnsplashIds.size) return;
+  const photos = unsplashResults.filter(p => selectedUnsplashIds.has(p.id));
+  const btn = document.getElementById('save-selected-btn');
+  btn.textContent = `Saving ${photos.length} photo${photos.length > 1 ? 's' : ''}...`;
+  btn.disabled = true;
+
+  let saved = 0, skipped = 0;
+  for (const photo of photos) {
+    try {
+      const res = await fetch('/api/media/save-unsplash', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          unsplash_id: photo.id,
+          regular_url: photo.regular,
+          full_url: photo.full,
+          thumb_url: photo.thumb,
+          alt_text: photo.alt,
+          photographer_name: photo.photographer_name,
+          photographer_url: photo.photographer_url,
+          unsplash_url: photo.unsplash_url,
+          download_location: photo.download_location,
+          width: photo.width,
+          height: photo.height,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) { saved++; if (data.item) mediaItems.unshift(data.item); }
+      else if (data.code === 'DUPLICATE') skipped++;
+      else if (data.code === 'LIMIT_REACHED') { showToast('Library full — delete some images first', true); break; }
+    } catch (e) { skipped++; }
+  }
+
+  mediaCount = Math.min(50, mediaCount + saved);
+  updateMediaCounter(mediaCount, 50);
+  renderMediaGrid();
+  selectedUnsplashIds.clear();
+  btn.textContent = 'Save Selected to Library →';
+  btn.disabled = false;
+  showToast(`${saved} photo${saved !== 1 ? 's' : ''} saved${skipped ? ` (${skipped} skipped)` : ''} ✓`);
+  document.querySelectorAll('.media-thumb').forEach(t => { t.classList.remove('selected'); const c = t.querySelector('.media-thumb-check'); if(c) c.textContent=''; });
+  btn.style.display = 'none';
+}
+
+// ── Image upload ──
+function handleImageSelect(input) {
+  if (!input.files.length) return;
+  imageUploadFile = input.files[0];
+  showUploadPreview(imageUploadFile);
+}
+function handleImageDrop(event) {
+  event.preventDefault();
+  document.getElementById('upload-dropzone').style.borderColor = 'var(--border)';
+  const file = event.dataTransfer.files[0];
+  if (!file) return;
+  imageUploadFile = file;
+  showUploadPreview(file);
+}
+function showUploadPreview(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    document.getElementById('upload-preview-img').src = e.target.result;
+    document.getElementById('upload-preview').style.display = 'block';
+    document.getElementById('upload-submit-btn').style.display = 'inline-block';
+  };
+  reader.readAsDataURL(file);
+}
+async function submitImageUpload() {
+  if (!imageUploadFile) return;
+  const btn = document.getElementById('upload-submit-btn');
+  btn.textContent = 'Uploading...';
+  btn.disabled = true;
+
+  const formData = new FormData();
+  formData.append('image', imageUploadFile);
+  formData.append('alt_text', document.getElementById('upload-alt-text').value);
+
+  try {
+    const res = await fetch('/api/media/upload', { method: 'POST', body: formData });
+    const data = await res.json();
+    if (res.ok) {
+      mediaItems.unshift(data.item);
+      mediaCount++;
+      updateMediaCounter(mediaCount, 50);
+      renderMediaGrid();
+      document.getElementById('image-upload-panel').style.display = 'none';
+      document.getElementById('upload-preview').style.display = 'none';
+      imageUploadFile = null;
+      showToast('Image uploaded ✓');
+    } else {
+      showToast(data.error || 'Upload failed', true);
+    }
+  } catch (e) { showToast('Upload failed', true); }
+
+  btn.textContent = 'Upload to Library →';
+  btn.disabled = false;
+}
+
+// ── Custom page uploads ──
+function showCustomPageUpload() {
+  const form = document.getElementById('custom-page-upload-form');
+  form.style.display = form.style.display === 'none' ? 'block' : 'none';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Show donate-page-extra fields when donate slug is selected
+  const slugEl = document.getElementById('custom-page-slug');
+  if (slugEl) {
+    slugEl.addEventListener('change', () => {
+      const extra = document.getElementById('donate-page-extra');
+      if (extra) extra.style.display = slugEl.value === 'donate' ? 'block' : 'none';
+    });
+  }
+});
+
+async function submitCustomPage() {
+  const slug = document.getElementById('custom-page-slug').value;
+  const fileInput = document.getElementById('custom-page-file');
+  if (!slug) { showToast('Select a page to replace', true); return; }
+  if (!fileInput.files.length) { showToast('Choose an HTML file', true); return; }
+
+  const formData = new FormData();
+  formData.append('page', fileInput.files[0]);
+  formData.append('page_slug', slug);
+  if (slug === 'donate') {
+    formData.append('payment_processor', document.getElementById('custom-processor').value);
+    formData.append('processor_account', document.getElementById('custom-processor-account').value);
+    formData.append('wants_webhook', document.getElementById('custom-wants-webhook').checked);
+  }
+
+  try {
+    const res = await fetch('/api/media/pages/upload', { method: 'POST', body: formData });
+    const data = await res.json();
+    if (res.ok) {
+      showToast(`${slug} page uploaded ✓`);
+      document.getElementById('custom-page-upload-form').style.display = 'none';
+      loadCustomPages();
+    } else {
+      showToast(data.error || 'Upload failed', true);
+    }
+  } catch (e) { showToast('Upload failed', true); }
+}
+
+async function loadCustomPages() {
+  try {
+    const res = await fetch('/api/media/pages');
+    if (!res.ok) return;
+    const pages = await res.json();
+    renderCustomPages(pages);
+  } catch (e) {}
+}
+
+function renderCustomPages(pages) {
+  const list = document.getElementById('custom-pages-list');
+  if (!list) return;
+  if (!pages.length) {
+    list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-size:13px">No custom pages uploaded yet.</div>';
+    return;
+  }
+  list.innerHTML = pages.map(p => `
+    <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--white);border:1px solid var(--border);border-radius:8px">
+      <span style="font-size:20px">📄</span>
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:13px;color:var(--navy);text-transform:capitalize">${p.page_slug}</div>
+        <div style="font-size:11px;color:var(--muted)">${p.original_filename} · ${Math.round(p.file_size_bytes/1024)}KB · Uploaded ${new Date(p.uploaded_at).toLocaleDateString()}</div>
+        ${p.payment_processor ? `<div style="font-size:11px;color:var(--green)">✓ ${p.payment_processor} tracking${p.wants_webhook ? ' · webhook requested' : ''}</div>` : ''}
+      </div>
+      <a href="${p.cloudinary_url}" target="_blank" style="font-size:12px;color:var(--sky);text-decoration:none">Preview →</a>
+      <button onclick="deleteCustomPage('${p.page_slug}')" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:14px" title="Revert to builder">🗑</button>
+    </div>`).join('');
+}
+
+async function deleteCustomPage(slug) {
+  if (!confirm(`Remove custom ${slug} page? Your site will revert to the builder version.`)) return;
+  try {
+    const res = await fetch(`/api/media/pages/${slug}`, { method: 'DELETE' });
+    if (res.ok) { showToast(`Custom ${slug} page removed`); loadCustomPages(); }
+    else showToast('Delete failed', true);
+  } catch (e) { showToast('Delete failed', true); }
+}
 
 // ── COLLECTIVE UPGRADES ───────────────────────────────────────
 async function loadUpgrades() {
