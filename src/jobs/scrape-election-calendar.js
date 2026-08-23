@@ -200,6 +200,9 @@ async function scrapeState(stateAbbr, db = null) {
 
   const html = await res.text();
 
+  // DEBUG: log first 500 chars of response to diagnose parsing issues
+  console.log(`[Scraper] ${stateAbbr}: HTTP ${res.status}, body length: ${html.length}, first 200 chars: ${html.substring(0, 200).replace(/\n/g, '\\n')}`);
+
   // Convert HTML to parseable text
   // Extract the main content area by finding election date headers
   const markdown = html
@@ -224,6 +227,16 @@ async function scrapeState(stateAbbr, db = null) {
     .trim();
 
   const stateName = slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+
+  // DEBUG: show markdown around election headers
+  const h2idx = markdown.indexOf('\n## ');
+  console.log(`[Scraper] ${stateAbbr}: markdown length: ${markdown.length}, first ## at index: ${h2idx}`);
+  if (h2idx > -1) {
+    console.log(`[Scraper] ${stateAbbr}: header context: ${markdown.substring(h2idx, h2idx + 150).replace(/\n/g, '\\n')}`);
+  } else {
+    console.log(`[Scraper] ${stateAbbr}: NO ## headers found. Sample markdown: ${markdown.substring(0, 300).replace(/\n/g, '\\n')}`);
+  }
+
   const elections = parseStateCalendar(markdown, stateAbbr.toUpperCase(), stateName);
 
   console.log(`[Scraper] ${stateAbbr}: found ${elections.length} elections`);
