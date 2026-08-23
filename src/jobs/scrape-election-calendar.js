@@ -77,8 +77,9 @@ function parseStateCalendar(markdown, stateAbbr, stateName) {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
 
-    // Detect election header: "## Tue Aug 11, 2026 - Wisconsin Congressional..."
-    const electionMatch = line.match(/^##\s+((?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s+\w+\s+\d+,\s+\d+)\s+-\s+(.+)$/i);
+    // Detect election header — page uses h3 tags which become ### in markdown
+    // e.g. "### Tue Aug 11, 2026 - Wisconsin Congressional Primary Election"
+    const electionMatch = line.match(/^#{2,4}\s+((?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s+\w+\s+\d+,\s+\d+)\s+-\s+(.+)$/i);
     if (electionMatch) {
       if (currentElection) elections.push(currentElection);
       const dateStr = electionMatch[1];
@@ -109,13 +110,13 @@ function parseStateCalendar(markdown, stateAbbr, stateName) {
 
     if (!currentElection) continue;
 
-    // Detect section headers
-    if (line.includes('Voter Registration Deadline')) { currentSection = 'registration'; continue; }
-    if (line.includes('Absentee Ballot Request Deadline')) { currentSection = 'absenteeRequest'; continue; }
-    if (line.includes('Absentee Ballot Return Deadline')) { currentSection = 'absenteeReturn'; continue; }
-    if (line.includes('Early Voting Available')) { currentSection = 'earlyVoting'; continue; }
-    // Stop processing domestic section when we hit overseas/military
-    if (line.includes('Overseas') || line.includes('Military')) { currentSection = null; continue; }
+    // Detect section headers (h4 on real page = #### in markdown, but match any # level)
+    if (/#{1,4}\s+Voter Registration Deadline/i.test(line)) { currentSection = 'registration'; continue; }
+    if (/#{1,4}\s+Absentee Ballot Request Deadline/i.test(line)) { currentSection = 'absenteeRequest'; continue; }
+    if (/#{1,4}\s+Absentee Ballot Return Deadline/i.test(line)) { currentSection = 'absenteeReturn'; continue; }
+    if (/#{1,4}\s+Early Voting/i.test(line)) { currentSection = 'earlyVoting'; continue; }
+    // Stop at overseas/military sections
+    if (/#{1,4}\s+Overseas|#{1,4}\s+Military/i.test(line)) { currentSection = null; continue; }
 
     if (!currentSection || !line) continue;
 
