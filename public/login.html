@@ -46,6 +46,7 @@ input::placeholder { color: rgba(255,255,255,0.25); }
   <div class="eyebrow">Candidate Portal</div>
   <h1>Sign In</h1>
   <div class="error" id="error"></div>
+  <div class="error" id="resetSuccess" style="background:rgba(21,128,61,0.12);border-color:rgba(21,128,61,0.3);color:#86efac">✓ Password updated. You can now sign in with your new password.</div>
   <div class="field">
     <label>Email Address</label>
     <input type="email" id="email" placeholder="your@email.com" autocomplete="email">
@@ -53,6 +54,9 @@ input::placeholder { color: rgba(255,255,255,0.25); }
   <div class="field">
     <label>Password</label>
     <input type="password" id="password" placeholder="Your password" autocomplete="current-password">
+    <div style="text-align:right;margin-top:7px">
+      <a href="#" id="forgotLink" onclick="goForgot(event)" style="font-size:12px;color:rgba(255,255,255,0.4);text-decoration:none">Forgot password?</a>
+    </div>
   </div>
   <button class="btn" onclick="login()">Sign In →</button>
   <div class="footer-links">
@@ -61,6 +65,25 @@ input::placeholder { color: rgba(255,255,255,0.25); }
   </div>
 </div>
 <script>
+// Show success banner if redirected from password reset
+const _urlParams = new URLSearchParams(window.location.search);
+if (_urlParams.get('message') === 'password-reset') {
+  document.getElementById('resetSuccess').classList.add('show');
+}
+
+// Pre-fill email if carried from forgot-password page
+const _prefillEmail = _urlParams.get('email');
+if (_prefillEmail) {
+  document.getElementById('email').value = _prefillEmail;
+}
+
+// Carry current email value into forgot-password page
+function goForgot(e) {
+  e.preventDefault();
+  const email = document.getElementById('email').value.trim();
+  window.location.href = '/forgot-password.html' + (email ? '?email=' + encodeURIComponent(email) : '');
+}
+
 async function login() {
   const email = document.getElementById('email').value.trim();
   const password = document.getElementById('password').value;

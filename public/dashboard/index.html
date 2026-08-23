@@ -4110,6 +4110,11 @@ function editBlock(pageId, idx) {
   const block = builderBlocks[pageId]?.[idx];
   if (!block) return;
 
+  // Track which block is open for auto-save targeting
+  window._poyCurrentEditingBlockId = `${pageId}::${idx}`;
+  window._poyCurrentEditingPageId = pageId;
+  window._poyCurrentEditingIdx = idx;
+
   const panel = document.createElement('div');
   panel.className = 'block-editor-panel';
   panel.style.cssText = 'background:var(--gray);border:2px solid var(--navy);border-radius:10px;padding:20px;margin-top:8px;animation:fadeIn 0.2s ease';
@@ -4513,8 +4518,13 @@ function saveBlock(pageId, idx) {
   // Re-render list to reflect saved state
   const page = builderPages.find(p => p.id === pageId);
   if (page) renderBlockList(page);
-  // Auto-save to API
-  saveBlocksToAPI(pageId);
+  // Save to API and update auto-save status
+  saveBlocksToAPI(pageId).then(() => {
+    window.poyAutoSave?.markClean();
+  }).catch(() => {
+    window.poyAutoSave?.setStatus('error');
+  });
+  window._poyCurrentEditingBlockId = null; // editor closed
 }
 
 function readBlockFields(type, pid, existing = {}) {
@@ -4706,16 +4716,18 @@ function selectFromMediaPicker(url, altText) {
 // ── Save blocks to API ──
 async function saveBlocksToAPI(pageId) {
   const blocks = builderBlocks[pageId] || [];
-  // We need the DB page ID — for now store mapping when pages load from API
-  // This is a no-op stub until pages are loaded from DB with real IDs
-  // Full implementation connects when public site renderer is built
   try {
-    await fetch(`/api/site/blocks`, {
+    const res = await fetch(`/api/site/blocks`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ page_key: pageId, blocks }),
     });
-  } catch (e) { /* non-fatal */ }
+    if (!res.ok && res.status !== 401) throw new Error(`API ${res.status}`);
+    return res;
+  } catch (e) {
+    console.warn('[Builder] saveBlocksToAPI failed:', e.message);
+    throw e; // re-throw so callers can handle
+  }
 }
 
 // ── Issues ──
@@ -5577,6 +5589,166 @@ function logout() {
     .then(() => window.location.href = '/')
     .catch(() => window.location.href = '/');
 }
+</script>
+
+<script>
+// ─────────────────────────────────────────────────────────────
+// SESSION EXPIRY HANDLER
+// Wraps fetch() globally. When any API call returns SESSION_EXPIRED,
+// shows a red banner and pauses auto-save. Candidates see a clear
+// "Log In Again" prompt instead of silent failure loops.
+// ─────────────────────────────────────────────────────────────
+(function installSessionExpiryHandler() {
+  const _origFetch = window.fetch.bind(window);
+  let _bannerShown = false;
+
+  window.fetch = async function(...args) {
+    const response = await _origFetch(...args);
+    if (response.status === 401 && !_bannerShown) {
+      const clone = response.clone();
+      try {
+        const data = await clone.json();
+        if (data.error === 'SESSION_EXPIRED') {
+          _bannerShown = true;
+          window._poyAutoSavePaused = true;
+          _showSessionBanner();
+        }
+      } catch { /* not JSON — ignore */ }
+    }
+    return response;
+  };
+
+  function _showSessionBanner() {
+    if (document.getElementById('poy-session-banner')) return;
+    const b = document.createElement('div');
+    b.id = 'poy-session-banner';
+    b.style.cssText = [
+      'position:fixed;top:0;left:0;right:0;z-index:99999',
+      'background:#7f1d1d;color:#fecaca',
+      'font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:14px',
+      'padding:13px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px',
+      'box-shadow:0 2px 12px rgba(0,0,0,0.4)',
+    ].join(';');
+    b.innerHTML = `
+      <span>⏱ Your session has expired. <strong>Unsaved changes may be lost.</strong></span>
+      <div style="display:flex;gap:10px;flex-shrink:0">
+        <a href="/login.html?redirect=/dashboard/"
+           style="background:#dc2626;color:#fff;text-decoration:none;padding:7px 16px;border-radius:5px;font-weight:600;font-size:13px">
+          Log In Again
+        </a>
+        <button onclick="this.closest('#poy-session-banner').remove()"
+                style="background:transparent;border:1px solid #fca5a5;color:#fca5a5;padding:7px 12px;border-radius:5px;cursor:pointer;font-size:13px">
+          Dismiss
+        </button>
+      </div>`;
+    document.body.prepend(b);
+  }
+})();
+
+// ─────────────────────────────────────────────────────────────
+// AUTO-SAVE SYSTEM — Website Builder
+// Tracks changes in the block editor, saves every 30 seconds
+// if dirty. Shows "Saved ✓" / "Saving…" / "Unsaved changes ●"
+// in a status indicator next to the builder tab bar.
+// ─────────────────────────────────────────────────────────────
+(function initAutoSave() {
+  let _isDirty = false;
+  let _isSaving = false;
+  const INTERVAL = 30000;
+
+  // ── Status indicator ──────────────────────────────
+  function _injectIndicator() {
+    if (document.getElementById('poy-save-status')) return;
+    const el = document.createElement('div');
+    el.id = 'poy-save-status';
+    el.style.cssText = 'display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:#8899bb;padding:4px 10px;border-radius:4px;transition:color 0.2s;user-select:none;position:fixed;bottom:20px;right:20px;background:rgba(13,27,53,0.92);border:1px solid #2a3a5c;box-shadow:0 2px 8px rgba(0,0,0,0.3);z-index:500;pointer-events:none;';
+    el.innerHTML = '<span id="poy-save-dot" style="width:7px;height:7px;border-radius:50%;background:#8899bb;display:inline-block;flex-shrink:0"></span><span id="poy-save-text">All saved</span>';
+    document.body.appendChild(el);
+  }
+
+  function _setStatus(state) {
+    const map = {
+      saved:   { color: '#22c55e', label: 'Saved ✓' },
+      saving:  { color: '#f59e0b', label: 'Saving…' },
+      unsaved: { color: '#f59e0b', label: 'Unsaved changes ●' },
+      error:   { color: '#ef4444', label: 'Save failed — click Save Block' },
+      idle:    { color: '#8899bb', label: 'All saved' },
+    };
+    const s = map[state] || map.idle;
+    const dot = document.getElementById('poy-save-dot');
+    const txt = document.getElementById('poy-save-text');
+    const wrap = document.getElementById('poy-save-status');
+    if (wrap) wrap.style.color = s.color;
+    if (dot) dot.style.background = s.color;
+    if (txt) txt.textContent = s.label;
+  }
+
+  function _markDirty() {
+    if (!_isDirty) { _isDirty = true; _setStatus('unsaved'); }
+  }
+
+  function _markClean() {
+    _isDirty = false;
+    _setStatus('saved');
+    setTimeout(() => _setStatus('idle'), 3000);
+  }
+
+  // Listen for any input change inside the block editor panels
+  document.addEventListener('input', (e) => {
+    if (e.target.closest('.block-editor-panel') || e.target.closest('#btab-pages')) _markDirty();
+  }, true);
+  document.addEventListener('change', (e) => {
+    if (e.target.closest('.block-editor-panel') || e.target.closest('#btab-pages')) _markDirty();
+  }, true);
+
+  // ── Auto-save executor ────────────────────────────
+  async function _autoSave() {
+    if (!_isDirty || _isSaving || window._poyAutoSavePaused) return;
+    const pageId = window._poyCurrentEditingPageId;
+    const idx = window._poyCurrentEditingIdx;
+    if (pageId == null || idx == null) return;
+
+    _isSaving = true;
+    _setStatus('saving');
+
+    try {
+      // Read current field values into the block, then save to API
+      const block = builderBlocks[pageId]?.[idx];
+      if (block) {
+        const pid = `be-${pageId}-${idx}`;
+        block.content = readBlockFields(block.type, pid, block.content);
+      }
+      await saveBlocksToAPI(pageId);
+      _markClean();
+    } catch (err) {
+      console.warn('[AutoSave] failed:', err.message);
+      _setStatus('error');
+    } finally {
+      _isSaving = false;
+    }
+  }
+
+  // Warn on navigation with unsaved changes
+  window.addEventListener('beforeunload', (e) => {
+    if (_isDirty) {
+      _autoSave(); // best-effort sync
+      e.preventDefault();
+      e.returnValue = 'You have unsaved changes in the website builder. Leave anyway?';
+    }
+  });
+
+  // Expose for external use
+  window.poyAutoSave = { markDirty: _markDirty, markClean: _markClean, setStatus: _setStatus };
+
+  // Init after DOM ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', _injectIndicator);
+  } else {
+    _injectIndicator();
+  }
+
+  setInterval(_autoSave, INTERVAL);
+})();
 </script>
 </body>
 </html>

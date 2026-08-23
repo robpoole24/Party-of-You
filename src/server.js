@@ -13,7 +13,7 @@ const cookieParser = require('cookie-parser');
 const path = require('path');
 
 const { getApiStatus, getConnectedApis, getPendingApis } = require('./config/apis');
-const { requireAdmin, requireCandidate, adminLogin, candidateLogin, logout, verifyToken } = require('./middleware/auth');
+const { requireAdmin, requireCandidate, adminLogin, candidateLogin, logout, forgotPassword, resetPassword, verifyToken } = require('./middleware/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -194,6 +194,22 @@ app.get('/c/:subdomain', (req, res) => {
   });
 });
 
+// Public candidate sub-pages — /c/:subdomain/issues, /c/:subdomain/donate etc.
+// Same HTML shell as /c/:subdomain; JS reads the URL segment to show the right page.
+app.get('/c/:subdomain/:page', (req, res) => {
+  const { subdomain, page } = req.params;
+  if (!/^[a-z0-9-]{1,50}$/.test(subdomain) || !/^[a-z0-9-]{1,50}$/.test(page)) {
+    return res.status(400).send('Invalid campaign URL');
+  }
+  const filePath = path.join(__dirname, '../public/candidate-page.html');
+  res.sendFile(filePath, (err) => {
+    if (err) {
+      console.error('[CandidatePage] Could not serve candidate-page.html:', err.message);
+      res.status(500).send('Candidate page unavailable. Please try again shortly.');
+    }
+  });
+});
+
 // All other static files — 1h cache in production
 app.use(express.static(path.join(__dirname, '../public'), {
   maxAge: process.env.NODE_ENV === 'production' ? '1h' : 0,
@@ -253,6 +269,8 @@ app.post('/api/admin/logout', (req, res) => {
 // Candidate auth
 app.post('/api/auth/login', (req, res) => candidateLogin(req, res, db));
 app.post('/api/auth/logout', logout);
+app.post('/api/auth/forgot-password', (req, res) => forgotPassword(req, res, db));
+app.post('/api/auth/reset-password', (req, res) => resetPassword(req, res, db));
 
 // Lightweight auth check — used by nav.js to show/hide dashboard link
 app.get('/api/auth/me', (req, res) => {
