@@ -3,620 +3,594 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Loading... | Party of You</title>
+  <title>Loading...</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600;700&family=Oswald:wght@400;600;700&family=Playfair+Display:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --navy:  #1a2d5a;
-      --navy-d:#021434;
-      --red:   #c8102e;
-      --sky:   #2b7fc1;
-      --white: #ffffff;
-      --gray:  #f4f6fa;
-      --border:#dde3ef;
-      --text:  #1a1a2e;
-      --muted: #64748b;
-      --green: #15803d;
-      --cond:  'Barlow Condensed', sans-serif;
-      --body:  'Barlow', sans-serif;
-    }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: var(--body); color: var(--text); background: var(--gray); min-height: 100vh; }
+  :root {
+    --accent:#c8102e; --accent-d:#a00c24;
+    --navy:#1a2d5a; --navy-d:#021434;
+    --sky:#2b7fc1; --white:#ffffff; --off-white:#f8fafc;
+    --gray:#f4f6fa; --border:#dde3ef;
+    --text:#1a1a2e; --muted:#64748b; --green:#15803d;
+    --h-font:'Barlow Condensed',sans-serif;
+    --b-font:'Barlow',sans-serif;
+    --nav-bg:var(--navy-d); --hero-bg:var(--navy-d);
+    --page-bg:var(--gray);
+  }
+  [data-template="hometown"]    { --accent:#c8102e; --nav-bg:#021434; --hero-bg:#021434; }
+  [data-template="grassroots"]  { --accent:#15803d; --accent-d:#166534; --navy:#14532d; --navy-d:#052e16; --nav-bg:#052e16; --hero-bg:#052e16; --page-bg:#f0fdf4; }
+  [data-template="forward"]     { --accent:#2b7fc1; --accent-d:#1d5a8a; --navy:#0f172a; --navy-d:#0f172a; --nav-bg:#0f172a; --hero-bg:#1e293b; --page-bg:#f8fafc; }
+  [data-template="people_first"]{ --accent:#b45309; --accent-d:#92400e; --navy:#1a2d5a; --navy-d:#0c1a35; --nav-bg:#1a2d5a; --page-bg:#fffbf5; }
+  [data-template="independent"] { --accent:#111; --accent-d:#000; --navy:#111; --navy-d:#000; --nav-bg:#000; --hero-bg:#111; --page-bg:#fff; --border:#e2e2e2; --text:#111; }
 
-    /* ── NAV ── */
-    .site-nav {
-      background: var(--navy-d);
-      padding: 12px 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .site-nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-    .site-nav-logo img { height: 36px; }
-    .site-nav-logo span { font-family: var(--cond); font-size: 18px; font-weight: 800; color: white; text-transform: uppercase; letter-spacing: 0.04em; }
-    .site-nav-link { font-size: 13px; color: rgba(255,255,255,0.7); text-decoration: none; }
-    .site-nav-link:hover { color: white; }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{font-family:var(--b-font);color:var(--text);background:var(--page-bg);min-height:100vh;}
 
-    /* ── HERO ── */
-    .hero {
-      background: var(--navy-d);
-      color: white;
-      padding: 48px 24px 40px;
-    }
-    .hero-inner { max-width: 860px; margin: 0 auto; display: flex; gap: 32px; align-items: flex-start; flex-wrap: wrap; }
-    .hero-photo {
-      width: 120px; height: 120px; border-radius: 50%;
-      border: 4px solid rgba(255,255,255,0.2);
-      object-fit: cover; flex-shrink: 0;
-      background: var(--navy);
-    }
-    .hero-photo-placeholder {
-      width: 120px; height: 120px; border-radius: 50%;
-      border: 4px solid rgba(255,255,255,0.2);
-      background: var(--navy); flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 48px;
-    }
-    .hero-info { flex: 1; min-width: 200px; }
-    .hero-badge {
-      display: inline-block;
-      font-family: var(--cond); font-size: 11px; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 0.1em;
-      background: var(--red); color: white;
-      padding: 3px 10px; border-radius: 4px; margin-bottom: 10px;
-    }
-    .hero-name { font-family: var(--cond); font-size: 48px; font-weight: 900; line-height: 1; text-transform: uppercase; margin-bottom: 6px; }
-    .hero-race { font-size: 16px; color: rgba(255,255,255,0.75); margin-bottom: 16px; }
-    .hero-meta { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; color: rgba(255,255,255,0.6); }
-    .hero-meta span::before { margin-right: 5px; }
+  .site-nav{background:var(--nav-bg);padding:0 28px;display:flex;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,0.25);}
+  .site-nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;padding:14px 0;flex-shrink:0;}
+  .nav-name{font-family:var(--h-font);font-size:20px;font-weight:900;color:white;text-transform:uppercase;letter-spacing:.04em;line-height:1;}
+  .nav-links{display:flex;align-items:stretch;margin-left:auto;gap:0;}
+  .nav-link{color:rgba(255,255,255,.7);font-size:13px;font-weight:600;text-decoration:none;padding:0 16px;display:flex;align-items:center;border-bottom:3px solid transparent;transition:color .15s,border-color .15s;height:52px;}
+  .nav-link:hover{color:white;border-bottom-color:rgba(255,255,255,.3);}
+  .nav-link.active{color:white;border-bottom-color:var(--accent);}
+  .nav-cta{background:var(--accent);color:white;font-size:13px;font-weight:700;text-decoration:none;padding:8px 18px;border-radius:4px;margin-left:12px;align-self:center;white-space:nowrap;transition:background .15s;}
+  .nav-cta:hover{background:var(--accent-d);}
 
-    /* ── CONTENT ── */
-    .content { max-width: 860px; margin: 0 auto; padding: 32px 24px; display: flex; flex-direction: column; gap: 24px; }
+  .site-hero{background:var(--hero-bg);color:white;padding:60px 28px 52px;position:relative;overflow:hidden;}
+  .hero-inner{max-width:900px;margin:0 auto;display:flex;gap:36px;align-items:center;flex-wrap:wrap;}
+  .hero-photo{width:140px;height:140px;border-radius:50%;border:4px solid rgba(255,255,255,.25);object-fit:cover;flex-shrink:0;}
+  .hero-photo-placeholder{width:140px;height:140px;border-radius:50%;border:4px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:56px;flex-shrink:0;}
+  .hero-info{flex:1;min-width:220px;}
+  .hero-badge{display:inline-block;font-family:var(--h-font);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;background:var(--accent);color:white;padding:3px 10px;border-radius:3px;margin-bottom:12px;}
+  .hero-name{font-family:var(--h-font);font-size:clamp(36px,6vw,64px);font-weight:900;line-height:1;text-transform:uppercase;margin-bottom:8px;}
+  .hero-race{font-size:18px;color:rgba(255,255,255,.8);margin-bottom:12px;}
+  .hero-tagline{font-size:15px;color:rgba(255,255,255,.65);margin-bottom:20px;line-height:1.6;max-width:500px;}
+  .hero-actions{display:flex;gap:10px;flex-wrap:wrap;}
+  .hero-meta{display:flex;gap:16px;flex-wrap:wrap;margin-top:16px;font-size:12px;color:rgba(255,255,255,.55);}
 
-    /* ── ACTION BAR ── */
-    .action-bar {
-      background: var(--white);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 20px 24px;
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-    .action-bar-text { flex: 1; min-width: 180px; }
-    .action-bar-text strong { font-family: var(--cond); font-size: 18px; font-weight: 800; text-transform: uppercase; color: var(--navy); display: block; }
-    .action-bar-text span { font-size: 13px; color: var(--muted); }
-    .btn { display: inline-block; padding: 10px 22px; border-radius: 6px; font-size: 14px; font-weight: 700; text-decoration: none; cursor: pointer; border: none; font-family: var(--body); }
-    .btn-primary { background: var(--red); color: white; }
-    .btn-primary:hover { background: #a00d26; }
-    .btn-secondary { background: var(--navy); color: white; }
-    .btn-secondary:hover { background: #0f1f3d; }
-    .btn-outline { background: transparent; color: var(--navy); border: 2px solid var(--navy); }
-    .btn-outline:hover { background: var(--gray); }
+  .btn{display:inline-block;padding:11px 24px;border-radius:5px;font-size:14px;font-weight:700;text-decoration:none;cursor:pointer;border:none;font-family:var(--b-font);transition:background .15s,transform .1s;}
+  .btn:hover{transform:translateY(-1px);}
+  .btn-primary{background:var(--accent);color:white;}
+  .btn-primary:hover{background:var(--accent-d);}
+  .btn-ghost{background:rgba(255,255,255,.12);color:white;border:1px solid rgba(255,255,255,.3);}
+  .btn-ghost:hover{background:rgba(255,255,255,.2);}
+  .btn-outline{background:transparent;color:var(--accent);border:2px solid var(--accent);}
+  .btn-outline:hover{background:var(--accent);color:white;}
 
-    /* ── PANELS ── */
-    .panel { background: var(--white); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
-    .panel-hdr {
-      padding: 14px 20px; border-bottom: 1px solid var(--border);
-      font-family: var(--cond); font-size: 15px; font-weight: 800;
-      text-transform: uppercase; letter-spacing: 0.06em; color: var(--navy);
-      display: flex; align-items: center; gap: 8px;
-    }
-    .panel-body { padding: 20px; }
-    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    @media (max-width: 600px) { .two-col { grid-template-columns: 1fr; } }
+  .page-wrap{display:none;}
+  .page-wrap.active{display:block;}
+  .page-content{max-width:900px;margin:0 auto;padding:36px 24px 60px;}
 
-    /* ── BIO ── */
-    .bio-text { font-size: 15px; line-height: 1.75; color: var(--text); }
+  .block-heading{font-family:var(--h-font);font-size:28px;font-weight:900;text-transform:uppercase;color:var(--navy);margin-bottom:20px;}
+  .block-bio{margin-bottom:32px;}
+  .block-bio.photo-left{display:grid;grid-template-columns:280px 1fr;gap:32px;align-items:start;}
+  .block-bio.photo-right{display:grid;grid-template-columns:1fr 280px;gap:32px;align-items:start;}
+  .bio-photo{width:100%;border-radius:8px;object-fit:cover;}
+  .bio-photo-top{width:180px;height:180px;border-radius:50%;object-fit:cover;margin:0 auto 20px;display:block;}
+  .bio-body{font-size:15px;line-height:1.8;color:var(--text);white-space:pre-line;}
+  .bio-quals{margin-top:20px;display:flex;flex-direction:column;gap:8px;}
+  .bio-qual{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--text);}
+  .bio-qual::before{content:'✓';color:var(--accent);font-weight:700;flex-shrink:0;}
 
-    /* ── PLATFORM PLANKS ── */
-    .plank-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
-    .plank-card {
-      background: var(--gray); border: 1px solid var(--border);
-      border-radius: 8px; padding: 14px 16px;
-    }
-    .plank-icon { font-size: 22px; margin-bottom: 6px; }
-    .plank-title { font-family: var(--cond); font-size: 15px; font-weight: 800; text-transform: uppercase; color: var(--navy); margin-bottom: 4px; }
-    .plank-text { font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .block-issues{margin-bottom:32px;}
+  .issues-sections{display:flex;flex-direction:column;gap:16px;}
+  .issue-section{background:var(--white);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+  .issue-section-hdr{padding:16px 20px;display:flex;align-items:center;gap:12px;}
+  .issue-icon{font-size:22px;}
+  .issue-title{font-family:var(--h-font);font-size:18px;font-weight:800;text-transform:uppercase;color:var(--navy);}
+  .issue-body{padding:4px 20px 16px 54px;}
+  .issue-summary{font-size:14px;color:var(--muted);margin-bottom:10px;}
+  .issue-bullets{list-style:none;display:flex;flex-direction:column;gap:6px;}
+  .issue-bullets li{font-size:14px;color:var(--text);display:flex;gap:8px;}
+  .issue-bullets li::before{content:'→';color:var(--accent);font-weight:700;flex-shrink:0;}
+  .issues-accordion .issue-section-hdr{cursor:pointer;}
+  .issues-accordion .issue-section-hdr:hover{background:var(--gray);}
+  .issues-accordion .issue-body{display:none;}
+  .issues-accordion .issue-section.open .issue-body{display:block;}
+  .accordion-arrow{margin-left:auto;color:var(--muted);transition:transform .2s;}
+  .issue-section.open .accordion-arrow{transform:rotate(180deg);}
 
-    /* ── PLEDGE BADGE ── */
-    .pledge-banner {
-      background: linear-gradient(135deg, var(--navy-d), var(--navy));
-      color: white; border-radius: 10px; padding: 16px 20px;
-      display: flex; align-items: center; gap: 14px; margin-bottom: 16px;
-    }
-    .pledge-check { font-size: 32px; flex-shrink: 0; }
-    .pledge-text strong { font-family: var(--cond); font-size: 16px; font-weight: 800; text-transform: uppercase; display: block; }
-    .pledge-text span { font-size: 12px; color: rgba(255,255,255,0.7); }
+  .block-donate{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:28px;margin-bottom:32px;}
+  .donate-methods{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;margin:20px 0;}
+  .donate-method{display:flex;flex-direction:column;align-items:center;gap:8px;padding:20px 16px;border:2px solid var(--border);border-radius:10px;text-decoration:none;color:var(--text);transition:border-color .15s;}
+  .donate-method:hover{border-color:var(--accent);}
+  .method-icon{font-size:28px;}
+  .method-label{font-family:var(--h-font);font-size:15px;font-weight:800;text-transform:uppercase;}
+  .method-sub{font-size:11px;color:var(--muted);text-align:center;}
+  .fec-notice{font-size:11px;color:var(--muted);margin-top:16px;padding-top:14px;border-top:1px solid var(--border);line-height:1.6;}
 
-    /* ── EVENTS ── */
-    .event-item { padding: 14px 0; border-bottom: 1px solid var(--border); display: flex; gap: 16px; align-items: flex-start; }
-    .event-item:last-child { border-bottom: none; padding-bottom: 0; }
-    .event-date-block { text-align: center; background: var(--red); color: white; border-radius: 8px; padding: 8px 12px; flex-shrink: 0; min-width: 52px; }
-    .event-month { font-family: var(--cond); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
-    .event-day { font-family: var(--cond); font-size: 26px; font-weight: 900; line-height: 1; }
-    .event-info-title { font-weight: 700; font-size: 14px; color: var(--text); margin-bottom: 3px; }
-    .event-info-meta { font-size: 12px; color: var(--muted); }
+  .block-events{margin-bottom:32px;}
+  .events-list{display:flex;flex-direction:column;gap:12px;}
+  .event-card{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:16px 20px;display:flex;gap:16px;align-items:flex-start;}
+  .event-date{text-align:center;background:var(--accent);color:white;border-radius:8px;padding:8px 14px;flex-shrink:0;min-width:56px;}
+  .event-date-month{font-family:var(--h-font);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;}
+  .event-date-day{font-family:var(--h-font);font-size:28px;font-weight:900;line-height:1;}
+  .event-info-title{font-weight:700;font-size:15px;margin-bottom:4px;}
+  .event-info-meta{font-size:12px;color:var(--muted);}
 
-    /* ── VOLUNTEER FORM ── */
-    .vol-form { display: flex; flex-direction: column; gap: 12px; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    @media (max-width: 500px) { .form-row { grid-template-columns: 1fr; } }
-    input, textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 6px; font-family: var(--body); font-size: 14px; color: var(--text); background: var(--white); }
-    input:focus, textarea:focus { outline: none; border-color: var(--sky); }
-    textarea { resize: vertical; min-height: 80px; }
-    .form-label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; display: block; }
-    .vol-count { font-family: var(--cond); font-size: 28px; font-weight: 900; color: var(--navy); }
+  .block-volunteer{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:28px;margin-bottom:32px;}
+  .block-endorsements{margin-bottom:32px;}
+  .endorsement-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-top:16px;}
+  .endorsement-card{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:20px;}
+  .endorsement-quote{font-size:15px;line-height:1.7;color:var(--text);margin-bottom:14px;font-style:italic;}
+  .endorsement-quote::before{content:'\201C';color:var(--accent);font-size:24px;line-height:0;vertical-align:-6px;margin-right:2px;}
+  .endorsement-name{font-weight:700;font-size:14px;color:var(--navy);}
+  .endorsement-title{font-size:12px;color:var(--muted);}
+  .block-gallery{margin-bottom:32px;}
+  .gallery-grid{display:grid;gap:8px;margin-top:16px;}
+  .gallery-grid.cols-2{grid-template-columns:repeat(2,1fr);}
+  .gallery-grid.cols-3{grid-template-columns:repeat(3,1fr);}
+  .gallery-grid.cols-4{grid-template-columns:repeat(4,1fr);}
+  .gallery-item{border-radius:8px;overflow:hidden;aspect-ratio:4/3;}
+  .gallery-item img{width:100%;height:100%;object-fit:cover;}
+  .gallery-caption{font-size:11px;color:var(--muted);padding:4px 0;text-align:center;}
+  .block-contact{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:28px;margin-bottom:32px;}
+  .contact-links{display:flex;flex-direction:column;gap:12px;}
+  .contact-link{display:flex;align-items:center;gap:12px;font-size:14px;color:var(--text);text-decoration:none;}
+  .contact-link:hover{color:var(--accent);}
+  .contact-icon{width:36px;height:36px;border-radius:50%;background:var(--gray);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+  .social-links{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
+  .social-link{display:flex;align-items:center;gap:6px;padding:8px 14px;border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);text-decoration:none;}
+  .social-link:hover{border-color:var(--accent);color:var(--accent);}
+  .block-text{margin-bottom:32px;}
+  .block-text-body{font-size:15px;line-height:1.8;color:var(--text);}
+  .block-text-body a{color:var(--accent);}
 
-    /* ── CONTACT ── */
-    .contact-links { display: flex; flex-direction: column; gap: 10px; }
-    .contact-link { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--text); text-decoration: none; }
-    .contact-link:hover { color: var(--sky); }
-    .contact-icon { width: 32px; text-align: center; font-size: 16px; }
+  .pledge-section{background:var(--navy);color:white;padding:48px 24px;}
+  .pledge-inner{max-width:900px;margin:0 auto;}
+  .pledge-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:4px;padding:6px 14px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.8);margin-bottom:16px;}
+  .pledge-heading{font-family:var(--h-font);font-size:32px;font-weight:900;text-transform:uppercase;margin-bottom:8px;}
+  .pledge-sub{font-size:14px;color:rgba(255,255,255,.65);margin-bottom:28px;line-height:1.6;}
+  .plank-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;}
+  .plank-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:16px;}
+  .plank-icon{font-size:22px;margin-bottom:6px;}
+  .plank-title{font-family:var(--h-font);font-size:14px;font-weight:800;text-transform:uppercase;color:white;margin-bottom:4px;}
+  .plank-text{font-size:12px;color:rgba(255,255,255,.6);line-height:1.6;}
 
-    /* ── FOOTER ── */
-    .site-footer {
-      background: var(--navy-d); color: rgba(255,255,255,0.5);
-      text-align: center; padding: 24px;
-      font-size: 12px; margin-top: 32px;
-    }
-    .site-footer a { color: rgba(255,255,255,0.6); text-decoration: none; }
-    .site-footer a:hover { color: white; }
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:center;justify-content:center;padding:24px;}
+  .modal{background:white;border-radius:12px;padding:28px;max-width:480px;width:100%;max-height:90vh;overflow-y:auto;}
+  .vol-form{display:flex;flex-direction:column;gap:12px;margin-top:16px;}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .form-field label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);display:block;margin-bottom:4px;}
+  .form-field input,.form-field textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:var(--b-font);color:var(--text);}
+  .form-field input:focus,.form-field textarea:focus{outline:none;border-color:var(--accent);}
 
-    /* ── STATES ── */
-    .loading-state { text-align: center; padding: 80px 24px; color: var(--muted); font-size: 16px; }
-    .not-found { text-align: center; padding: 80px 24px; }
-    .not-found h1 { font-family: var(--cond); font-size: 48px; font-weight: 900; color: var(--navy); margin-bottom: 12px; }
-    .not-found p { color: var(--muted); font-size: 16px; margin-bottom: 24px; }
+  .site-footer{background:var(--navy-d);color:rgba(255,255,255,.5);text-align:center;padding:28px 24px;font-size:12px;}
+  .site-footer a{color:rgba(255,255,255,.6);text-decoration:none;}
+  .site-footer a:hover{color:white;}
+  .footer-social{display:flex;justify-content:center;gap:16px;margin-bottom:12px;flex-wrap:wrap;}
 
-    /* ── MODAL ── */
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 24px; }
-    .modal { background: white; border-radius: 12px; padding: 28px; max-width: 480px; width: 100%; }
-    .modal h2 { font-family: var(--cond); font-size: 24px; font-weight: 900; text-transform: uppercase; color: var(--navy); margin-bottom: 16px; }
-    .modal-success { text-align: center; padding: 16px 0; }
-    .modal-success .check { font-size: 48px; margin-bottom: 12px; }
-    .modal-success p { color: var(--muted); font-size: 14px; line-height: 1.6; }
-
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
-    .fade-in { animation: fadeIn 0.3s ease; }
+  .loading-state{text-align:center;padding:100px 24px;color:var(--muted);}
+  .loading-spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .not-found{text-align:center;padding:100px 24px;}
+  .not-found h1{font-family:var(--h-font);font-size:48px;font-weight:900;color:var(--navy);margin-bottom:12px;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:translateY(0);}}
+  .fade-in{animation:fadeIn .3s ease;}
+  @media(max-width:640px){
+    .nav-links{display:none;}
+    .block-bio.photo-left,.block-bio.photo-right{grid-template-columns:1fr;}
+    .form-row{grid-template-columns:1fr;}
+    .gallery-grid.cols-3,.gallery-grid.cols-4{grid-template-columns:repeat(2,1fr);}
+    .donate-methods{grid-template-columns:repeat(2,1fr);}
+    .hero-name{font-size:36px;}
+  }
   </style>
 </head>
 <body>
 
-<!-- NAV -->
-<nav class="site-nav">
-  <a href="/" class="site-nav-logo">
-    <img src="/images/partyofyoulogo.png" alt="Party of You">
-    <span>Party of You</span>
-  </a>
-  <a href="/apply.html" class="site-nav-link">Run for Office →</a>
-</nav>
-
-<!-- LOADING STATE -->
 <div id="loading-state" class="loading-state">
-  Loading campaign page...
+  <div class="loading-spinner"></div>
+  <div>Loading campaign page...</div>
 </div>
 
-<!-- NOT FOUND STATE (hidden) -->
 <div id="not-found-state" class="not-found" style="display:none">
   <h1>Page Not Found</h1>
-  <p>This campaign page doesn't exist or has been removed.</p>
-  <a href="/" class="btn btn-primary">Go Home</a>
+  <p style="color:var(--muted);margin-bottom:24px">This campaign page doesn't exist or hasn't been published yet.</p>
+  <a href="/" style="background:var(--accent);color:white;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:700">Go Home</a>
 </div>
 
-<!-- MAIN CONTENT (hidden until loaded) -->
-<div id="main-content" style="display:none" class="fade-in">
-
-  <!-- HERO -->
-  <div class="hero">
-    <div class="hero-inner">
-      <div id="hero-photo-wrap">
-        <div class="hero-photo-placeholder">👤</div>
-      </div>
-      <div class="hero-info">
-        <div class="hero-badge">Independent Candidate</div>
-        <div class="hero-name" id="hero-name">Candidate Name</div>
-        <div class="hero-race" id="hero-race">Office Sought</div>
-        <div class="hero-meta">
-          <span id="hero-location"></span>
-          <span id="hero-pledge"></span>
-        </div>
-      </div>
+<div id="site-root" style="display:none" class="fade-in">
+  <nav class="site-nav" id="site-nav">
+    <a href="#" class="site-nav-logo" id="nav-logo" onclick="showPage('home');return false">
+      <span class="nav-name" id="nav-name">Loading...</span>
+    </a>
+    <div class="nav-links" id="nav-links"></div>
+  </nav>
+  <div class="site-hero" id="site-hero"></div>
+  <div id="pages-container"></div>
+  <div class="pledge-section" id="pledge-section" style="display:none">
+    <div class="pledge-inner">
+      <div class="pledge-badge">✅ Platform Pledge Signed</div>
+      <div class="pledge-heading">What I Stand For</div>
+      <div class="pledge-sub" id="pledge-sub"></div>
+      <div class="plank-grid" id="plank-grid"></div>
+      <div style="margin-top:20px"><a href="/platform.html" style="color:rgba(255,255,255,.6);font-size:13px;text-decoration:none">Read the full platform →</a></div>
     </div>
   </div>
+  <footer class="site-footer" id="site-footer"></footer>
+</div>
 
-  <!-- CONTENT -->
-  <div class="content">
-
-    <!-- ACTION BAR -->
-    <div class="action-bar">
-      <div class="action-bar-text">
-        <strong id="action-name">Support this campaign</strong>
-        <span>Every volunteer, donation, and vote matters.</span>
-      </div>
-      <button class="btn btn-primary" onclick="openVolunteerModal()">✋ Volunteer</button>
-      <a id="donate-link" href="#" class="btn btn-secondary" target="_blank" style="display:none">💸 Donate</a>
-      <a id="website-link" href="#" class="btn btn-outline" target="_blank" style="display:none">🌐 Campaign Site</a>
-    </div>
-
-    <div class="two-col">
-
-      <!-- LEFT COLUMN -->
-      <div style="display:flex;flex-direction:column;gap:20px">
-
-        <!-- BIO -->
-        <div class="panel" id="bio-panel">
-          <div class="panel-hdr">👤 About <span id="bio-name-hdr" style="margin-left:4px"></span></div>
-          <div class="panel-body">
-            <div class="bio-text" id="bio-text">Loading...</div>
-          </div>
-        </div>
-
-        <!-- UPCOMING EVENTS -->
-        <div class="panel" id="events-panel">
-          <div class="panel-hdr">📅 Upcoming Events</div>
-          <div class="panel-body" id="events-body">
-            <div style="color:var(--muted);font-size:13px">No upcoming events scheduled.</div>
-          </div>
-        </div>
-
-        <!-- CONTACT -->
-        <div class="panel" id="contact-panel" style="display:none">
-          <div class="panel-hdr">📬 Get in Touch</div>
-          <div class="panel-body">
-            <div class="contact-links" id="contact-links"></div>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- RIGHT COLUMN -->
-      <div style="display:flex;flex-direction:column;gap:20px">
-
-        <!-- VOLUNTEER COUNTER -->
-        <div class="panel">
-          <div class="panel-hdr">🤝 Join the Team</div>
-          <div class="panel-body">
-            <div id="vol-count-display" style="margin-bottom:14px;display:none">
-              <div class="vol-count" id="vol-count-num">0</div>
-              <div style="font-size:13px;color:var(--muted)">volunteers and counting</div>
-            </div>
-            <p style="font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:16px">This campaign runs on people power. Sign up to knock doors, make calls, or help however you can.</p>
-            <button class="btn btn-primary" style="width:100%" onclick="openVolunteerModal()">✋ Sign Up to Volunteer</button>
-          </div>
-        </div>
-
-        <!-- PLATFORM PLEDGE -->
-        <div class="panel">
-          <div class="panel-hdr">📋 Platform Pledge</div>
-          <div class="panel-body">
-            <div class="pledge-banner">
-              <div class="pledge-check">✅</div>
-              <div class="pledge-text">
-                <strong>Signed the Pledge</strong>
-                <span id="pledge-date">Committed to all 9 planks</span>
-              </div>
-            </div>
-            <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:14px">
-              Every Party of You candidate signs a binding pledge to these 9 platform commitments. No corporate money. No PAC money. No exceptions.
-            </p>
-            <a href="/platform.html" class="btn btn-outline" style="font-size:13px;padding:8px 16px">Read the Full Platform →</a>
-          </div>
-        </div>
-
-        <!-- POWERED BY -->
-        <div style="text-align:center;padding:12px">
-          <div style="font-size:11px;color:var(--muted);margin-bottom:6px">Powered by</div>
-          <a href="/" style="text-decoration:none">
-            <img src="/images/partyofyoulogo.png" alt="Party of You" style="height:28px;opacity:0.6">
-          </a>
-          <div style="font-size:11px;color:var(--muted);margin-top:6px">Free • Ad-free • No data sold</div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- PLATFORM PLANKS (full width) -->
-    <div class="panel">
-      <div class="panel-hdr">🗳️ What <span id="plank-name-hdr" style="margin-left:4px"></span> Stands For</div>
-      <div class="panel-body">
-        <div class="plank-grid" id="plank-grid">
-          <div style="color:var(--muted);font-size:13px">Loading platform...</div>
-        </div>
-      </div>
-    </div>
-
-  </div><!-- /content -->
-</div><!-- /main-content -->
-
-<!-- VOLUNTEER MODAL -->
 <div id="vol-modal" class="modal-overlay" style="display:none">
   <div class="modal">
     <div id="vol-form-wrap">
-      <h2>✋ Volunteer</h2>
-      <p style="font-size:13px;color:var(--muted);margin-bottom:18px;line-height:1.6">Sign up to support this campaign. We'll reach out with ways to help.</p>
+      <h2 style="font-family:var(--h-font);font-size:24px;font-weight:900;text-transform:uppercase;color:var(--navy);margin-bottom:12px">✋ Volunteer</h2>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:18px;line-height:1.6">Sign up to support this campaign.</p>
       <div class="vol-form">
         <div class="form-row">
-          <div>
-            <label class="form-label">First Name *</label>
-            <input type="text" id="vol-first" placeholder="Jane">
-          </div>
-          <div>
-            <label class="form-label">Last Name *</label>
-            <input type="text" id="vol-last" placeholder="Smith">
-          </div>
+          <div class="form-field"><label>First Name *</label><input type="text" id="vol-first" placeholder="Jane"></div>
+          <div class="form-field"><label>Last Name *</label><input type="text" id="vol-last" placeholder="Smith"></div>
         </div>
-        <div>
-          <label class="form-label">Email *</label>
-          <input type="email" id="vol-email-public" placeholder="jane@example.com">
-        </div>
-        <div>
-          <label class="form-label">Phone (optional)</label>
-          <input type="tel" id="vol-phone-public" placeholder="(414) 555-0100">
-        </div>
-        <div>
-          <label class="form-label">ZIP Code</label>
-          <input type="text" id="vol-zip-public" placeholder="53221" maxlength="5">
-        </div>
-        <div>
-          <label class="form-label">How can you help? (optional)</label>
-          <textarea id="vol-message" placeholder="Door knocking, phone banking, yard sign..."></textarea>
-        </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px">
-          <button class="btn btn-primary" style="flex:1" onclick="submitVolunteer()">Sign Up →</button>
-          <button class="btn btn-outline" onclick="closeVolunteerModal()">Cancel</button>
+        <div class="form-field"><label>Email *</label><input type="email" id="vol-email" placeholder="jane@example.com"></div>
+        <div class="form-field"><label>Phone</label><input type="tel" id="vol-phone"></div>
+        <div class="form-field"><label>ZIP Code</label><input type="text" id="vol-zip" maxlength="5"></div>
+        <div class="form-field"><label>How can you help?</label><textarea id="vol-message" rows="3" placeholder="Door knocking, phone banking..."></textarea></div>
+        <div style="display:flex;gap:10px;margin-top:4px">
+          <button onclick="submitVolunteer()" style="flex:1;background:var(--accent);color:white;border:none;border-radius:6px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--b-font)" id="vol-submit-btn">Sign Up →</button>
+          <button onclick="closeVolModal()" style="background:var(--gray);color:var(--muted);border:1px solid var(--border);border-radius:6px;padding:12px 18px;cursor:pointer;font-family:var(--b-font)">Cancel</button>
         </div>
       </div>
     </div>
-    <div id="vol-success-wrap" class="modal-success" style="display:none">
-      <div class="check">🎉</div>
-      <h2 style="font-size:28px">You're in!</h2>
-      <p>Thanks for signing up. The campaign will reach out soon with ways to get involved.</p>
-      <button class="btn btn-primary" style="margin-top:16px" onclick="closeVolunteerModal()">Close</button>
+    <div id="vol-success-wrap" style="display:none;text-align:center;padding:16px 0">
+      <div style="font-size:48px;margin-bottom:12px">🎉</div>
+      <h2 style="font-family:var(--h-font);font-size:28px;color:var(--navy)">You're in!</h2>
+      <p style="color:var(--muted);margin:10px 0 20px;line-height:1.6">Thanks for signing up. The campaign will be in touch soon.</p>
+      <button onclick="closeVolModal()" style="background:var(--accent);color:white;border:none;border-radius:6px;padding:12px 24px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--b-font)">Close</button>
     </div>
   </div>
 </div>
 
-<!-- FOOTER -->
-<footer class="site-footer">
-  <p>
-    <a href="/">Party of You</a> &nbsp;·&nbsp;
-    <a href="/platform.html">Platform</a> &nbsp;·&nbsp;
-    <a href="/apply.html">Run for Office</a> &nbsp;·&nbsp;
-    <a href="/terms.html">Terms</a>
-  </p>
-  <p style="margin-top:8px">Free infrastructure for independent candidates. No ads. No corporate money. Ever.</p>
-</footer>
-
 <script>
-  // Extract subdomain from URL path: /c/:subdomain
-  const pathParts = window.location.pathname.split('/');
-  const subdomain = pathParts[2];
+const subdomain = window.location.pathname.split('/')[2];
+let siteData = null;
 
-  let candidateData = null;
-  let candidateId = null;
+async function init() {
+  if (!subdomain) { showNotFound(); return; }
+  try {
+    const res = await fetch('/api/candidate/' + subdomain);
+    if (!res.ok) { showNotFound(); return; }
+    siteData = await res.json();
+    if (!siteData.success) { showNotFound(); return; }
+    render();
+  } catch(e) { showNotFound(); }
+}
 
-  async function loadPage() {
-    if (!subdomain) {
-      showNotFound();
-      return;
-    }
+function showNotFound() {
+  document.getElementById('loading-state').style.display = 'none';
+  document.getElementById('not-found-state').style.display = 'block';
+}
 
-    try {
-      const res = await fetch(`/api/candidate/${subdomain}`);
-      if (!res.ok) {
-        showNotFound();
-        return;
-      }
-      const data = await res.json();
-      if (!data.success) {
-        showNotFound();
-        return;
-      }
+function darkenHex(hex, amt) {
+  const n = parseInt(hex.replace('#',''), 16);
+  const r = Math.max(0,(n>>16)-amt), g = Math.max(0,((n>>8)&0xff)-amt), b = Math.max(0,(n&0xff)-amt);
+  return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');
+}
 
-      candidateData = data.candidate;
-      render(data);
-    } catch (err) {
-      showNotFound();
-    }
+function applyTemplate() {
+  const site = siteData.site;
+  const tpl = site?.template || 'hometown';
+  document.body.setAttribute('data-template', tpl);
+  if (site?.accentColor) {
+    document.documentElement.style.setProperty('--accent', site.accentColor);
+    document.documentElement.style.setProperty('--accent-d', darkenHex(site.accentColor, 20));
   }
-
-  function showNotFound() {
-    document.getElementById('loading-state').style.display = 'none';
-    document.getElementById('not-found-state').style.display = 'block';
+  if (site?.fontHeading && site.fontHeading !== 'Barlow Condensed') {
+    document.documentElement.style.setProperty('--h-font', "'" + site.fontHeading + "', sans-serif");
   }
+}
 
-  function render(data) {
-    const c = data.candidate;
+function render() {
+  applyTemplate();
+  const {candidate, site, pages, issues, platform, events, volunteerCount} = siteData;
+  const title = site?.siteTitle || (candidate.displayName + ' for ' + (candidate.officeSought || 'Office'));
+  document.title = title + ' | Party of You';
+  renderNav(candidate, site, pages);
+  renderHero(candidate, site);
+  renderPages(pages, issues, events, volunteerCount, candidate, site);
+  if (platform?.length && candidate.pledgedAt) renderPledge(candidate, platform);
+  renderFooter(candidate, site);
+  document.getElementById('loading-state').style.display = 'none';
+  document.getElementById('site-root').style.display = 'block';
+  const first = (pages||[]).find(p => p.is_enabled);
+  showPage(first?.slug || 'home');
+}
 
-    // Page title
-    document.title = `${c.displayName} for ${c.officeSought || 'Office'} | Party of You`;
+function renderNav(candidate, site, pages) {
+  document.getElementById('nav-name').textContent = site?.siteTitle || candidate.displayName;
+  const enabled = (pages||[]).filter(p => p.is_enabled);
+  document.getElementById('nav-links').innerHTML =
+    enabled.map(p => '<a href="#" class="nav-link" data-page="' + p.slug + '" onclick="showPage(\'' + p.slug + '\');return false">' + (p.nav_label||p.title) + '</a>').join('') +
+    '<a href="#" class="nav-cta" onclick="openVolModal();return false">Volunteer</a>';
+}
 
-    // Hero
-    document.getElementById('hero-name').textContent = c.displayName || c.fullName;
-    document.getElementById('hero-race').textContent = c.officeSought
-      ? `Running for ${c.officeSought}`
-      : 'Independent Candidate';
+function renderHero(candidate, site) {
+  const photo = candidate.photoUrl
+    ? '<img src="' + candidate.photoUrl + '" alt="' + candidate.displayName + '" class="hero-photo">'
+    : '<div class="hero-photo-placeholder">👤</div>';
+  const loc = [candidate.city, candidate.state].filter(Boolean).join(', ');
+  const pledgeDate = candidate.pledgedAt ? new Date(candidate.pledgedAt).toLocaleDateString('en-US',{month:'long',year:'numeric'}) : null;
+  document.getElementById('site-hero').innerHTML = '<div class="hero-inner">' + photo + '<div class="hero-info">' +
+    '<div class="hero-badge">Independent Candidate</div>' +
+    '<div class="hero-name">' + candidate.displayName + '</div>' +
+    (candidate.officeSought ? '<div class="hero-race">Running for ' + candidate.officeSought + '</div>' : '') +
+    (site?.siteTagline ? '<div class="hero-tagline">' + site.siteTagline + '</div>' : '') +
+    '<div class="hero-actions">' +
+      '<button class="btn btn-primary" onclick="openVolModal()">✋ Volunteer</button>' +
+      (site?.donateStripeUrl||site?.donatePaypalUrl||site?.donateVenmo ? '<a href="#" class="btn btn-ghost" onclick="showPage(\'donate\');return false">💸 Donate</a>' : '') +
+    '</div>' +
+    '<div class="hero-meta">' +
+      (loc ? '<span>📍 ' + loc + '</span>' : '') +
+      (pledgeDate ? '<span>✅ Platform pledged ' + pledgeDate + '</span>' : '') +
+    '</div></div></div>';
+}
 
-    const locParts = [c.city, c.state].filter(Boolean);
-    if (locParts.length) {
-      document.getElementById('hero-location').textContent = '📍 ' + locParts.join(', ');
-    }
-
-    if (c.pledgedAt) {
-      const pledgeDate = new Date(c.pledgedAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-      document.getElementById('hero-pledge').textContent = `✅ Platform pledged ${pledgeDate}`;
-      document.getElementById('pledge-date').textContent = `Pledged ${pledgeDate}`;
-    }
-
-    // Photo
-    if (c.photoUrl) {
-      document.getElementById('hero-photo-wrap').innerHTML =
-        `<img src="${c.photoUrl}" alt="${c.displayName}" class="hero-photo">`;
-    }
-
-    // Action bar
-    document.getElementById('action-name').textContent = `Support ${c.preferredName || c.fullName}`;
-
-    if (c.fecCommitteeId) {
-      const donateLink = document.getElementById('donate-link');
-      donateLink.href = `https://www.actblue.com/donate/ref?ref=${encodeURIComponent(c.fecCommitteeId)}`;
-      donateLink.style.display = 'inline-block';
-    }
-
-    if (c.campaignWebsite) {
-      const webLink = document.getElementById('website-link');
-      webLink.href = c.campaignWebsite;
-      webLink.style.display = 'inline-block';
-    }
-
-    // Bio
-    const preferredFirst = c.preferredName?.split(' ')[0] || c.fullName?.split(' ')[0] || 'This candidate';
-    document.getElementById('bio-name-hdr').textContent = preferredFirst;
-    document.getElementById('plank-name-hdr').textContent = preferredFirst;
-    document.getElementById('bio-text').textContent = c.bio || `${c.displayName} is running for ${c.officeSought || 'office'} as an independent candidate committed to the Party of You platform.`;
-
-    // Volunteer count
-    if (data.volunteerCount > 0) {
-      document.getElementById('vol-count-num').textContent = data.volunteerCount.toLocaleString();
-      document.getElementById('vol-count-display').style.display = 'block';
-    }
-
-    // Events
-    renderEvents(data.events);
-
-    // Platform planks
-    renderPlanks(data.platform);
-
-    // Contact
-    renderContact(c);
-
-    // Show page
-    document.getElementById('loading-state').style.display = 'none';
-    document.getElementById('main-content').style.display = 'block';
+function renderPages(pages, issues, events, volunteerCount, candidate, site) {
+  const container = document.getElementById('pages-container');
+  if (!pages || !pages.length) {
+    container.innerHTML = '<div class="page-wrap active" id="page-home"><div class="page-content">' +
+      renderDefaultLayout(candidate, issues, events, volunteerCount, site) + '</div></div>';
+    return;
   }
+  container.innerHTML = pages.filter(p=>p.is_enabled).map(page =>
+    '<div class="page-wrap" id="page-' + page.slug + '"><div class="page-content">' +
+    renderPageBlocks(page, issues, events, volunteerCount, candidate, site) + '</div></div>'
+  ).join('');
+}
 
-  function renderEvents(events) {
-    const body = document.getElementById('events-body');
-    if (!events || !events.length) {
-      body.innerHTML = '<p style="color:var(--muted);font-size:13px">No upcoming events scheduled. Check back soon.</p>';
-      return;
-    }
-    body.innerHTML = events.map(e => {
+function renderPageBlocks(page, issues, events, volunteerCount, candidate, site) {
+  const blocks = page.blocks || [];
+  if (!blocks.length) return renderDefaultPageContent(page.page_type, candidate, issues, events, volunteerCount, site);
+  return blocks.map(b => renderBlock(b, issues, events, volunteerCount, candidate, site)).join('');
+}
+
+function renderBlock(block, issues, events, volunteerCount, candidate, site) {
+  const c = block.content || {};
+  switch(block.block_type) {
+    case 'hero':         return renderHeroBlock(c);
+    case 'bio':          return renderBioBlock(c, candidate);
+    case 'issues':       return renderIssuesBlock(c, issues);
+    case 'donate':       return renderDonateBlock(c, site);
+    case 'events':       return renderEventsBlock(c, events);
+    case 'volunteer':    return renderVolunteerBlock(c, volunteerCount);
+    case 'endorsements': return renderEndorsementsBlock(c);
+    case 'gallery':      return renderGalleryBlock(c);
+    case 'contact':      return renderContactBlock(c, candidate, site);
+    case 'text':         return '<div class="block-text"><div class="block-text-body">' + (c.body_html||'') + '</div></div>';
+    case 'divider':      return renderDividerBlock(c);
+    default: return '';
+  }
+}
+
+function renderHeroBlock(c) {
+  const bg = c.background_type==='photo'&&c.photo_url ? 'background-image:url('+c.photo_url+');background-size:cover;background-position:center;' : '';
+  const textColor = bg ? 'white' : 'var(--navy)';
+  return '<div style="' + bg + 'padding:60px 0;text-align:center;margin-bottom:32px">' +
+    (c.heading ? '<div style="font-family:var(--h-font);font-size:clamp(28px,5vw,52px);font-weight:900;text-transform:uppercase;color:' + textColor + ';margin-bottom:10px">' + c.heading + '</div>' : '') +
+    (c.subheading ? '<div style="font-size:16px;color:' + (bg?'rgba(255,255,255,.8)':'var(--muted)') + ';margin-bottom:20px">' + c.subheading + '</div>' : '') +
+    '<div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">' +
+    (c.cta_primary_label ? '<a href="' + (c.cta_primary_url||'#') + '" class="btn btn-primary">' + c.cta_primary_label + '</a>' : '') +
+    (c.cta_secondary_label ? '<a href="' + (c.cta_secondary_url||'#') + '" class="btn btn-outline">' + c.cta_secondary_label + '</a>' : '') +
+    '</div></div>';
+}
+
+function renderBioBlock(c, candidate) {
+  const pos = c.photo_position || 'left';
+  const photo = c.photo_url || candidate.photoUrl;
+  const body = c.body_html || candidate.bio || '';
+  const quals = (c.qualifications||[]).map(q => '<div class="bio-qual">' + (q.label||q) + '</div>').join('');
+  const hdr = c.heading ? '<div class="block-heading">' + c.heading + '</div>' : '';
+  const bodyHTML = '<div class="bio-body">' + body + '</div>' + (quals ? '<div class="bio-quals">' + quals + '</div>' : '');
+  const photoTag = photo ? '<img src="' + photo + '" alt="" class="bio-photo">' : '';
+  if (pos==='top') return '<div class="block-bio photo-top">' + (photo?'<img src="'+photo+'" alt="" class="bio-photo-top">':'') + hdr + bodyHTML + '</div>';
+  if (pos==='right') return '<div class="block-bio photo-right"><div>' + hdr + bodyHTML + '</div>' + photoTag + '</div>';
+  return '<div class="block-bio photo-left">' + photoTag + '<div>' + hdr + bodyHTML + '</div></div>';
+}
+
+function renderIssuesBlock(c, allIssues) {
+  const layout = c.layout || 'sections';
+  const ids = c.issue_ids || [];
+  const items = ids.length ? ids.map(i=>allIssues[i]).filter(Boolean) : (allIssues||[]);
+  if (!items.length) return '';
+  const accordion = layout === 'accordion';
+  const issueHTML = items.map((issue, i) =>
+    '<div class="issue-section' + (accordion&&i===0?' open':'') + '"' + (accordion?' onclick="this.classList.toggle(\'open\')"':'') + '>' +
+    '<div class="issue-section-hdr">' +
+    '<span class="issue-icon">' + (issue.icon||'📋') + '</span>' +
+    '<span class="issue-title">' + issue.title + '</span>' +
+    (accordion ? '<span class="accordion-arrow">▼</span>' : '') +
+    '</div><div class="issue-body">' +
+    (issue.summary ? '<div class="issue-summary">' + issue.summary + '</div>' : '') +
+    ((issue.bullet_points||[]).length ? '<ul class="issue-bullets">' + (issue.bullet_points||[]).map(b=>'<li>'+b+'</li>').join('') + '</ul>' : '') +
+    '</div></div>'
+  ).join('');
+  return '<div class="block-issues">' +
+    (c.heading ? '<div class="block-heading">' + c.heading + '</div>' : '') +
+    '<div class="issues-sections' + (accordion?' issues-accordion':'') + '">' + issueHTML + '</div></div>';
+}
+
+function renderDonateBlock(c, site) {
+  const methods = [];
+  if (c.show_stripe!==false && site?.donateStripeUrl)
+    methods.push('<a href="'+site.donateStripeUrl+'" target="_blank" class="donate-method"><span class="method-icon">💳</span><span class="method-label">Stripe</span><span class="method-sub">Credit / Debit Card</span></a>');
+  if (c.show_paypal!==false && site?.donatePaypalUrl)
+    methods.push('<a href="'+site.donatePaypalUrl+'" target="_blank" class="donate-method"><span class="method-icon">🅿️</span><span class="method-label">PayPal</span><span class="method-sub">PayPal.me</span></a>');
+  if (c.show_venmo!==false && site?.donateVenmo)
+    methods.push('<div class="donate-method"><span class="method-icon">💜</span><span class="method-label">Venmo</span><span class="method-sub">'+(site.donateVenmo.startsWith('@')?site.donateVenmo:'@'+site.donateVenmo)+'</span></div>');
+  if (c.show_cash!==false && site?.donateCashAddress)
+    methods.push('<div class="donate-method"><span class="method-icon">✉️</span><span class="method-label">By Mail</span><span class="method-sub" style="white-space:pre-line">'+site.donateCashAddress+'</span></div>');
+  if (!methods.length) return '';
+  return '<div class="block-donate">' +
+    '<div class="block-heading">' + (c.heading||'Support the Campaign') + '</div>' +
+    (c.subheading?'<p style="color:var(--muted);font-size:14px;margin-bottom:4px">'+c.subheading+'</p>':'') +
+    '<div class="donate-methods">' + methods.join('') + '</div>' +
+    (c.custom_message?'<p style="font-size:13px;color:var(--muted);line-height:1.6;margin-top:12px">'+c.custom_message+'</p>':'') +
+    (site?.donateFecNotice?'<div class="fec-notice">'+site.donateFecNotice+'</div>':'') +
+    '</div>';
+}
+
+function renderEventsBlock(c, events) {
+  const max = c.max_events||5;
+  const now = new Date();
+  const items = (events||[]).filter(e=>c.show_past||new Date(e.start_time)>now).slice(0,max);
+  const hdr = '<div class="block-heading">' + (c.heading||'Upcoming Events') + '</div>';
+  if (!items.length) return '<div class="block-events">' + hdr + '<p style="color:var(--muted);font-size:14px">No upcoming events scheduled.</p></div>';
+  return '<div class="block-events">' + hdr + '<div class="events-list">' +
+    items.map(e => {
       const dt = new Date(e.start_time);
-      const month = dt.toLocaleString('en-US', { month: 'short' }).toUpperCase();
-      const day = dt.getDate();
-      const time = dt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-      return `
-        <div class="event-item">
-          <div class="event-date-block">
-            <div class="event-month">${month}</div>
-            <div class="event-day">${day}</div>
-          </div>
-          <div class="event-info">
-            <div class="event-info-title">${e.title}</div>
-            <div class="event-info-meta">
-              ${time}${e.location_name ? ` · ${e.location_name}` : ''}
-            </div>
-            ${e.description ? `<div style="font-size:12px;color:var(--muted);margin-top:4px;line-height:1.5">${e.description}</div>` : ''}
-          </div>
-        </div>`;
-    }).join('');
+      return '<div class="event-card">' +
+        '<div class="event-date"><div class="event-date-month">'+dt.toLocaleString('en-US',{month:'short'}).toUpperCase()+'</div><div class="event-date-day">'+dt.getDate()+'</div></div>' +
+        '<div><div class="event-info-title">'+e.title+'</div>' +
+        '<div class="event-info-meta">'+dt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})+(e.location_name?' · '+e.location_name:'')+'</div></div></div>';
+    }).join('') + '</div></div>';
+}
+
+function renderVolunteerBlock(c, volunteerCount) {
+  return '<div class="block-volunteer">' +
+    '<div class="block-heading">' + (c.heading||'Join the Team') + '</div>' +
+    (volunteerCount>0?'<div style="font-family:var(--h-font);font-size:32px;font-weight:900;color:var(--accent)">'+volunteerCount.toLocaleString()+' <span style="font-size:16px;color:var(--muted)">volunteers and counting</span></div>':'') +
+    (c.subheading?'<p style="color:var(--muted);font-size:14px;line-height:1.6;margin-top:8px">'+c.subheading+'</p>':'') +
+    '<button onclick="openVolModal()" class="btn btn-primary" style="margin-top:16px;width:100%;font-size:15px;padding:14px">✋ Sign Up to Volunteer</button>' +
+    '</div>';
+}
+
+function renderEndorsementsBlock(c) {
+  if (!(c.endorsements||[]).length) return '';
+  return '<div class="block-endorsements">' +
+    (c.heading?'<div class="block-heading">'+c.heading+'</div>':'') +
+    '<div class="endorsement-grid">' +
+    c.endorsements.map(e =>
+      '<div class="endorsement-card">' +
+      (e.quote?'<div class="endorsement-quote">'+e.quote+'</div>':'') +
+      '<div class="endorsement-name">'+(e.name||'')+'</div>' +
+      (e.title?'<div class="endorsement-title">'+e.title+'</div>':'') +
+      '</div>').join('') + '</div></div>';
+}
+
+function renderGalleryBlock(c) {
+  if (!(c.photos||[]).length) return '';
+  const cols = c.columns||3;
+  return '<div class="block-gallery">' +
+    (c.heading?'<div class="block-heading">'+c.heading+'</div>':'') +
+    '<div class="gallery-grid cols-'+cols+'">' +
+    c.photos.map(p=>'<div><div class="gallery-item"><img src="'+p.url+'" alt="'+(p.caption||'')+'" loading="lazy"></div>'+(p.caption?'<div class="gallery-caption">'+p.caption+'</div>':'')+'</div>').join('') +
+    '</div></div>';
+}
+
+function renderContactBlock(c, candidate, site) {
+  const links = [];
+  if (c.show_email!==false && candidate.campaignEmail) links.push('<a href="mailto:'+candidate.campaignEmail+'" class="contact-link"><span class="contact-icon">✉️</span>'+candidate.campaignEmail+'</a>');
+  if (c.show_phone!==false && candidate.campaignPhone) links.push('<a href="tel:'+candidate.campaignPhone+'" class="contact-link"><span class="contact-icon">📞</span>'+candidate.campaignPhone+'</a>');
+  if (!links.length && !c.body) return '';
+  const socials = c.show_socials!==false ? renderSocialLinks(site) : '';
+  return '<div class="block-contact">' +
+    '<div class="block-heading">'+(c.heading||'Get in Touch')+'</div>' +
+    (c.body?'<p style="color:var(--muted);font-size:15px;line-height:1.7;margin-bottom:20px">'+c.body+'</p>':'') +
+    '<div class="contact-links">'+links.join('')+'</div>' + socials + '</div>';
+}
+
+function renderSocialLinks(site) {
+  if (!site) return '';
+  const links = [];
+  if (site.socialTwitter) links.push('<a href="https://twitter.com/'+site.socialTwitter.replace('@','')+'" target="_blank" class="social-link">𝕏 '+site.socialTwitter+'</a>');
+  if (site.socialFacebook) links.push('<a href="'+site.socialFacebook+'" target="_blank" class="social-link">📘 Facebook</a>');
+  if (site.socialInstagram) links.push('<a href="https://instagram.com/'+site.socialInstagram.replace('@','')+'" target="_blank" class="social-link">📷 Instagram</a>');
+  return links.length ? '<div class="social-links">'+links.join('')+'</div>' : '';
+}
+
+function renderDividerBlock(c) {
+  const h = c.height_px||40;
+  if (c.style==='space') return '<div style="height:'+h+'px"></div>';
+  if (c.style==='stars') return '<div style="height:'+h+'px;display:flex;align-items:center;justify-content:center;color:var(--accent);letter-spacing:8px;font-size:16px">★ ★ ★</div>';
+  return '<div style="height:'+h+'px;display:flex;align-items:center"><hr style="flex:1;border:none;border-top:1px solid var(--border)"></div>';
+}
+
+function renderDefaultLayout(candidate, issues, events, volunteerCount, site) {
+  return [
+    renderBioBlock({heading:'About '+(candidate.preferredName||candidate.fullName?.split(' ')[0])}, candidate),
+    issues?.length ? renderIssuesBlock({heading:'Where I Stand',layout:'sections'}, issues) : '',
+    events?.length ? renderEventsBlock({heading:'Upcoming Events'}, events) : '',
+    renderVolunteerBlock({heading:'Join the Team'}, volunteerCount),
+    renderDonateBlock({heading:'Support the Campaign'}, site),
+    renderContactBlock({heading:'Get in Touch'}, candidate, site),
+  ].filter(Boolean).join('');
+}
+
+function renderDefaultPageContent(type, candidate, issues, events, volunteerCount, site) {
+  switch(type) {
+    case 'about':     return renderBioBlock({heading:'About '+(candidate.preferredName||candidate.fullName?.split(' ')[0])}, candidate);
+    case 'issues':    return renderIssuesBlock({heading:'Where I Stand',layout:'sections'}, issues);
+    case 'donate':    return renderDonateBlock({heading:'Support the Campaign'}, site);
+    case 'events':    return renderEventsBlock({heading:'Upcoming Events'}, events);
+    case 'volunteer': return renderVolunteerBlock({heading:'Join the Team'}, volunteerCount);
+    case 'contact':   return renderContactBlock({heading:'Get in Touch'}, candidate, site);
+    default:          return renderDefaultLayout(candidate, issues, events, volunteerCount, site);
   }
+}
 
-  function renderPlanks(planks) {
-    const grid = document.getElementById('plank-grid');
-    if (!planks || !planks.length) {
-      grid.innerHTML = '<p style="color:var(--muted);font-size:13px">Platform loading...</p>';
-      return;
-    }
-    grid.innerHTML = planks.map(p => `
-      <div class="plank-card">
-        <div class="plank-icon">${p.icon}</div>
-        <div class="plank-title">${p.title}</div>
-        <div class="plank-text">${p.text}</div>
-      </div>`).join('');
-  }
+function renderPledge(candidate, platform) {
+  const name = candidate.preferredName||candidate.fullName?.split(' ')[0];
+  document.getElementById('pledge-sub').textContent = name + ' has signed the Party of You platform pledge — a commitment to all nine of these principles. No corporate money. No PAC money. No exceptions.';
+  document.getElementById('plank-grid').innerHTML = platform.map(p =>
+    '<div class="plank-card"><div class="plank-icon">'+p.icon+'</div><div class="plank-title">'+p.title+'</div><div class="plank-text">'+p.text+'</div></div>'
+  ).join('');
+  document.getElementById('pledge-section').style.display = 'block';
+}
 
-  function renderContact(c) {
-    const links = [];
-    if (c.campaignEmail) links.push(`<a href="mailto:${c.campaignEmail}" class="contact-link"><span class="contact-icon">✉️</span>${c.campaignEmail}</a>`);
-    if (c.campaignPhone) links.push(`<a href="tel:${c.campaignPhone}" class="contact-link"><span class="contact-icon">📞</span>${c.campaignPhone}</a>`);
-    if (c.campaignWebsite) links.push(`<a href="${c.campaignWebsite}" target="_blank" class="contact-link"><span class="contact-icon">🌐</span>${c.campaignWebsite}</a>`);
+function renderFooter(candidate, site) {
+  const socials = [];
+  if (site?.socialTwitter) socials.push('<a href="https://twitter.com/'+site.socialTwitter.replace('@','')+'" target="_blank">𝕏</a>');
+  if (site?.socialFacebook) socials.push('<a href="'+site.socialFacebook+'" target="_blank">Facebook</a>');
+  if (site?.socialInstagram) socials.push('<a href="https://instagram.com/'+site.socialInstagram.replace('@','')+'" target="_blank">Instagram</a>');
+  document.getElementById('site-footer').innerHTML =
+    (socials.length?'<div class="footer-social">'+socials.join('')+'</div>':'') +
+    (candidate.campaignEmail?'<p style="margin-bottom:8px"><a href="mailto:'+candidate.campaignEmail+'">'+candidate.campaignEmail+'</a></p>':'') +
+    '<p>Powered by <a href="https://partyofyou.org" target="_blank">Party of You</a> — free infrastructure for independent candidates.</p>';
+}
 
-    if (links.length) {
-      document.getElementById('contact-links').innerHTML = links.join('');
-      document.getElementById('contact-panel').style.display = 'block';
-    }
-  }
+function showPage(slug) {
+  document.querySelectorAll('.page-wrap').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(l=>l.classList.remove('active'));
+  const page = document.getElementById('page-'+slug);
+  if (page) page.classList.add('active');
+  const link = document.querySelector('[data-page="'+slug+'"]');
+  if (link) link.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
 
-  // ── VOLUNTEER MODAL ──────────────────────────────────────────
-  function openVolunteerModal() {
-    document.getElementById('vol-modal').style.display = 'flex';
-    document.getElementById('vol-form-wrap').style.display = 'block';
-    document.getElementById('vol-success-wrap').style.display = 'none';
-    document.getElementById('vol-first').focus();
-  }
+function openVolModal() {
+  document.getElementById('vol-modal').style.display='flex';
+  document.getElementById('vol-form-wrap').style.display='block';
+  document.getElementById('vol-success-wrap').style.display='none';
+  document.getElementById('vol-first').focus();
+}
+function closeVolModal() { document.getElementById('vol-modal').style.display='none'; }
+document.getElementById('vol-modal').addEventListener('click',function(e){if(e.target===this)closeVolModal();});
 
-  function closeVolunteerModal() {
-    document.getElementById('vol-modal').style.display = 'none';
-  }
+async function submitVolunteer() {
+  const first=document.getElementById('vol-first').value.trim();
+  const last=document.getElementById('vol-last').value.trim();
+  const email=document.getElementById('vol-email').value.trim();
+  const phone=document.getElementById('vol-phone').value.trim();
+  const zip=document.getElementById('vol-zip').value.trim();
+  const msg=document.getElementById('vol-message').value.trim();
+  if(!first||!last){alert('Please enter your name.');return;}
+  if(!email||!email.includes('@')){alert('Please enter a valid email.');return;}
+  const btn=document.getElementById('vol-submit-btn');
+  btn.textContent='Signing up...';btn.disabled=true;
+  try {
+    await fetch('/api/candidate/'+subdomain+'/volunteer',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({name:first+' '+last,email,phone:phone||null,zip:zip||null,message:msg||null,source:'public_page'})
+    });
+  } catch(e){}
+  document.getElementById('vol-form-wrap').style.display='none';
+  document.getElementById('vol-success-wrap').style.display='block';
+  btn.textContent='Sign Up →';btn.disabled=false;
+}
 
-  // Close on backdrop click
-  document.getElementById('vol-modal').addEventListener('click', function(e) {
-    if (e.target === this) closeVolunteerModal();
-  });
-
-  async function submitVolunteer() {
-    const first = document.getElementById('vol-first').value.trim();
-    const last = document.getElementById('vol-last').value.trim();
-    const email = document.getElementById('vol-email-public').value.trim();
-    const phone = document.getElementById('vol-phone-public').value.trim();
-    const zip = document.getElementById('vol-zip-public').value.trim();
-    const message = document.getElementById('vol-message').value.trim();
-
-    if (!first || !last) { alert('Please enter your first and last name.'); return; }
-    if (!email || !email.includes('@')) { alert('Please enter a valid email address.'); return; }
-
-    const btn = document.querySelector('#vol-form-wrap .btn-primary');
-    btn.textContent = 'Signing up...';
-    btn.disabled = true;
-
-    try {
-      const res = await fetch(`/api/candidate/${subdomain}/volunteer`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: `${first} ${last}`,
-          email,
-          phone: phone || null,
-          zip: zip || null,
-          message: message || null,
-          source: 'public_page',
-        }),
-      });
-
-      // Show success regardless (even if API has issues — don't frustrate volunteers)
-      document.getElementById('vol-form-wrap').style.display = 'none';
-      document.getElementById('vol-success-wrap').style.display = 'block';
-
-      // Update volunteer count
-      const countEl = document.getElementById('vol-count-num');
-      const current = parseInt(countEl.textContent.replace(/,/g, '')) || 0;
-      countEl.textContent = (current + 1).toLocaleString();
-      document.getElementById('vol-count-display').style.display = 'block';
-
-    } catch (err) {
-      // Still show success — don't lose a volunteer over a network hiccup
-      document.getElementById('vol-form-wrap').style.display = 'none';
-      document.getElementById('vol-success-wrap').style.display = 'block';
-    }
-  }
-
-  // ── INIT ─────────────────────────────────────────────────────
-  loadPage();
+init();
 </script>
 </body>
 </html>

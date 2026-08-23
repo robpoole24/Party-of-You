@@ -130,6 +130,55 @@ router.get('/:subdomain', async (req, res) => {
       volunteerCount = parseInt(volResult.rows[0].count) || 0;
     } catch (e) {}
 
+    // Get site settings (template, colors, donate config)
+    let site = null;
+    try {
+      const siteResult = await db.query(
+        'SELECT * FROM candidate_sites WHERE candidate_id = $1',
+        [c.id]
+      );
+      if (siteResult.rows.length) site = siteResult.rows[0];
+    } catch (e) { console.warn('[CandidatePage] Site settings failed:', e.message); }
+
+    // Get pages and blocks
+    let pages = [];
+    try {
+      const pagesResult = await db.query(
+        'SELECT * FROM site_pages WHERE candidate_id = $1 AND is_enabled = TRUE ORDER BY sort_order',
+        [c.id]
+      );
+      pages = pagesResult.rows;
+
+      // Load blocks for each page
+      for (const page of pages) {
+        const blocksResult = await db.query(
+          'SELECT * FROM site_blocks WHERE page_id = $1 AND is_visible = TRUE ORDER BY sort_order',
+          [page.id]
+        );
+        page.blocks = blocksResult.rows;
+      }
+    } catch (e) { console.warn('[CandidatePage] Pages/blocks failed:', e.message); }
+
+    // Get candidate issues
+    let issues = [];
+    try {
+      const issuesResult = await db.query(
+        'SELECT * FROM candidate_issues WHERE candidate_id = $1 AND is_published = TRUE ORDER BY sort_order',
+        [c.id]
+      );
+      issues = issuesResult.rows;
+    } catch (e) { console.warn('[CandidatePage] Issues failed:', e.message); }
+
+    // Check for custom page uploads (served separately via /c/:subdomain/:page)
+    let customPages = [];
+    try {
+      const cpResult = await db.query(
+        'SELECT page_slug, cloudinary_url FROM candidate_custom_pages WHERE candidate_id = $1 AND is_active = TRUE',
+        [c.id]
+      );
+      customPages = cpResult.rows;
+    } catch (e) {}
+
     res.json({
       success: true,
       candidate: {
@@ -149,6 +198,27 @@ router.get('/:subdomain', async (req, res) => {
         fecCommitteeId: c.fec_committee_id,
         pledgedAt: c.pledged_at,
       },
+      site: site ? {
+        template: site.template || 'hometown',
+        accentColor: site.accent_color,
+        fontHeading: site.font_heading,
+        navStyle: site.nav_style || 'top',
+        siteTitle: site.site_title,
+        siteTagline: site.site_tagline,
+        socialTwitter: site.social_twitter,
+        socialFacebook: site.social_facebook,
+        socialInstagram: site.social_instagram,
+        socialYoutube: site.social_youtube,
+        donateStripeUrl: site.donate_stripe_url,
+        donatePaypalUrl: site.donate_paypal_url,
+        donateVenmo: site.donate_venmo,
+        donateCashAddress: site.donate_cash_address,
+        donateFecNotice: site.donate_fec_notice,
+        isPublished: site.is_published,
+      } : null,
+      pages,
+      issues,
+      customPages,
       platform: PLATFORM_PLANKS,
       events,
       volunteerCount,
