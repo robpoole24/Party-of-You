@@ -221,3 +221,47 @@ router.patch('/profile', async (req, res) => {
     res.status(500).json({ error: 'Profile update failed', detail: err.message });
   }
 });
+
+// POST /api/dashboard/upgrade-interest
+router.post('/upgrade-interest', async (req, res) => {
+  const db = req.db;
+  const candidateId = req.candidate?.id;
+  if (!candidateId) return res.status(401).json({ error: 'Not authenticated' });
+
+  const { upgradeId, upgradeName } = req.body;
+  if (!upgradeId) return res.status(400).json({ error: 'upgradeId required' });
+
+  try {
+    // Store in a simple upgrade_interest table if it exists, otherwise log it
+    await db.query(`
+      INSERT INTO upgrade_interest (candidate_id, upgrade_id, upgrade_name, expressed_at)
+      VALUES ($1, $2, $3, NOW())
+      ON CONFLICT (candidate_id, upgrade_id) DO UPDATE SET
+        expressed_at = NOW()
+    `, [candidateId, upgradeId, upgradeName || upgradeId]).catch(async () => {
+      // Table may not exist yet — create it and retry
+      await db.query(`
+        CREATE TABLE IF NOT EXISTS upgrade_interest (
+          id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+          candidate_id UUID NOT NULL REFERENCES candidates(id) ON DELETE CASCADE,
+          upgrade_id TEXT NOT NULL,
+          upgrade_name TEXT,
+          expressed_at TIMESTAMPTZ DEFAULT NOW(),
+          UNIQUE (candidate_id, upgrade_id)
+        )
+      `);
+      await db.query(`
+        INSERT INTO upgrade_interest (candidate_id, upgrade_id, upgrade_name, expressed_at)
+        VALUES ($1, $2, $3, NOW())
+        ON CONFLICT (candidate_id, upgrade_id) DO UPDATE SET expressed_at = NOW()
+      `, [candidateId, upgradeId, upgradeName || upgradeId]);
+    });
+
+    console.log(`[Upgrades] ${candidateId} expressed interest in: ${upgradeId}`);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('[Upgrades] interest error:', err.message);
+    // Return success anyway — don't block the UX over a logging failure
+    res.json({ success: true });
+  }
+});

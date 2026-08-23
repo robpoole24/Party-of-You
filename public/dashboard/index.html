@@ -444,6 +444,9 @@ body { font-family: var(--body); background: var(--gray); color: var(--text); -w
       <button class="nav-item" onclick="showSection('website', this)">
         <span class="icon">🌐</span> My Website
       </button>
+      <button class="nav-item" onclick="showSection('finance', this)">
+        <span class="icon">💰</span> Campaign Finance
+      </button>
       <button class="nav-item" onclick="showSection('community', this)">
         <span class="icon">🤝</span> Community
       </button>
@@ -1758,6 +1761,276 @@ body { font-family: var(--body); background: var(--gray); color: var(--text); -w
           </div>
         </div>
       </div>
+
+      <!-- ── CAMPAIGN FINANCE ── -->
+      <div class="section" id="sec-finance">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;flex-wrap:wrap;gap:12px">
+          <div>
+            <div style="font-family:var(--cond);font-size:28px;font-weight:900;text-transform:uppercase;color:var(--navy);margin-bottom:4px">Campaign Finance</div>
+            <div style="font-size:13px;color:var(--muted)">Track donations and expenses. Generate quarterly reports for filing.</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button onclick="showFinanceTab('donations')" class="topbar-btn secondary" style="font-size:12px" id="ftab-btn-donations">+ Log Donation</button>
+            <button onclick="showFinanceTab('expenses')" class="topbar-btn secondary" style="font-size:12px" id="ftab-btn-expenses">+ Log Expense</button>
+            <button onclick="generateReport()" class="topbar-btn primary" style="font-size:12px">📄 Generate Report</button>
+          </div>
+        </div>
+
+        <!-- Summary cards -->
+        <div class="panel-grid three" style="margin-bottom:20px">
+          <div class="panel">
+            <div class="panel-body" style="text-align:center;padding:20px">
+              <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:6px">Total Raised</div>
+              <div style="font-family:var(--cond);font-size:36px;font-weight:900;color:var(--green)" id="fin-total-raised">$0.00</div>
+              <div style="font-size:11px;color:var(--muted)" id="fin-donor-count">0 donors</div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-body" style="text-align:center;padding:20px">
+              <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:6px">Total Spent</div>
+              <div style="font-family:var(--cond);font-size:36px;font-weight:900;color:var(--red)" id="fin-total-spent">$0.00</div>
+              <div style="font-size:11px;color:var(--muted)" id="fin-expense-count">0 expenses</div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-body" style="text-align:center;padding:20px">
+              <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:6px">Cash on Hand</div>
+              <div style="font-family:var(--cond);font-size:36px;font-weight:900;color:var(--navy)" id="fin-cash-on-hand">$0.00</div>
+              <div style="font-size:11px;color:var(--muted)" id="fin-period-label">Current period</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Finance tabs -->
+        <div style="display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:20px">
+          <button class="builder-tab active" onclick="showFinanceTab('donations')" id="ftab-donations">💰 Donations</button>
+          <button class="builder-tab" onclick="showFinanceTab('expenses')" id="ftab-expenses">💸 Expenses</button>
+          <button class="builder-tab" onclick="showFinanceTab('reports')" id="ftab-reports">📄 Reports</button>
+        </div>
+
+        <!-- DONATIONS TAB -->
+        <div id="fin-donations" class="builder-tab-content">
+          <!-- Add donation form -->
+          <div id="donation-form" style="display:none;background:var(--white);border:2px solid var(--navy);border-radius:10px;padding:20px;margin-bottom:20px">
+            <div style="font-family:var(--cond);font-size:16px;font-weight:800;text-transform:uppercase;color:var(--navy);margin-bottom:16px">Log a Donation</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+              <div>
+                <label class="field-label">Donor Name</label>
+                <input type="text" id="don-name" placeholder="Jane Smith" style="width:100%;height:38px;padding:0 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--body)">
+              </div>
+              <div>
+                <label class="field-label">Amount *</label>
+                <input type="number" id="don-amount" placeholder="100.00" min="0.01" step="0.01" style="width:100%;height:38px;padding:0 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--body)">
+              </div>
+              <div>
+                <label class="field-label">Date *</label>
+                <input type="date" id="don-date" style="width:100%;height:38px;padding:0 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--body)">
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+              <div>
+                <label class="field-label">Payment Method</label>
+                <select id="don-method" style="width:100%;height:38px;padding:0 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--body)">
+                  <option value="stripe">Stripe</option>
+                  <option value="paypal">PayPal</option>
+                  <option value="venmo">Venmo</option>
+                  <option value="check">Check</option>
+                  <option value="cash">Cash</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label class="field-label">Donor Email</label>
+                <input type="email" id="don-email" placeholder="jane@example.com" style="width:100%;height:38px;padding:0 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--body)">
+              </div>
+              <div>
+                <label class="field-label">Transaction ID (optional)</label>
+                <input type="text" id="don-txid" placeholder="ch_xxx or PayPal ID" style="width:100%;height:38px;padding:0 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--body)">
+              </div>
+            </div>
+            <!-- FEC required fields — shown when amount >= $200 -->
+            <div id="don-fec-fields" style="display:none;background:rgba(180,83,9,0.05);border:1px solid rgba(180,83,9,0.2);border-radius:8px;padding:14px;margin-bottom:12px">
+              <div style="font-size:11px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px">⚖️ FEC Required — Donations $200+</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div><label class="field-label">Employer</label><input type="text" id="don-employer" placeholder="ABC Corp" style="width:100%;height:36px;padding:0 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--body)"></div>
+                <div><label class="field-label">Occupation</label><input type="text" id="don-occupation" placeholder="Software Engineer" style="width:100%;height:36px;padding:0 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--body)"></div>
+                <div><label class="field-label">Address</label><input type="text" id="don-address" placeholder="123 Main St" style="width:100%;height:36px;padding:0 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--body)"></div>
+                <div style="display:grid;grid-template-columns:1fr 60px 80px;gap:6px">
+                  <div><label class="field-label">City</label><input type="text" id="don-city" style="width:100%;height:36px;padding:0 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--body)"></div>
+                  <div><label class="field-label">ST</label><input type="text" id="don-state" maxlength="2" style="width:100%;height:36px;padding:0 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--body);text-transform:uppercase"></div>
+                  <div><label class="field-label">ZIP</label><input type="text" id="don-zip" maxlength="5" style="width:100%;height:36px;padding:0 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--body)"></div>
+                </div>
+              </div>
+            </div>
+            <div style="margin-bottom:12px">
+              <label class="field-label">Notes (optional)</label>
+              <input type="text" id="don-notes" placeholder="Event name, referral source, etc." style="width:100%;height:38px;padding:0 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--body)">
+            </div>
+            <div style="display:flex;gap:8px">
+              <button onclick="submitDonation()" class="topbar-btn primary" style="font-size:12px">Save Donation</button>
+              <button onclick="document.getElementById('donation-form').style.display='none'" class="topbar-btn secondary" style="font-size:12px">Cancel</button>
+            </div>
+          </div>
+
+          <!-- Donations table -->
+          <div class="panel">
+            <div class="panel-hdr" style="justify-content:space-between">
+              <h2><span class="ph-icon">💰</span> Donation Log</h2>
+              <button onclick="toggleDonationForm()" class="topbar-btn primary" style="font-size:11px;padding:5px 12px">+ Add</button>
+            </div>
+            <div style="overflow-x:auto">
+              <table class="data-table" id="donations-table">
+                <thead><tr>
+                  <th>Date</th><th>Donor</th><th>Amount</th><th>Method</th><th>Notes</th><th></th>
+                </tr></thead>
+                <tbody id="donations-tbody">
+                  <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--muted)">No donations logged yet.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- EXPENSES TAB -->
+        <div id="fin-expenses" class="builder-tab-content" style="display:none">
+          <!-- Add expense form -->
+          <div id="expense-form" style="display:none;background:var(--white);border:2px solid var(--navy);border-radius:10px;padding:20px;margin-bottom:20px">
+            <div style="font-family:var(--cond);font-size:16px;font-weight:800;text-transform:uppercase;color:var(--navy);margin-bottom:16px">Log an Expense</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+              <div>
+                <label class="field-label">Payee *</label>
+                <input type="text" id="exp-payee" placeholder="Facebook Ads, Printer, etc." style="width:100%;height:38px;padding:0 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--body)">
+              </div>
+              <div>
+                <label class="field-label">Amount *</label>
+                <input type="number" id="exp-amount" placeholder="250.00" min="0.01" step="0.01" style="width:100%;height:38px;padding:0 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--body)">
+              </div>
+              <div>
+                <label class="field-label">Date *</label>
+                <input type="date" id="exp-date" style="width:100%;height:38px;padding:0 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--body)">
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+              <div>
+                <label class="field-label">Category *</label>
+                <select id="exp-category" style="width:100%;height:38px;padding:0 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--body)">
+                  <option value="advertising">Advertising</option>
+                  <option value="campaign_materials">Campaign Materials</option>
+                  <option value="events">Events</option>
+                  <option value="filing_fees">Filing Fees</option>
+                  <option value="office">Office / Supplies</option>
+                  <option value="postage">Postage / Mailing</option>
+                  <option value="professional_services">Professional Services</option>
+                  <option value="travel">Travel</option>
+                  <option value="voter_outreach">Voter Outreach</option>
+                  <option value="wages">Wages / Stipends</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label class="field-label">Payment Method</label>
+                <select id="exp-method" style="width:100%;height:38px;padding:0 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--body)">
+                  <option value="card">Card</option>
+                  <option value="check">Check</option>
+                  <option value="cash">Cash</option>
+                  <option value="transfer">Transfer</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+            </div>
+            <div style="margin-bottom:12px">
+              <label class="field-label">Description *</label>
+              <input type="text" id="exp-description" placeholder="Facebook ad campaign — Oct 15-31" style="width:100%;height:38px;padding:0 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--body)">
+            </div>
+            <div style="display:flex;gap:8px">
+              <button onclick="submitExpense()" class="topbar-btn primary" style="font-size:12px">Save Expense</button>
+              <button onclick="document.getElementById('expense-form').style.display='none'" class="topbar-btn secondary" style="font-size:12px">Cancel</button>
+            </div>
+          </div>
+
+          <!-- Expenses table -->
+          <div class="panel">
+            <div class="panel-hdr" style="justify-content:space-between">
+              <h2><span class="ph-icon">💸</span> Expense Log</h2>
+              <button onclick="toggleExpenseForm()" class="topbar-btn primary" style="font-size:11px;padding:5px 12px">+ Add</button>
+            </div>
+            <div style="overflow-x:auto">
+              <table class="data-table" id="expenses-table">
+                <thead><tr>
+                  <th>Date</th><th>Payee</th><th>Category</th><th>Amount</th><th>Description</th><th></th>
+                </tr></thead>
+                <tbody id="expenses-tbody">
+                  <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--muted)">No expenses logged yet.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- REPORTS TAB -->
+        <div id="fin-reports" class="builder-tab-content" style="display:none">
+          <div class="panel" style="margin-bottom:20px">
+            <div class="panel-hdr"><h2><span class="ph-icon">📄</span> Generate Quarterly Report</h2></div>
+            <div class="panel-body">
+              <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:18px;max-width:600px">
+                Generate a summary report for FEC or state campaign finance filing. The report tallies all donations and expenses for the selected quarter and exports as CSV. You'll still need to file officially through your state or FEC portal — this gives you the numbers.
+              </div>
+              <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:20px">
+                <div>
+                  <label class="field-label">Reporting Period</label>
+                  <select id="report-period" style="height:38px;padding:0 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:var(--body)">
+                    <option value="Q1-2026">Q1 2026 (Jan 1 – Mar 31)</option>
+                    <option value="Q2-2026">Q2 2026 (Apr 1 – Jun 30)</option>
+                    <option value="Q3-2026" selected>Q3 2026 (Jul 1 – Sep 30)</option>
+                    <option value="Q4-2026">Q4 2026 (Oct 1 – Dec 31)</option>
+                  </select>
+                </div>
+                <button onclick="generateReport()" class="topbar-btn primary" style="font-size:12px">Generate Report</button>
+                <button onclick="exportCSV()" class="topbar-btn secondary" style="font-size:12px">⬇ Export CSV</button>
+              </div>
+
+              <!-- Report preview -->
+              <div id="report-preview" style="display:none">
+                <div style="background:var(--gray);border-radius:8px;padding:20px;margin-bottom:16px">
+                  <div style="font-family:var(--cond);font-size:16px;font-weight:800;text-transform:uppercase;color:var(--navy);margin-bottom:14px" id="report-title">Q3 2026 Campaign Finance Report</div>
+                  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
+                    <div style="text-align:center;background:var(--white);border-radius:6px;padding:12px">
+                      <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:4px">Total Raised</div>
+                      <div style="font-family:var(--cond);font-size:22px;font-weight:900;color:var(--green)" id="rpt-raised">$0</div>
+                    </div>
+                    <div style="text-align:center;background:var(--white);border-radius:6px;padding:12px">
+                      <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:4px">Total Spent</div>
+                      <div style="font-family:var(--cond);font-size:22px;font-weight:900;color:var(--red)" id="rpt-spent">$0</div>
+                    </div>
+                    <div style="text-align:center;background:var(--white);border-radius:6px;padding:12px">
+                      <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:4px">Cash on Hand</div>
+                      <div style="font-family:var(--cond);font-size:22px;font-weight:900;color:var(--navy)" id="rpt-cash">$0</div>
+                    </div>
+                    <div style="text-align:center;background:var(--white);border-radius:6px;padding:12px">
+                      <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:4px">Donors</div>
+                      <div style="font-family:var(--cond);font-size:22px;font-weight:900;color:var(--sky)" id="rpt-donors">0</div>
+                    </div>
+                  </div>
+                  <!-- Itemized donors (>$200) -->
+                  <div id="rpt-itemized-wrap" style="display:none">
+                    <div style="font-size:12px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px">⚖️ Itemized Donors (over $200 aggregate)</div>
+                    <table class="data-table" id="rpt-itemized-table" style="background:var(--white);border-radius:6px">
+                      <thead><tr><th>Donor</th><th>Employer</th><th>Occupation</th><th>Amount</th></tr></thead>
+                      <tbody id="rpt-itemized-tbody"></tbody>
+                    </table>
+                  </div>
+                </div>
+                <!-- Expense breakdown by category -->
+                <div id="rpt-expense-breakdown" style="background:var(--gray);border-radius:8px;padding:16px">
+                  <div style="font-size:12px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Expenses by Category</div>
+                  <div id="rpt-categories"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /sec-finance -->
 
       <!-- ── COMMUNITY ── -->
       <div class="section" id="sec-community">
@@ -3558,6 +3831,7 @@ function showSection(name, btn) {
     events: loadEvents,
     volunteers: loadVolunteers,
     website: loadSiteBuilder,
+    finance: loadFinance,
     community: () => {},
     upgrades: loadUpgrades,
   };
@@ -4933,6 +5207,300 @@ async function deleteCustomPage(slug) {
     if (res.ok) { showToast(`Custom ${slug} page removed`); loadCustomPages(); }
     else showToast('Delete failed', true);
   } catch (e) { showToast('Delete failed', true); }
+}
+
+
+// ── CAMPAIGN FINANCE ──────────────────────────────────────────
+
+let finDonations = [];
+let finExpenses  = [];
+let finLoaded    = false;
+
+async function loadFinance() {
+  if (finLoaded) { updateFinanceSummary(); return; }
+  try {
+    const [donRes, expRes] = await Promise.all([
+      fetch('/api/finance/donations'),
+      fetch('/api/finance/expenses'),
+    ]);
+    if (donRes.ok) finDonations = await donRes.json();
+    if (expRes.ok) finExpenses  = await expRes.json();
+    finLoaded = true;
+  } catch (e) { console.warn('[Finance] load error:', e.message); }
+  updateFinanceSummary();
+  renderDonationTable();
+  renderExpenseTable();
+  // Set today's date as default for new entries
+  const today = new Date().toISOString().split('T')[0];
+  ['don-date','exp-date'].forEach(id => { const el = document.getElementById(id); if (el) el.value = today; });
+}
+
+function showFinanceTab(tab) {
+  ['donations','expenses','reports'].forEach(t => {
+    document.getElementById('fin-'+t).style.display = t === tab ? 'block' : 'none';
+    document.getElementById('ftab-'+t)?.classList.toggle('active', t === tab);
+  });
+  if (tab === 'donations') toggleDonationForm(false);
+  if (tab === 'expenses')  toggleExpenseForm(false);
+}
+
+function updateFinanceSummary() {
+  const totalRaised = finDonations.reduce((s,d) => s + (d.amount_cents||0), 0);
+  const totalSpent  = finExpenses.reduce((s,e)  => s + (e.amount_cents||0), 0);
+  const cash = totalRaised - totalSpent;
+  const fmt = cents => '$' + (cents/100).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+  set('fin-total-raised', fmt(totalRaised));
+  set('fin-total-spent',  fmt(totalSpent));
+  set('fin-cash-on-hand', fmt(cash));
+  set('fin-donor-count',  `${finDonations.length} donor${finDonations.length !== 1 ? 's' : ''}`);
+  set('fin-expense-count',`${finExpenses.length} expense${finExpenses.length !== 1 ? 's' : ''}`);
+}
+
+// ── DONATIONS ──
+function toggleDonationForm(show) {
+  const form = document.getElementById('donation-form');
+  if (!form) return;
+  if (show === undefined) show = form.style.display === 'none';
+  form.style.display = show ? 'block' : 'none';
+  if (show) form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// Show FEC fields when amount >= $200
+document.addEventListener('DOMContentLoaded', () => {
+  const amtEl = document.getElementById('don-amount');
+  if (amtEl) amtEl.addEventListener('input', () => {
+    const fec = document.getElementById('don-fec-fields');
+    if (fec) fec.style.display = parseFloat(amtEl.value) >= 200 ? 'block' : 'none';
+  });
+});
+
+async function submitDonation() {
+  const amount = parseFloat(document.getElementById('don-amount')?.value);
+  const date   = document.getElementById('don-date')?.value;
+  if (!amount || amount <= 0) { showToast('Enter a valid amount', true); return; }
+  if (!date) { showToast('Enter a date', true); return; }
+
+  const payload = {
+    donor_name:   document.getElementById('don-name')?.value || null,
+    donor_email:  document.getElementById('don-email')?.value || null,
+    donor_employer:    document.getElementById('don-employer')?.value || null,
+    donor_occupation:  document.getElementById('don-occupation')?.value || null,
+    donor_address:     document.getElementById('don-address')?.value || null,
+    donor_city:        document.getElementById('don-city')?.value || null,
+    donor_state:       document.getElementById('don-state')?.value || null,
+    donor_zip:         document.getElementById('don-zip')?.value || null,
+    amount_cents: Math.round(amount * 100),
+    received_date: date,
+    payment_method: document.getElementById('don-method')?.value || 'other',
+    transaction_id: document.getElementById('don-txid')?.value || null,
+    notes: document.getElementById('don-notes')?.value || null,
+  };
+
+  try {
+    const res = await fetch('/api/finance/donations', {
+      method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error('Save failed');
+    const saved = await res.json();
+    finDonations.unshift(saved);
+    updateFinanceSummary();
+    renderDonationTable();
+    document.getElementById('donation-form').style.display = 'none';
+    // Reset form
+    ['don-name','don-email','don-amount','don-txid','don-notes','don-employer','don-occupation','don-address','don-city','don-state','don-zip'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.value = '';
+    });
+    document.getElementById('don-fec-fields').style.display = 'none';
+    showToast('Donation logged ✓');
+  } catch (e) { showToast('Save failed — check connection', true); }
+}
+
+function renderDonationTable() {
+  const tbody = document.getElementById('donations-tbody');
+  if (!tbody) return;
+  if (!finDonations.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--muted)">No donations logged yet. Click + Add to record your first donation.</td></tr>';
+    return;
+  }
+  const fmt = cents => '$' + (cents/100).toFixed(2);
+  tbody.innerHTML = finDonations.map(d => `
+    <tr>
+      <td>${new Date(d.received_date).toLocaleDateString()}</td>
+      <td>${d.donor_name || '<span style="color:var(--muted)">Anonymous</span>'}</td>
+      <td style="font-weight:700;color:var(--green)">${fmt(d.amount_cents)}</td>
+      <td style="text-transform:capitalize">${d.payment_method || '—'}</td>
+      <td style="color:var(--muted);font-size:12px">${d.notes || '—'}</td>
+      <td><button onclick="deleteDonation('${d.id}')" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:14px" title="Delete">🗑</button></td>
+    </tr>`).join('');
+}
+
+async function deleteDonation(id) {
+  if (!confirm('Delete this donation record?')) return;
+  try {
+    await fetch('/api/finance/donations/' + id, { method: 'DELETE' });
+    finDonations = finDonations.filter(d => d.id !== id);
+    updateFinanceSummary(); renderDonationTable();
+    showToast('Donation deleted');
+  } catch (e) { showToast('Delete failed', true); }
+}
+
+// ── EXPENSES ──
+function toggleExpenseForm(show) {
+  const form = document.getElementById('expense-form');
+  if (!form) return;
+  if (show === undefined) show = form.style.display === 'none';
+  form.style.display = show ? 'block' : 'none';
+  if (show) form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+async function submitExpense() {
+  const amount  = parseFloat(document.getElementById('exp-amount')?.value);
+  const date    = document.getElementById('exp-date')?.value;
+  const payee   = document.getElementById('exp-payee')?.value?.trim();
+  const desc    = document.getElementById('exp-description')?.value?.trim();
+  if (!amount || amount <= 0) { showToast('Enter a valid amount', true); return; }
+  if (!date)   { showToast('Enter a date', true); return; }
+  if (!payee)  { showToast('Enter a payee', true); return; }
+  if (!desc)   { showToast('Enter a description', true); return; }
+
+  const payload = {
+    payee_name:       payee,
+    amount_cents:     Math.round(amount * 100),
+    expense_date:     date,
+    expense_category: document.getElementById('exp-category')?.value || 'other',
+    payment_method:   document.getElementById('exp-method')?.value || 'other',
+    description:      desc,
+  };
+
+  try {
+    const res = await fetch('/api/finance/expenses', {
+      method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error('Save failed');
+    const saved = await res.json();
+    finExpenses.unshift(saved);
+    updateFinanceSummary(); renderExpenseTable();
+    document.getElementById('expense-form').style.display = 'none';
+    ['exp-payee','exp-amount','exp-description'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    showToast('Expense logged ✓');
+  } catch (e) { showToast('Save failed — check connection', true); }
+}
+
+function renderExpenseTable() {
+  const tbody = document.getElementById('expenses-tbody');
+  if (!tbody) return;
+  if (!finExpenses.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--muted)">No expenses logged yet.</td></tr>';
+    return;
+  }
+  const fmt = cents => '$' + (cents/100).toFixed(2);
+  const catLabel = cat => cat?.replace(/_/g,' ').replace(/\b\w/g, c => c.toUpperCase()) || '—';
+  tbody.innerHTML = finExpenses.map(e => `
+    <tr>
+      <td>${new Date(e.expense_date).toLocaleDateString()}</td>
+      <td>${e.payee_name}</td>
+      <td style="font-size:12px;color:var(--muted)">${catLabel(e.expense_category)}</td>
+      <td style="font-weight:700;color:var(--red)">${fmt(e.amount_cents)}</td>
+      <td style="font-size:12px;color:var(--muted)">${e.description}</td>
+      <td><button onclick="deleteExpense('${e.id}')" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:14px" title="Delete">🗑</button></td>
+    </tr>`).join('');
+}
+
+async function deleteExpense(id) {
+  if (!confirm('Delete this expense record?')) return;
+  try {
+    await fetch('/api/finance/expenses/' + id, { method: 'DELETE' });
+    finExpenses = finExpenses.filter(e => e.id !== id);
+    updateFinanceSummary(); renderExpenseTable();
+    showToast('Expense deleted');
+  } catch (e) { showToast('Delete failed', true); }
+}
+
+// ── REPORTS ──
+function generateReport() {
+  showFinanceTab('reports');
+  const period = document.getElementById('report-period')?.value || 'Q3-2026';
+  const [q, yr] = period.split('-');
+  const quarters = { Q1:[1,3], Q2:[4,6], Q3:[7,9], Q4:[10,12] };
+  const [startM, endM] = quarters[q] || [7,9];
+  const start = new Date(`${yr}-${String(startM).padStart(2,'0')}-01`);
+  const end   = new Date(`${yr}-${String(endM).padStart(2,'0')}-${endM===3||endM===12?31:endM===6?30:30}`);
+
+  const periodDons = finDonations.filter(d => {
+    const dt = new Date(d.received_date); return dt >= start && dt <= end;
+  });
+  const periodExps = finExpenses.filter(e => {
+    const dt = new Date(e.expense_date); return dt >= start && dt <= end;
+  });
+
+  const totalRaised = periodDons.reduce((s,d) => s + (d.amount_cents||0), 0);
+  const totalSpent  = periodExps.reduce((s,e) => s + (e.amount_cents||0), 0);
+  const cash        = totalRaised - totalSpent;
+  const fmt = cents => '$' + (cents/100).toFixed(2);
+
+  set('report-title', `${period} Campaign Finance Summary`);
+  set('rpt-raised', fmt(totalRaised));
+  set('rpt-spent', fmt(totalSpent));
+  set('rpt-cash', fmt(cash));
+  set('rpt-donors', periodDons.length);
+
+  // Itemized donors ($200+)
+  const itemized = periodDons.filter(d => d.amount_cents >= 20000);
+  const itemWrap = document.getElementById('rpt-itemized-wrap');
+  if (itemized.length && itemWrap) {
+    itemWrap.style.display = 'block';
+    document.getElementById('rpt-itemized-tbody').innerHTML = itemized.map(d => `
+      <tr>
+        <td>${d.donor_name || 'Unknown'}</td>
+        <td>${d.donor_employer || '<span style="color:var(--red)">REQUIRED</span>'}</td>
+        <td>${d.donor_occupation || '<span style="color:var(--red)">REQUIRED</span>'}</td>
+        <td style="font-weight:700">${fmt(d.amount_cents)}</td>
+      </tr>`).join('');
+  } else if (itemWrap) {
+    itemWrap.style.display = 'none';
+  }
+
+  // Expense breakdown by category
+  const byCategory = {};
+  periodExps.forEach(e => {
+    const cat = e.expense_category || 'other';
+    byCategory[cat] = (byCategory[cat] || 0) + (e.amount_cents || 0);
+  });
+  const catLabel = cat => cat.replace(/_/g,' ').replace(/\b\w/g, c => c.toUpperCase());
+  const catHTML = Object.entries(byCategory)
+    .sort((a,b) => b[1]-a[1])
+    .map(([cat, cents]) => {
+      const pct = totalSpent ? Math.round((cents/totalSpent)*100) : 0;
+      return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div style="width:140px;font-size:12px;color:var(--text)">${catLabel(cat)}</div>
+        <div style="flex:1;background:var(--white);border-radius:4px;overflow:hidden;height:16px">
+          <div style="width:${pct}%;height:100%;background:var(--red);border-radius:4px"></div>
+        </div>
+        <div style="font-size:12px;font-weight:700;color:var(--text);width:60px;text-align:right">${fmt(cents)}</div>
+      </div>`;
+    }).join('') || '<div style="color:var(--muted);font-size:13px">No expenses this period.</div>';
+
+  document.getElementById('rpt-categories').innerHTML = catHTML;
+  document.getElementById('report-preview').style.display = 'block';
+}
+
+function exportCSV() {
+  const period = document.getElementById('report-period')?.value || 'Q3-2026';
+  const fmt = cents => (cents/100).toFixed(2);
+
+  let csv = 'Type,Date,Party,Amount,Category/Method,Description/Notes\n';
+  finDonations.forEach(d => {
+    csv += `Donation,${d.received_date},${d.donor_name||'Anonymous'},${fmt(d.amount_cents)},${d.payment_method||''},${(d.notes||'').replace(/,/g,';')}\n`;
+  });
+  finExpenses.forEach(e => {
+    csv += `Expense,${e.expense_date},${e.payee_name},${fmt(e.amount_cents)},${e.expense_category||''},${(e.description||'').replace(/,/g,';')}\n`;
+  });
+
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `campaign-finance-${period}.csv`;
+  a.click(); URL.revokeObjectURL(url);
 }
 
 // ── COLLECTIVE UPGRADES ───────────────────────────────────────

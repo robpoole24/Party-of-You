@@ -124,7 +124,7 @@ app.use('/admin/listmonk', requireAdmin, (req, res) => {
 
 // Election calendar scraper endpoint
 app.post('/api/admin/scrape/election-calendar', requireAdmin, async (req, res) => {
-  const { state = 'all' } = req.body;
+  const { state = 'all' } = req.body || {};
 
   let scraperModule;
   try {
@@ -322,6 +322,9 @@ app.use('/api/candidate', require('./routes/candidate-page'));
 
 // Website builder API (requires candidate auth)
 app.use('/api/site', requireCandidate, require('./routes/site'));
+
+// Campaign Finance API (requires candidate auth)
+app.use('/api/finance', requireCandidate, require('./routes/finance'));
 
 // Media library API (requires candidate auth)
 app.use('/api/media', requireCandidate, require('./routes/media'));
