@@ -238,6 +238,10 @@ async function scrapeState(stateAbbr, db = null) {
     console.log(`[Scraper] ${stateAbbr}: NO ## headers found. Sample markdown: ${markdown.substring(0, 300).replace(/\n/g, '\\n')}`);
   }
 
+  // DEBUG: show ALL ## headers found in markdown
+  const allHeaders = markdown.split('\n').filter(l => l.trim().startsWith('#'));
+  console.log(`[Scraper] ${stateAbbr}: ALL headers found (${allHeaders.length}):`, allHeaders.slice(0,20).join(' | '));
+
   const elections = parseStateCalendar(markdown, stateAbbr.toUpperCase(), stateName);
 
   console.log(`[Scraper] ${stateAbbr}: found ${elections.length} elections`);
