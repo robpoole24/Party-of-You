@@ -161,53 +161,47 @@ function extractTag(html, tag) {
 function parsePbsWiTable(html) {
   const candidates = [];
 
-  // Find the main candidate table — it has rows with candidate URLs
-  // Pattern: <td><a href="/candidate/...">Name</a></td><td>Party</td><td><a href="/race/...">Race</a></td>
-  const tableMatch = html.match(/<table[\s\S]*?<\/table>/gi);
-  if (!tableMatch) {
-    console.warn('[CandidateScraper] PBS WI: no table found');
-    return candidates;
-  }
+  // The fetched page comes back as markdown (web_fetch converts HTML→markdown).
+  // Candidate rows look like:
+  //   | [Name](url) \* | Party | [Race label](url) | Incumbent |
+  //   | [Name](url)    | Party | [Race label](url) |           |
+  //
+  // Split into lines and parse each pipe-delimited row.
 
-  // Use the largest table (the candidate table)
-  const table = tableMatch.sort((a, b) => b.length - a.length)[0];
+  const lines = html.split('\n');
 
-  // Extract all rows
-  const rowMatches = table.match(/<tr[\s\S]*?<\/tr>/gi) || [];
+  for (const line of lines) {
+    // Must be a pipe-delimited row with at least 3 columns
+    if (!line.trim().startsWith('|')) continue;
 
-  for (const row of rowMatches) {
-    // Skip header row
-    if (/<th/i.test(row)) continue;
-
-    const cells = row.match(/<td[\s\S]*?<\/td>/gi) || [];
+    const cells = line.split('|').map(c => c.trim()).filter((c, i, arr) => i > 0 && i < arr.length - 1);
     if (cells.length < 3) continue;
 
-    // Cell 0: candidate name + URL
-    const nameCell = cells[0];
-    const nameUrlMatch = nameCell.match(/href="(\/candidate\/[^"]+)"[^>]*>([^<]+)/i);
-    if (!nameUrlMatch) continue;
+    const [nameCell, partyCell, raceCell, incumbentCell = ''] = cells;
 
-    const candidateSlug = nameUrlMatch[1];
-    // Strip the \* incumbent marker from name
-    const name = stripHtml(nameCell).replace(/\s*\*\s*$/, '').trim();
+    // Skip header and separator rows
+    if (/^[-:\s]+$/.test(nameCell) || /^Name$/i.test(nameCell)) continue;
 
-    // Cell 1: party
-    const party = stripHtml(cells[1]).trim();
+    // Extract name and URL from markdown link: [Name](url) or [Name](url) \*
+    const nameMatch = nameCell.match(/\[([^\]]+)\]\(([^)]+)\)/);
+    if (!nameMatch) continue;
 
-    // Cell 2: race/office + URL
-    const raceCell = cells[2];
-    const raceUrlMatch = raceCell.match(/href="(\/race\/[^"]+)"[^>]*>([^<]+)/i);
-    const raceLabel = raceUrlMatch ? raceUrlMatch[2].trim() : stripHtml(raceCell).trim();
-    const raceSlug = raceUrlMatch ? raceUrlMatch[1] : null;
+    const name = nameMatch[1].replace(/\s*\\?\*\s*$/, '').trim();
+    const candidateUrl = nameMatch[2];
 
-    // Cell 3: incumbent marker (★ or "Incumbent" text)
-    const isIncumbent = cells.length > 3
-      ? /incumbent|\*/i.test(stripHtml(cells[3]))
-      : /\*/.test(nameCell);
+    // Party
+    const party = partyCell.trim();
+    if (!party || /^[-|\s]*$/.test(party)) continue;
 
-    // Parse office type and district from race label
-    // Examples: "Assembly District 56", "Senate District 3", "U.S. Representative District 2",
-    //           "Governor", "Attorney General", "State Treasurer"
+    // Race label and URL
+    const raceMatch = raceCell.match(/\[([^\]]+)\]\(([^)]+)\)/);
+    const raceLabel = raceMatch ? raceMatch[1].trim() : raceCell.trim();
+    const raceUrl = raceMatch ? raceMatch[2] : null;
+
+    // Incumbent: cell 4 contains "Incumbent" text, or name cell has \*
+    const isIncumbent = /incumbent/i.test(incumbentCell) ||
+                        /\\?\*/.test(nameCell);
+
     const { officeType, district } = parseWiRaceLabel(raceLabel);
 
     if (!name || !party) continue;
@@ -219,8 +213,8 @@ function parsePbsWiTable(html) {
       name,
       party: normalizeParty(party),
       isIncumbent,
-      sourceUrl: `https://pbswisconsin.org${candidateSlug}`,
-      raceUrl: raceSlug ? `https://pbswisconsin.org${raceSlug}` : null,
+      sourceUrl: candidateUrl.startsWith('http') ? candidateUrl : `https://pbswisconsin.org${candidateUrl}`,
+      raceUrl: raceUrl ? (raceUrl.startsWith('http') ? raceUrl : `https://pbswisconsin.org${raceUrl}`) : null,
       source: 'pbs_wi',
       electionYear: ELECTION_YEAR,
     });
