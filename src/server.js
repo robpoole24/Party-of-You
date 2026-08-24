@@ -163,6 +163,71 @@ app.post('/api/admin/scrape/election-calendar', requireAdmin, async (req, res) =
   });
 });
 
+// Candidate scraper endpoint
+app.post('/api/admin/scrape/candidates', requireAdmin, async (req, res) => {
+  const { source = 'pbs-wi', state = 'WI' } = req.body || {};
+
+  let scraperModule;
+  try {
+    scraperModule = require('./jobs/scrape-candidates');
+  } catch (e) {
+    return res.status(500).json({ error: 'Candidate scraper module failed to load', detail: e.message });
+  }
+
+  const {
+    scrapePbsWisconsin,
+    scrapeBallotpediaState,
+    scrapeBallotpediaAll,
+    scrapeWikipediaState,
+    scrapeAll: scrapeAllCandidates,
+    ensureTable: ensureCandidatesTable,
+  } = scraperModule;
+
+  try {
+    await ensureCandidatesTable(db);
+  } catch (e) {
+    console.warn('[CandidateScraper] Could not ensure table:', e.message);
+  }
+
+  const stateLabel = state.toUpperCase() === 'ALL' ? 'all states' : state.toUpperCase();
+  res.json({
+    success: true,
+    message: `Candidate scrape started: source=${source}, state=${stateLabel}. Check server logs for progress.`,
+    note: state.toUpperCase() === 'ALL'
+      ? 'Scraping all states takes ~5 minutes with polite rate limiting.'
+      : `Scraping ${stateLabel} — should complete in under 30 seconds.`,
+  });
+
+  setImmediate(async () => {
+    try {
+      switch (source.toLowerCase()) {
+        case 'pbs-wi':
+        case 'pbs_wi':
+          await scrapePbsWisconsin(db);
+          break;
+        case 'ballotpedia':
+          if (state.toUpperCase() === 'ALL') {
+            await scrapeBallotpediaAll(db, 2000);
+          } else {
+            await scrapeBallotpediaState(state.toUpperCase(), db);
+          }
+          break;
+        case 'wikipedia':
+          await scrapeWikipediaState(state.toUpperCase(), db);
+          break;
+        case 'all':
+          await scrapeAllCandidates(db, 2000);
+          break;
+        default:
+          console.error(`[CandidateScraper] Unknown source: ${source}`);
+      }
+      console.log(`[CandidateScraper] Scrape complete: source=${source}, state=${stateLabel}`);
+    } catch (err) {
+      console.error('[CandidateScraper] Error:', err.message);
+    }
+  });
+});
+
 // nav.js — never cache so auth state updates immediately
 app.get('/nav.js', (req, res) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
@@ -330,7 +395,18 @@ app.get('/api/status', (req, res) => {
 });
 
 // Module 2: Open Seat Tracker
-app.use('/api/races', require('./routes/races'));
+// Attach getCandidatesForRace so races.js can enrich cards with real declared candidates
+app.use('/api/races', (req, res, next) => {
+  try {
+    const { getCandidatesForRace } = require('./jobs/scrape-candidates');
+    req.getCandidatesForRace = (state, officeType, district) =>
+      getCandidatesForRace(db, state, officeType, district);
+  } catch (e) {
+    // scrape-candidates not deployed yet — races still work, just no candidate enrichment
+    req.getCandidatesForRace = async () => [];
+  }
+  next();
+}, require('./routes/races'));
 
 // Module 5: District Intelligence
 app.use('/api/intelligence', require('./routes/intelligence'));
